@@ -1,0 +1,2 @@
+rootProject.name = 'pyroscope-javaagent'
+include('agent')

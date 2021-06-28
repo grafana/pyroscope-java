@@ -1,0 +1,124 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+import java.security.MessageDigest
+
+plugins {
+    id 'java-library'
+
+    // https://github.com/michel-kraemer/gradle-download-task
+    id "de.undercouch.download" version "4.1.1"
+
+    // https://github.com/johnrengelman/shadow
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+}
+
+def asyncProfilerVersion = "2.0"
+dependencies {
+    implementation files("$buildDir/async-profiler/async-profiler.jar")
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.10.0'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.10.0'
+}
+
+jar {
+    from("$buildDir/async-profiler/native") {
+        include "**.so"
+    }
+
+    manifest {
+        attributes(
+                'Premain-Class': 'io.pyroscope.javaagent.PyroscopeAgent'
+        )
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+    exclude 'Log4j-*'
+    exclude 'META-INF/org/apache/logging/log4j/**'
+    exclude 'META-INF/services/**'
+
+    from("$buildDir/async-profiler/native") {
+        include "**.so"
+        include "**.so.sha1"
+    }
+
+    archiveFileName = "pyroscope.jar"
+
+    minimize()
+}
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "io.pyroscope"
+}
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
+task asyncProfilerLib {
+    def suffixes = ['linux-aarch64', 'linux-arm', 'linux-x64', 'linux-x86', 'macos-x64']
+
+    def asyncProfilerDir = file("$buildDir/async-profiler")
+    outputs.file "$asyncProfilerDir/async-profiler.jar"
+    suffixes.forEach { suffix ->
+        outputs.file "$asyncProfilerDir/native/libasyncProfiler-${suffix}.so"
+    }
+
+    doLast {
+        suffixes.forEach { suffix ->
+            download {
+                src "https://github.com/jvm-profiling-tools/async-profiler/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.tar.gz"
+                dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.tar.gz")
+                overwrite true
+            }
+
+            // Extract the native library files.
+            copy {
+                from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.tar.gz"))
+                include '**/libasyncProfiler.so'
+                eachFile {
+                    it.relativePath = new RelativePath(true, "native/", "libasyncProfiler-${suffix}.so")
+                }
+                includeEmptyDirs false
+                into asyncProfilerDir
+            }
+
+            // Write checksums for the library files.
+            // They are used for the library deployment.
+            def sha1 = MessageDigest.getInstance('SHA1')
+            sha1.update(file("$asyncProfilerDir/native/libasyncProfiler-${suffix}.so").toPath().readBytes())
+            def hexString = new StringBuilder()
+            for (b in sha1.digest()) {
+                hexString.append(String.format('%01x', b & 0xFF))
+            }
+            new File("$asyncProfilerDir/native/libasyncProfiler-${suffix}.so.sha1").text = hexString
+        }
+
+        // Extract the Java library.
+        copy {
+            from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-linux-x64.tar.gz"))
+            include '**/async-profiler.jar'
+            eachFile {
+                it.relativePath = new RelativePath(true, it.relativePath.segments.drop(2))
+            }
+            includeEmptyDirs false
+            into asyncProfilerDir
+        }
+    }
+}
+
+clean.dependsOn 'cleanAsyncProfilerLib'
+compileJava.dependsOn 'asyncProfilerLib'
+relocateShadowJar.dependsOn 'asyncProfilerLib'
