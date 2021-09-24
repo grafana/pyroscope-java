@@ -11,15 +11,9 @@ The agent is distributed as a single JAR file `pyroscope.jar`. It contains nativ
 - Linux on ARM;
 - MacOS on x64.
 
-## Building
+## Downloads
 
-To build the agent JAR:
-
-```shell
-./gradlew shadowJar
-```
-
-The file will be in `agent/build/libs/pyroscope.jar`.
+Visit [releases](/releases) page to download the latest version of `pyroscope.jar`
 
 ## Usage
 
@@ -54,3 +48,13 @@ The address of the Pyroscope server. The default is `http://localhost:4040`.
 
 ### `PYROSCOPE_AUTH_TOKEN`
 The authorization token used to upload profiling data.
+
+## Building
+
+If you want to build the agent JAR yourself, from this repo run:
+
+```shell
+./gradlew shadowJar
+```
+
+The file will be in `agent/build/libs/pyroscope.jar`.
