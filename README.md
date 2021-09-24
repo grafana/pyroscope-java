@@ -13,7 +13,7 @@ The agent is distributed as a single JAR file `pyroscope.jar`. It contains nativ
 
 ## Downloads
 
-Visit [releases](/releases) page to download the latest version of `pyroscope.jar`
+Visit [releases](https://github.com/pyroscope-io/pyroscope-java/releases) page to download the latest version of `pyroscope.jar`
 
 ## Usage
 
