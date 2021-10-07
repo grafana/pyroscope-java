@@ -39,7 +39,7 @@ class Profiler {
 
         try (final InputStream is = Objects.requireNonNull(
                 Profiler.class.getResourceAsStream("/" + fileName))) {
-            final Path target = Paths.get(targetDir.getPath(), targetLibraryFileName(fileName));
+            final Path target = targetDir.toPath().resolve(targetLibraryFileName(fileName)).toAbsolutePath();
             Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
             libraryPath = target.toString();
         }
