@@ -1,0 +1,16 @@
+TODO support multiple simultaneous profiling modes (profiling event types)
+  - async-profiler dump format
+    - ATM, the collapsed dump format (what we're using) is not supported for multiple-event profiling
+      - can it be supported?
+      - see
+        - https://github.com/jvm-profiling-tools/async-profiler/issues/150
+        - https://github.com/jvm-profiling-tools/async-profiler/issues/357
+  - data flow changes
+    - ATM, sample snapshots are uploaded specifying event-type-dependent parameters per snapshot
+      - so multiple-event profiling needs a dedicated queue+snapshot+upload pipeline for each event type used
+
+TODO support per-thread profiling
+  - might not be possible to access that feature through the AsyncProfiler class
+    - see
+      - https://github.com/jvm-profiling-tools/async-profiler/issues/489
+
