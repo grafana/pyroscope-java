@@ -39,7 +39,7 @@ public enum EventType {
         Optional<EventType> maybeEventType =
             EnumSet.allOf(EventType.class)
             .stream()
-            .filter(eventType -> eventType.id == id)
+            .filter(eventType -> eventType.id.equals(id))
             .findAny();
         return maybeEventType.orElseThrow(IllegalArgumentException::new);
     }

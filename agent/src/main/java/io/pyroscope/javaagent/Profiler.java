@@ -134,7 +134,7 @@ class Profiler {
 
     // TODO new method for starting new snapshot/batch
     final synchronized void start() {
-        instance.start(eventType.toString(), interval.toNanos());
+        instance.start(eventType.id, interval.toNanos());
         profilingStarted = Instant.now();
         logger.info("Profiling started");
     }
@@ -153,7 +153,7 @@ class Profiler {
 
         // TODO use `this.start()` or analogue
         profilingStarted = Instant.now();
-        instance.start(eventType.toString(), interval.toNanos());
+        instance.start(eventType.id, interval.toNanos());
         return result;
     }
 }

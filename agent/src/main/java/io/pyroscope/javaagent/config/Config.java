@@ -98,7 +98,8 @@ public final class Config {
     }
 
     private static EventType profilingEvent() {
-        final String profilingEventStr = System.getenv(PYROSCOPE_PROFILER_EVENT_CONFIG);
+        final String profilingEventStr =
+            System.getenv(PYROSCOPE_PROFILER_EVENT_CONFIG).trim().toLowerCase();
         if (profilingEventStr == null || profilingEventStr.isEmpty()) {
             return DEFAULT_PROFILER_EVENT;
         }
@@ -107,7 +108,7 @@ public final class Config {
             return EventType.fromId(profilingEventStr);
         } catch (IllegalArgumentException e) {
             PreConfigLogger.LOGGER.warn("Invalid {} value {}, using {}",
-                    PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT);
+                    PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
             return DEFAULT_PROFILER_EVENT;
         }
     }
