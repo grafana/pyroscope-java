@@ -69,8 +69,8 @@ final class Uploader implements Runnable {
         try {
             final URI baseUri = URI.create(config.serverAddress);
             final String query = urlParam("name", config.applicationName)
-                    + "&" + urlParam("units", snapshot.eventType.units)
-                    + "&" + urlParam("aggregationType", snapshot.eventType.aggregationType)
+                    + "&" + urlParam("units", snapshot.eventType.units.id)
+                    + "&" + urlParam("aggregationType", snapshot.eventType.aggregationType.id)
                     + "&" + urlParam("sampleRate", Long.toString(config.profilingIntervalInHertz()))
                     + "&" + urlParam("from", Long.toString(snapshot.started.getEpochSecond()))
                     + "&" + urlParam("until", Long.toString(snapshot.finished.getEpochSecond()))
