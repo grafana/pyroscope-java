@@ -9,7 +9,7 @@ import io.pyroscope.http.AggregationType;
 
 public enum EventType {
     CPU (Events.CPU, Units.SAMPLES, AggregationType.SUM),
-    ALLOC (Events.ALLOC, Units.SAMPLES, AggregationType.SUM),
+    ALLOC (Events.ALLOC, Units.BYTES, AggregationType.SUM),
     LOCK (Events.LOCK, Units.SAMPLES, AggregationType.SUM),
     WALL (Events.WALL, Units.SAMPLES, AggregationType.SUM),
     ITIMER (Events.ITIMER, Units.SAMPLES, AggregationType.SUM);
