@@ -1,13 +1,18 @@
 package io.pyroscope.javaagent;
 
+import java.util.EnumSet;
+import java.util.Optional;
+
 import one.profiler.Events;
+import io.pyroscope.http.Units;
+import io.pyroscope.http.AggregationType;
 
 public enum EventType {
-    CPU (Events.CPU),
-    ALLOC (Events.ALLOC),
-    LOCK (Events.LOCK),
-    WALL (Events.WALL),
-    ITIMER (Events.ITIMER);
+    CPU (Events.CPU, Units.SAMPLES, AggregationType.SUM),
+    ALLOC (Events.ALLOC, Units.SAMPLES, AggregationType.SUM),
+    LOCK (Events.LOCK, Units.SAMPLES, AggregationType.SUM),
+    WALL (Events.WALL, Units.SAMPLES, AggregationType.SUM),
+    ITIMER (Events.ITIMER, Units.SAMPLES, AggregationType.SUM);
 
     /**
     * Event type id, as defined in one.profiler.Events.
@@ -17,23 +22,25 @@ public enum EventType {
     /**
     * Unit option, as expected by Pyroscope's HTTP API.
     */
-    public final PyroscopeUnits units;
+    public final Units units;
 
     /**
     * Aggregation type option, as expected by Pyroscope's HTTP API.
     */
-    public final PyroscopeAggregationType aggregationType;
+    public final AggregationType aggregationType;
 
-    EventType(String id) {
+    EventType(String id, Units units, AggregationType aggregationType) {
         this.id = id;
-
-        // Currently, use the same units and aggregationType for all event types.
-        // These properties being defined on EventType presumes that they are solely EventType dependent.
-        this.units = PyroscopeUnits.SAMPLES;
-        this.aggregationType = PyroscopeAggregationType.SUM;
+        this.units = units;
+        this.aggregationType = aggregationType;
     }
 
-    public static EventType parse(String id) throws IllegalArgumentException {
-        return EventType.valueOf(id);
+    public static EventType fromId(String id) throws IllegalArgumentException {
+        Optional<EventType> maybeEventType =
+            EnumSet.allOf(EventType.class)
+            .stream()
+            .filter(eventType -> eventType.id == id)
+            .findAny();
+        return maybeEventType.orElseThrow(IllegalArgumentException::new);
     }
 }

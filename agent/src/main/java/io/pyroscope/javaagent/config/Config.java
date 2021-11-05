@@ -104,7 +104,7 @@ public final class Config {
         }
 
         try {
-            return EventType.parse(profilingEventStr);
+            return EventType.fromId(profilingEventStr);
         } catch (IllegalArgumentException e) {
             PreConfigLogger.LOGGER.warn("Invalid {} value {}, using {}",
                     PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT);
