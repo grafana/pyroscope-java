@@ -1,6 +1,6 @@
-package io.pyroscope.javaagent;
+package io.pyroscope.http;
 
-public enum PyroscopeAggregationType {
+public enum AggregationType {
     SUM ("sum"),
     AVERAGE ("average");
 
@@ -9,7 +9,7 @@ public enum PyroscopeAggregationType {
     */
     public final String id;
 
-    PyroscopeAggregationType(String id) {
+    AggregationType(String id) {
         this.id = id;
     }
 }

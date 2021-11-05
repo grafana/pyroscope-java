@@ -1,6 +1,6 @@
-package io.pyroscope.javaagent;
+package io.pyroscope.http;
 
-public enum PyroscopeUnits {
+public enum Units {
     SAMPLES ("samples"),
     OBJECTS ("objects"),
     BYTES ("bytes");
@@ -10,7 +10,7 @@ public enum PyroscopeUnits {
     */
     public final String id;
 
-    PyroscopeUnits(String id) {
+    Units(String id) {
         this.id = id;
     }
 }
