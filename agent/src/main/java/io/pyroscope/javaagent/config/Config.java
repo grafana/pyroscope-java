@@ -33,6 +33,7 @@ public final class Config {
     public final Level logLevel;
     public final String serverAddress;
     public final String authToken;
+    public final String timeseriesName;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -40,7 +41,8 @@ public final class Config {
            final Duration uploadInterval,
            final Level logLevel,
            final String serverAddress,
-           final String authToken) {
+           final String authToken
+        ) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -48,6 +50,7 @@ public final class Config {
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
+        this.timeseriesName = timeseriesName(applicationName, profilingEvent);
     }
 
     public long profilingIntervalInHertz() {
@@ -60,8 +63,15 @@ public final class Config {
     }
 
     public static Config build() {
-        return new Config(applicationName(), profilingInterval(),
-                profilingEvent(), uploadInterval(), logLevel(), serverAddress(), authToken());
+        return new Config(
+            applicationName(),
+            profilingInterval(),
+            profilingEvent(),
+            uploadInterval(),
+            logLevel(),
+            serverAddress(),
+            authToken()
+        );
     }
 
     private static String applicationName() {
@@ -97,15 +107,21 @@ public final class Config {
         }
     }
 
+    private String timeseriesName(String applicationName, EventType eventType) {
+        return applicationName + "." + eventType.id;
+    }
+
     private static EventType profilingEvent() {
         final String profilingEventStr =
-            System.getenv(PYROSCOPE_PROFILER_EVENT_CONFIG).trim().toLowerCase();
+            System.getenv(PYROSCOPE_PROFILER_EVENT_CONFIG);
         if (profilingEventStr == null || profilingEventStr.isEmpty()) {
             return DEFAULT_PROFILER_EVENT;
         }
 
+        final String lowerCaseTrimmed = profilingEventStr.trim().toLowerCase();
+
         try {
-            return EventType.fromId(profilingEventStr);
+            return EventType.fromId(lowerCaseTrimmed);
         } catch (IllegalArgumentException e) {
             PreConfigLogger.LOGGER.warn("Invalid {} value {}, using {}",
                     PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
