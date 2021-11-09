@@ -1,0 +1,8 @@
+root = true
+
+[*]
+end_of_line = lf
+indent_style = space
+
+[{*.java,build.gradle,settings.gradle}]
+indent_size = 4

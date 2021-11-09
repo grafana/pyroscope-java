@@ -1,7 +1,7 @@
 package io.pyroscope.javaagent.config;
 
+import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.PreConfigLogger;
-import one.profiler.Events;
 import org.apache.logging.log4j.Level;
 
 import java.nio.ByteBuffer;
@@ -21,26 +21,28 @@ public final class Config {
 
     private static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
-    private static final String DEFAULT_PROFILER_EVENT = Events.ITIMER;
+    private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
 
     public final String spyName = DEFAULT_SPY_NAME;
     public final String applicationName;
     public final Duration profilingInterval;
-    public final String profilingEvent;
+    public final EventType profilingEvent;
     public final Duration uploadInterval;
     public final Level logLevel;
     public final String serverAddress;
     public final String authToken;
+    public final String timeseriesName;
 
     Config(final String applicationName,
            final Duration profilingInterval,
-           final String profilingEvent,
+           final EventType profilingEvent,
            final Duration uploadInterval,
            final Level logLevel,
            final String serverAddress,
-           final String authToken) {
+           final String authToken
+        ) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -48,11 +50,28 @@ public final class Config {
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
+        this.timeseriesName = timeseriesName(applicationName, profilingEvent);
+    }
+
+    public long profilingIntervalInHertz() {
+        return durationToHertz(this.profilingInterval);
+    }
+
+    private static long durationToHertz(Duration duration) {
+        Duration oneSecond = Duration.ofSeconds(1);
+        return oneSecond.toNanos() / duration.toNanos();
     }
 
     public static Config build() {
-        return new Config(applicationName(), profilingInterval(),
-                profilingEvent(), uploadInterval(), logLevel(), serverAddress(), authToken());
+        return new Config(
+            applicationName(),
+            profilingInterval(),
+            profilingEvent(),
+            uploadInterval(),
+            logLevel(),
+            serverAddress(),
+            authToken()
+        );
     }
 
     private static String applicationName() {
@@ -88,22 +107,24 @@ public final class Config {
         }
     }
 
-    private static String profilingEvent() {
-        final String profilingIntervalStr = System.getenv(PYROSCOPE_PROFILER_EVENT_CONFIG);
-        if (profilingIntervalStr == null || profilingIntervalStr.isEmpty()) {
+    private String timeseriesName(String applicationName, EventType eventType) {
+        return applicationName + "." + eventType.id;
+    }
+
+    private static EventType profilingEvent() {
+        final String profilingEventStr =
+            System.getenv(PYROSCOPE_PROFILER_EVENT_CONFIG);
+        if (profilingEventStr == null || profilingEventStr.isEmpty()) {
             return DEFAULT_PROFILER_EVENT;
         }
 
-        final String profilingIntervalStrLC = profilingIntervalStr.toLowerCase(Locale.ROOT);
-        if (profilingIntervalStrLC.equals(Events.ITIMER)
-                || profilingIntervalStrLC.equals(Events.CPU)
-                || profilingIntervalStrLC.equals(Events.ALLOC)
-                || profilingIntervalStrLC.equals(Events.LOCK)
-                || profilingIntervalStrLC.equals(Events.WALL)) {
-            return profilingIntervalStr;
-        } else {
+        final String lowerCaseTrimmed = profilingEventStr.trim().toLowerCase();
+
+        try {
+            return EventType.fromId(lowerCaseTrimmed);
+        } catch (IllegalArgumentException e) {
             PreConfigLogger.LOGGER.warn("Invalid {} value {}, using {}",
-                    PYROSCOPE_PROFILER_EVENT_CONFIG, profilingIntervalStrLC, DEFAULT_PROFILER_EVENT);
+                    PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
             return DEFAULT_PROFILER_EVENT;
         }
     }

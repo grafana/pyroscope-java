@@ -14,7 +14,7 @@ import java.util.Objects;
 
 class Profiler {
     private final Logger logger;
-    private final String event;
+    private final EventType eventType;
     private final Duration interval;
 
     private static String libraryPath;
@@ -123,16 +123,18 @@ class Profiler {
 
     private final AsyncProfiler instance = AsyncProfiler.getInstance(libraryPath);
 
+    // TODO this is actually start of snapshot, not profiling as a whole
     private Instant profilingStarted = null;
 
-    Profiler(final Logger logger, final String event, final Duration interval) {
+    Profiler(final Logger logger, final EventType eventType, final Duration interval) {
         this.logger = logger;
-        this.event = event;
+        this.eventType = eventType;
         this.interval = interval;
     }
 
+    // TODO new method for starting new snapshot/batch
     final synchronized void start() {
-        instance.start(event, interval.toNanos());
+        instance.start(eventType.id, interval.toNanos());
         profilingStarted = Instant.now();
         logger.info("Profiling started");
     }
@@ -142,10 +144,16 @@ class Profiler {
             throw new IllegalStateException("Profiling is not started");
         }
 
-        final Snapshot result = new Snapshot(profilingStarted, Instant.now(), instance.dumpCollapsed(Counter.SAMPLES));
+        final Snapshot result = new Snapshot(
+            eventType,
+            profilingStarted,
+            Instant.now(),
+            instance.dumpCollapsed(Counter.SAMPLES)
+        );
 
+        // TODO use `this.start()` or analogue
         profilingStarted = Instant.now();
-        instance.start(event, interval.toNanos());
+        instance.start(eventType.id, interval.toNanos());
         return result;
     }
 }
