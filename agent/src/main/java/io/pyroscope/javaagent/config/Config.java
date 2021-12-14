@@ -17,6 +17,7 @@ public final class Config {
     private static final String PYROSCOPE_UPLOAD_INTERVAL_CONFIG = "PYROSCOPE_UPLOAD_INTERVAL";
     private static final String PYROSCOPE_LOG_LEVEL_CONFIG = "PYROSCOPE_LOG_LEVEL";
     private static final String PYROSCOPE_SERVER_ADDRESS_CONFIG = "PYROSCOPE_SERVER_ADDRESS";
+    private static final String PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG = "PYROSCOPE_ADHOC_SERVER_ADDRESS";
     private static final String PYROSCOPE_AUTH_TOKEN_CONFIG = "PYROSCOPE_AUTH_TOKEN";
 
     private static final String DEFAULT_SPY_NAME = "javaspy";
@@ -164,7 +165,10 @@ public final class Config {
     }
 
     private static String serverAddress() {
-        String serverAddress = System.getenv(PYROSCOPE_SERVER_ADDRESS_CONFIG);
+        String serverAddress = System.getenv(PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG);
+        if (serverAddress == null || serverAddress.isEmpty()) {
+            serverAddress = System.getenv(PYROSCOPE_SERVER_ADDRESS_CONFIG);
+        }
         if (serverAddress == null || serverAddress.isEmpty()) {
             PreConfigLogger.LOGGER.warn("{} is not defined, using {}",
                     PYROSCOPE_SERVER_ADDRESS_CONFIG, DEFAULT_SERVER_ADDRESS);
