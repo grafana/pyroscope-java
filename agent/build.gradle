@@ -22,7 +22,7 @@ repositories {
 def asyncProfilerVersion = "2.0"
 dependencies {
     implementation files("$buildDir/async-profiler/async-profiler.jar")
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
