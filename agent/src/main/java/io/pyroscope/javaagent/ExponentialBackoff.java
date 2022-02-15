@@ -23,7 +23,9 @@ final class ExponentialBackoff {
     final int error() {
         attempt += 1;
         int multiplier = cap / base;
-        if ((multiplier >> attempt) > 0) {
+        // from https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.19
+        // "If the promoted type of the left-hand operand is int, then only the five lowest-order bits of the right-hand operand are used as the shift distance".
+        if (attempt < 32 && (multiplier >> attempt) > 0) {
             multiplier = 1 << attempt;
         }
         return random.nextInt(base * multiplier);
