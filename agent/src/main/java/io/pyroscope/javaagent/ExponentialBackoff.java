@@ -4,7 +4,7 @@ import java.util.Random;
 
 /**
  * Exponential backoff counter implementing the Full Jitter algorithm from
- * <a href=https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/">here</a>.
+ * <a href="https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/">here</a>.
  */
 final class ExponentialBackoff {
     private final Random random;
