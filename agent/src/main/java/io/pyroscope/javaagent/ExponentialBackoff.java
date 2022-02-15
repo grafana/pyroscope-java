@@ -22,9 +22,11 @@ final class ExponentialBackoff {
 
     final int error() {
         attempt += 1;
-        final int multiplier = (int) Math.pow(2, attempt);
-        final int upper = Math.min(cap, base * multiplier);
-        return random.nextInt(upper);
+        int multiplier = cap / base;
+        if ((multiplier >> attempt) > 0) {
+            multiplier = 1 << attempt;
+        }
+        return random.nextInt(base * multiplier);
     }
 
     final void reset() {
