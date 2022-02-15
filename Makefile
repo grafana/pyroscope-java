@@ -6,6 +6,10 @@ clean:
 build:
 	./gradlew shadowJar
 
+.PHONY: test
+test:
+	./gradlew test
+
 .PHONY: docker-example
 docker-example: build
 	cp agent/build/libs/pyroscope.jar example/
