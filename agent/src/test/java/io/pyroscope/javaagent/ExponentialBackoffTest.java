@@ -32,7 +32,8 @@ public class ExponentialBackoffTest {
         assertEquals(4_000, exponentialBackoff.error());
         assertEquals(8_000, exponentialBackoff.error());
         assertEquals(16_000, exponentialBackoff.error());
-        assertEquals(30_000, exponentialBackoff.error());
-        assertEquals(30_000, exponentialBackoff.error());
+        for (int i = 0; i < 100; i++) {
+            assertEquals(30_000, exponentialBackoff.error());
+        }
     }
 }
