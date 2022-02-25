@@ -56,10 +56,27 @@ public class PyroscopeAgent {
             executor.scheduleAtFixedRate(dumpProfile,
                     config.uploadInterval.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
 
-            final Thread uploaderThread = new Thread(
-                    new Uploader(logger, uploadQueue, config));
+            final Thread uploaderThread = new Thread(new Uploader(logger, uploadQueue, config));
             uploaderThread.setDaemon(true);
             uploaderThread.start();
+
+            // Stop profiling whenever the main program stops.
+            final ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor();
+            ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
+            while (threadGroup.getParent() != null)
+                threadGroup = threadGroup.getParent();
+            final int threadCount = threadGroup.activeCount() + 1;
+            final Runnable maybeShutdown = () -> {
+                ThreadGroup group = Thread.currentThread().getThreadGroup();
+                while (group.getParent() != null)
+                    group = group.getParent();
+                if (group.activeCount() == threadCount) {
+                    executor.shutdown();
+                    watchdog.shutdown();
+                    uploaderThread.interrupt();
+                }
+            };
+            watchdog.scheduleAtFixedRate(maybeShutdown, 1, 1, TimeUnit.SECONDS);
         } catch (final Throwable e) {
             logger.error("Error starting profiler", e);
         }
