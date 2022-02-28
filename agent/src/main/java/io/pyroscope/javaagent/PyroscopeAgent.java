@@ -11,6 +11,7 @@ import java.lang.instrument.Instrumentation;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class PyroscopeAgent {
@@ -42,7 +43,13 @@ public class PyroscopeAgent {
         try {
             final Profiler profiler = new Profiler(logger, config.profilingEvent, config.profilingInterval);
 
-            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        Thread t = Executors.defaultThreadFactory().newThread(r);
+                        t.setDaemon(true);
+                        return t;
+                    }
+                });
             profiler.start();
 
             final Runnable dumpProfile = () -> {
@@ -56,8 +63,7 @@ public class PyroscopeAgent {
             executor.scheduleAtFixedRate(dumpProfile,
                     config.uploadInterval.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
 
-            final Thread uploaderThread = new Thread(
-                    new Uploader(logger, uploadQueue, config));
+            final Thread uploaderThread = new Thread(new Uploader(logger, uploadQueue, config));
             uploaderThread.setDaemon(true);
             uploaderThread.start();
         } catch (final Throwable e) {
