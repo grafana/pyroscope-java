@@ -11,6 +11,7 @@ import java.lang.instrument.Instrumentation;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class PyroscopeAgent {
@@ -42,7 +43,13 @@ public class PyroscopeAgent {
         try {
             final Profiler profiler = new Profiler(logger, config.profilingEvent, config.profilingInterval);
 
-            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        Thread t = Executors.defaultThreadFactory().newThread(r);
+                        t.setDaemon(true);
+                        return t;
+                    }
+                });
             profiler.start();
 
             final Runnable dumpProfile = () -> {
@@ -59,24 +66,6 @@ public class PyroscopeAgent {
             final Thread uploaderThread = new Thread(new Uploader(logger, uploadQueue, config));
             uploaderThread.setDaemon(true);
             uploaderThread.start();
-
-            // Stop profiling whenever the main program stops.
-            final ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor();
-            ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
-            while (threadGroup.getParent() != null)
-                threadGroup = threadGroup.getParent();
-            final int threadCount = threadGroup.activeCount() + 1;
-            final Runnable maybeShutdown = () -> {
-                ThreadGroup group = Thread.currentThread().getThreadGroup();
-                while (group.getParent() != null)
-                    group = group.getParent();
-                if (group.activeCount() == threadCount) {
-                    executor.shutdown();
-                    watchdog.shutdown();
-                    uploaderThread.interrupt();
-                }
-            };
-            watchdog.scheduleAtFixedRate(maybeShutdown, 1, 1, TimeUnit.SECONDS);
         } catch (final Throwable e) {
             logger.error("Error starting profiler", e);
         }
