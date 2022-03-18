@@ -5,6 +5,7 @@ import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
 import org.apache.logging.log4j.Logger;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -193,7 +194,9 @@ class Profiler {
     final private byte[] dumpJFR() {
         try {
             instance.stop();
-            return new FileInputStream(tempFile).readAllBytes();
+            byte[] bytes = new byte[(int) tempFile.length()];
+            new DataInputStream(new FileInputStream(tempFile)).readFully(bytes);
+            return bytes;
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
