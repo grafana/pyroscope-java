@@ -56,7 +56,7 @@ public final class Config {
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
-        this.timeseriesName = timeseriesName(applicationName, profilingEvent);
+        this.timeseriesName = timeseriesName(applicationName, profilingEvent, format);
         this.format = format;
     }
 
@@ -115,7 +115,7 @@ public final class Config {
         }
     }
 
-    private String timeseriesName(String applicationName, EventType eventType) {
+    private String timeseriesName(String applicationName, EventType eventType, Format format) {
         if (format == Format.JFR)
             return applicationName;
         return applicationName + "." + eventType.id;
