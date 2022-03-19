@@ -1,5 +1,6 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
 import org.apache.logging.log4j.Logger;
 
@@ -7,7 +8,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 final class Uploader implements Runnable {
@@ -68,13 +68,15 @@ final class Uploader implements Runnable {
     private URL urlForSnapshot(final Snapshot snapshot) {
         try {
             final URI baseUri = URI.create(config.serverAddress);
-            final String query = urlParam("name", config.timeseriesName)
+            String query = urlParam("name", config.timeseriesName)
                     + "&" + urlParam("units", snapshot.eventType.units.id)
                     + "&" + urlParam("aggregationType", snapshot.eventType.aggregationType.id)
                     + "&" + urlParam("sampleRate", Long.toString(config.profilingIntervalInHertz()))
                     + "&" + urlParam("from", Long.toString(snapshot.started.getEpochSecond()))
                     + "&" + urlParam("until", Long.toString(snapshot.finished.getEpochSecond()))
                     + "&" + urlParam("spyName", config.spyName);
+            if (config.format == Format.JFR)
+                query += "&" + urlParam("format", "jfr");
             return new URI(baseUri.getScheme(), baseUri.getUserInfo(), baseUri.getHost(), baseUri.getPort(),
                     baseUri.getPath() + "/ingest", query, null).toURL();
         } catch (final MalformedURLException | URISyntaxException e) {
@@ -108,7 +110,7 @@ final class Uploader implements Runnable {
 
     private static void sendRequest(HttpURLConnection conn, final Snapshot snapshot) throws IOException {
         try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
-            out.write(snapshot.data.getBytes(StandardCharsets.UTF_8));
+            out.write(snapshot.data);
             out.flush();
         }
     }

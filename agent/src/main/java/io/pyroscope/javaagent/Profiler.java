@@ -1,12 +1,16 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.http.Format;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
 import org.apache.logging.log4j.Logger;
 
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Duration;
 import java.time.Instant;
@@ -16,6 +20,7 @@ class Profiler {
     private final Logger logger;
     private final EventType eventType;
     private final Duration interval;
+    private final Format format;
 
     private static String libraryPath;
     static {
@@ -125,16 +130,22 @@ class Profiler {
 
     // TODO this is actually start of snapshot, not profiling as a whole
     private Instant profilingStarted = null;
+    private File tempFile;
 
-    Profiler(final Logger logger, final EventType eventType, final Duration interval) {
+    Profiler(final Logger logger, final EventType eventType, final Duration interval, final Format format) {
         this.logger = logger;
         this.eventType = eventType;
         this.interval = interval;
+        this.format = format;
     }
 
     // TODO new method for starting new snapshot/batch
     final synchronized void start() {
-        instance.start(eventType.id, interval.toNanos());
+        if (format == Format.JFR) {
+            startJFR();
+        } else {
+            instance.start(eventType.id, interval.toNanos());
+        }
         profilingStarted = Instant.now();
         logger.info("Profiling started");
     }
@@ -148,12 +159,47 @@ class Profiler {
             eventType,
             profilingStarted,
             Instant.now(),
-            instance.dumpCollapsed(Counter.SAMPLES)
+            format == Format.JFR ? dumpJFR() : instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8)
         );
 
         // TODO use `this.start()` or analogue
         profilingStarted = Instant.now();
-        instance.start(eventType.id, interval.toNanos());
+        if (format == Format.JFR) {
+            restartJFR();
+        } else {
+            instance.start(eventType.id, interval.toNanos());
+        }
         return result;
     }
+
+    final private void startJFR() {
+        try {
+            // flight recorder is built on top of a file descriptor, so we need a file.
+            tempFile = File.createTempFile("pyroscope", ".jfr");
+            tempFile.deleteOnExit();
+            instance.execute(String.format("start,event=%s,interval=%s,file=%s", eventType.id, interval.toNanos(), tempFile.toString()));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    final private void restartJFR() {
+        try {
+            instance.execute(String.format("start,event=%s,interval=%s,file=%s", eventType.id, interval.toNanos(), tempFile.toString()));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    final private byte[] dumpJFR() {
+        try {
+            instance.stop();
+            byte[] bytes = new byte[(int) tempFile.length()];
+            new DataInputStream(new FileInputStream(tempFile)).readFully(bytes);
+            return bytes;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
 }

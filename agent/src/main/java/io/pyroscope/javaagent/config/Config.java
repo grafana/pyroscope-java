@@ -1,5 +1,6 @@
 package io.pyroscope.javaagent.config;
 
+import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.PreConfigLogger;
 import org.apache.logging.log4j.Level;
@@ -19,12 +20,14 @@ public final class Config {
     private static final String PYROSCOPE_SERVER_ADDRESS_CONFIG = "PYROSCOPE_SERVER_ADDRESS";
     private static final String PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG = "PYROSCOPE_ADHOC_SERVER_ADDRESS";
     private static final String PYROSCOPE_AUTH_TOKEN_CONFIG = "PYROSCOPE_AUTH_TOKEN";
+    private static final String PYROSCOPE_FORMAT_CONFIG = "PYROSCOPE_FORMAT";
 
     private static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
+    private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
 
     public final String spyName = DEFAULT_SPY_NAME;
     public final String applicationName;
@@ -35,6 +38,7 @@ public final class Config {
     public final String serverAddress;
     public final String authToken;
     public final String timeseriesName;
+    public final Format format;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -42,7 +46,8 @@ public final class Config {
            final Duration uploadInterval,
            final Level logLevel,
            final String serverAddress,
-           final String authToken
+           final String authToken,
+           final Format format
         ) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
@@ -51,7 +56,8 @@ public final class Config {
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
-        this.timeseriesName = timeseriesName(applicationName, profilingEvent);
+        this.timeseriesName = timeseriesName(applicationName, profilingEvent, format);
+        this.format = format;
     }
 
     public long profilingIntervalInHertz() {
@@ -71,7 +77,8 @@ public final class Config {
             uploadInterval(),
             logLevel(),
             serverAddress(),
-            authToken()
+            authToken(),
+            format()
         );
     }
 
@@ -108,7 +115,9 @@ public final class Config {
         }
     }
 
-    private String timeseriesName(String applicationName, EventType eventType) {
+    private String timeseriesName(String applicationName, EventType eventType, Format format) {
+        if (format == Format.JFR)
+            return applicationName;
         return applicationName + "." + eventType.id;
     }
 
@@ -180,5 +189,20 @@ public final class Config {
 
     private static String authToken() {
         return System.getenv(PYROSCOPE_AUTH_TOKEN_CONFIG);
+    }
+
+    private static Format format() {
+        final String format = System.getenv(PYROSCOPE_FORMAT_CONFIG);
+        if (format == null || format.isEmpty())
+            return DEFAULT_FORMAT;
+        switch (format.trim().toLowerCase()) {
+            case "collapsed":
+                return Format.COLLAPSED;
+            case "jfr":
+                return Format.JFR;
+            default:
+                PreConfigLogger.LOGGER.warn("Unknown format {}, using {}", format, DEFAULT_FORMAT);
+                return DEFAULT_FORMAT;
+        }
     }
 }

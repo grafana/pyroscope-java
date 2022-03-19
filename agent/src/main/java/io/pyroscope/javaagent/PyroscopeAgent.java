@@ -41,7 +41,7 @@ public class PyroscopeAgent {
         }
 
         try {
-            final Profiler profiler = new Profiler(logger, config.profilingEvent, config.profilingInterval);
+            final Profiler profiler = new Profiler(logger, config.profilingEvent, config.profilingInterval, config.format);
 
             final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
                     public Thread newThread(Runnable r) {
