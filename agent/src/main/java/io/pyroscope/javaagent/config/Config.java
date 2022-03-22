@@ -15,6 +15,7 @@ public final class Config {
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
     private static final String PYROSCOPE_PROFILER_EVENT_CONFIG = "PYROSCOPE_PROFILER_EVENT";
+    private static final String PYROSCOPE_PROFILER_ALLOC_CONFIG = "PYROSCOPE_PROFILER_ALLOC";
     private static final String PYROSCOPE_UPLOAD_INTERVAL_CONFIG = "PYROSCOPE_UPLOAD_INTERVAL";
     private static final String PYROSCOPE_LOG_LEVEL_CONFIG = "PYROSCOPE_LOG_LEVEL";
     private static final String PYROSCOPE_SERVER_ADDRESS_CONFIG = "PYROSCOPE_SERVER_ADDRESS";
@@ -25,6 +26,7 @@ public final class Config {
     private static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
+    private static final String DEFAULT_PROFILER_ALLOC = "0";
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
     private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
@@ -33,6 +35,7 @@ public final class Config {
     public final String applicationName;
     public final Duration profilingInterval;
     public final EventType profilingEvent;
+    public final String profilingAlloc;
     public final Duration uploadInterval;
     public final Level logLevel;
     public final String serverAddress;
@@ -43,6 +46,7 @@ public final class Config {
     Config(final String applicationName,
            final Duration profilingInterval,
            final EventType profilingEvent,
+           final String profilingAlloc,
            final Duration uploadInterval,
            final Level logLevel,
            final String serverAddress,
@@ -52,6 +56,7 @@ public final class Config {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
+        this.profilingAlloc = profilingAlloc;
         this.uploadInterval = uploadInterval;
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
@@ -74,6 +79,7 @@ public final class Config {
             applicationName(),
             profilingInterval(),
             profilingEvent(),
+            profilingAlloc(),
             uploadInterval(),
             logLevel(),
             serverAddress(),
@@ -137,6 +143,14 @@ public final class Config {
                     PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
             return DEFAULT_PROFILER_EVENT;
         }
+    }
+
+    private static String profilingAlloc() {
+        final String profilingAlloc = System.getenv(PYROSCOPE_PROFILER_ALLOC_CONFIG);
+        if (profilingAlloc == null || profilingAlloc.isEmpty()) {
+            return DEFAULT_PROFILER_ALLOC;
+        }
+        return profilingAlloc.trim().toLowerCase();
     }
 
     private static Duration uploadInterval() {
