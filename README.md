@@ -41,8 +41,8 @@ The agent is configured using environment variables.
 Starting with version v0.5.0 JFR format is (partially) supported to be able to support multiple events (JFR is the only output format that supports [multiple events in `async-profiler`](https://github.com/jvm-profiling-tools/async-profiler#multiple-events)).
 It currently supports the following events:
 - jdk.ExecutionSample (supported in `pyroscope-java >= 0.5.0` and `pyroscope >= 0.13.0`), used for CPU sampling events (`itimer`, `cpu`, `wall`).
-- jdk.ObjectAllocationInNewTLAB (supported in `pyroscope-java >= 0.5.0` and `pyroscope >= 0.13.0`), used for alloc sampling.
-- jdk.ObjectAllocationOutsideTLAB (supported in `pyroscope-java >= 0.5.0` and `pyroscope >= 0.13.0`), used for alloc sampling.
+- jdk.ObjectAllocationInNewTLAB (supported in `pyroscope-java >= 0.5.0` and `pyroscope >= 0.14.0`), used for alloc sampling.
+- jdk.ObjectAllocationOutsideTLAB (supported in `pyroscope-java >= 0.5.0` and `pyroscope >= 0.14.0`), used for alloc sampling.
 
 There are several environment variables that define how multiple event configuration works:
 
