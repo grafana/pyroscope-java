@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}-latest(JDK:${java})
+  build:
+    runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
