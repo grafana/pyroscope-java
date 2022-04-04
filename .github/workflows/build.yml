@@ -8,17 +8,18 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}-latest(JDK:${java})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu, macos, windows]
+        java: ['8', '11', '17']
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 8
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '8'
+          java-version: ${{ matrix.java }}
           distribution: 'adopt'
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
