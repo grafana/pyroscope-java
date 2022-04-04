@@ -10,12 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 @ExtendWith(MockitoExtension.class)
 public class ExponentialBackoffTest {
     @Test
     void test() {
-        final Random random = mock(Random.class);
+        final Random random = mock(Random.class, withSettings().withoutAnnotations());
         when(random.nextInt(anyInt())).then(invocation -> invocation.getArgument(0));
 
         final ExponentialBackoff exponentialBackoff = new ExponentialBackoff(1_000, 30_000, random);
