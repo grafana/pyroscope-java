@@ -19,7 +19,7 @@ repositories {
     mavenCentral()
 }
 
-def asyncProfilerVersion = "2.0"
+def asyncProfilerVersion = "2.7"
 dependencies {
     implementation files("$buildDir/async-profiler/async-profiler.jar")
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
@@ -68,7 +68,11 @@ task relocateShadowJar(type: ConfigureShadowRelocation) {
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 task asyncProfilerLib {
-    def suffixes = ['linux-aarch64', 'linux-arm', 'linux-x64', 'linux-x86', 'macos-x64']
+    def suffixes = [
+        ['linux-arm64', 'tar.gz'],
+        ['linux-x64', 'tar.gz'],
+        ['macos', 'zip']
+    ]
 
     def asyncProfilerDir = file("$buildDir/async-profiler")
     outputs.file "$asyncProfilerDir/async-profiler.jar"
@@ -77,16 +81,20 @@ task asyncProfilerLib {
     }
 
     doLast {
-        suffixes.forEach { suffix ->
+        suffixes.forEach { suffix, ext ->
             download {
-                src "https://github.com/jvm-profiling-tools/async-profiler/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.tar.gz"
-                dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.tar.gz")
+                src "https://github.com/jvm-profiling-tools/async-profiler/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
+                dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
                 overwrite true
             }
 
             // Extract the native library files.
             copy {
-                from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.tar.gz"))
+                if (ext == "zip") {
+                    from zipTree("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
+                } else {
+                    from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"))
+                }
                 include '**/libasyncProfiler.so'
                 eachFile {
                     it.relativePath = new RelativePath(true, "native/", "libasyncProfiler-${suffix}.so")
