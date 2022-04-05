@@ -55,51 +55,38 @@ class Profiler {
      * Creates the library file name based on the current OS and architecture name.
      */
     private static String libraryFileName() {
-        String os;
         String arch;
         final String osProperty = System.getProperty("os.name");
         final String archProperty = System.getProperty("os.arch");
         switch (osProperty) {
             case "Linux":
-                os = "linux";
                 switch (archProperty) {
-                    case "x86":
-                        arch = "x86";
-                        break;
-
                     case "amd64":
                         arch = "x64";
                         break;
 
-                    case "arm":
-                        arch = "arm";
-                        break;
-
                     case "aarch64":
-                        arch = "aarch64";
+                        arch = "arm64";
                         break;
 
                     default:
                         throw new RuntimeException("Unsupported architecture " + archProperty);
                 }
-                break;
+
+                return "libasyncProfiler-linux-" + arch + ".so";
 
             case "Mac OS X":
-                // async-profiler 2.1 is likely to bring macOS/AArch64 support
-                // https://github.com/jvm-profiling-tools/async-profiler/releases/tag/v2.1-ea
-                os = "macos";
-                if (!"x86_64".equals(archProperty)) {
-                    throw new RuntimeException("Unsupported architecture " + archProperty);
-                } else {
-                    arch = "x64";
+                switch (archProperty) {
+                    case "x86_64":
+                    case "aarch64":
+                        return "libasyncProfiler-macos.so";
+                    default:
+                        throw new RuntimeException("Unsupported architecture " + archProperty);
                 }
-                break;
 
             default:
                 throw new RuntimeException("Unsupported OS " + osProperty);
         }
-
-        return "libasyncProfiler-" + os + "-" + arch + ".so";
     }
 
     /**
@@ -169,6 +156,7 @@ class Profiler {
         if (format == Format.JFR) {
             restartJFR();
         } else {
+            instance.stop();
             instance.start(eventType.id, interval.toNanos());
         }
         return result;
