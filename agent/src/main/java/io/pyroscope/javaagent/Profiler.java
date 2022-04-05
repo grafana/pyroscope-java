@@ -158,6 +158,7 @@ class Profiler {
         if (format == Format.JFR) {
             restartJFR();
         } else {
+            instance.stop();
             instance.start(eventType.id, interval.toNanos());
         }
         return result;
