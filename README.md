@@ -6,10 +6,9 @@ The Java profiling agent for Pyroscope.io. Based on [async-profiler](https://git
 
 The agent is distributed as a single JAR file `pyroscope.jar`. It contains native async-profiler libraries for:
 - Linux on x64;
-- Linux on x86;
-- Linux on AArch64;
-- Linux on ARM;
+- Linux on ARM64;
 - MacOS on x64.
+- MacOS on ARM64.
 
 ## Downloads
 
