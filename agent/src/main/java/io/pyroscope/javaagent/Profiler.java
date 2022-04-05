@@ -55,13 +55,11 @@ class Profiler {
      * Creates the library file name based on the current OS and architecture name.
      */
     private static String libraryFileName() {
-        String os;
         String arch;
         final String osProperty = System.getProperty("os.name");
         final String archProperty = System.getProperty("os.arch");
         switch (osProperty) {
             case "Linux":
-                os = "linux";
                 switch (archProperty) {
                     case "amd64":
                         arch = "x64";
