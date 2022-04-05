@@ -197,7 +197,9 @@ class Profiler {
         try {
             instance.stop();
             byte[] bytes = new byte[(int) tempFile.length()];
-            new DataInputStream(new FileInputStream(tempFile)).readFully(bytes);
+            try (DataInputStream ds = new DataInputStream(new FileInputStream(tempFile))) {
+                ds.readFully(bytes);
+            }
             return bytes;
         } catch (IOException e) {
             throw new IllegalStateException(e);
