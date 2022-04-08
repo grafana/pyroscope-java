@@ -42,12 +42,15 @@ It currently supports the following events:
 - jdk.ExecutionSample (supported in `pyroscope-java >= 0.5.0` and `pyroscope >= 0.13.0`), used for CPU sampling events (`itimer`, `cpu`, `wall`).
 - jdk.ObjectAllocationInNewTLAB (supported in `pyroscope-java >= 0.5.0` and `pyroscope >= 0.14.0`), used for alloc sampling.
 - jdk.ObjectAllocationOutsideTLAB (supported in `pyroscope-java >= 0.5.0` and `pyroscope >= 0.14.0`), used for alloc sampling.
+- jdk.JavaMonitorEnter (supported in `pyroscope-java >= 0.6.0` and `pyroscope >= 0.15.0`), used for lock profiling.
+- jdk.ThreadPark (supported in `pyroscope-java >= 0.6.0` and `pyroscope >= 0.15.0`), used for lock profiling.
 
 There are several environment variables that define how multiple event configuration works:
 
 - `PYROSCOPE_FORMAT` sets the profiler output format. The default is `collapsed`, but in order to support multiple formats it must be set to `jfr`.
 - `PYROSCOPE_PROFILER_EVENT` sets the profiler event. With JFR format enabled, this event refers to one of the possible CPU profiling events: `itimer`, `cpu`, `wall`. The default is `itimer`.
 - `PYROSCOPE_PROFILER_ALLOC` sets the allocation threshold to register the events, in bytes (equivalent to `--alloc=` in `async-profiler`. The default value is 0, which means that allocation profiling is disabled. Setting it to `1` will register all the events.
+- `PYROSCOPE_PROFILER_LOCK` sets the lock threshold to register the events, in nanoseconds (equivalent to `--lock=` in `async-profiler`. The default value is -1, which means that allocation profiling is disabled. Setting it to `0` will register all the events.
 
 ## Building
 
