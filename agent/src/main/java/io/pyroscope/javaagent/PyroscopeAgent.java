@@ -45,6 +45,7 @@ public class PyroscopeAgent {
                     logger,
                     config.profilingEvent,
                     config.profilingAlloc,
+                    config.profilingLock,
                     config.profilingInterval,
                     config.format);
 

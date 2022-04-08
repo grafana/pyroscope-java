@@ -20,6 +20,7 @@ class Profiler {
     private final Logger logger;
     private final EventType eventType;
     private final String alloc;
+    private final String lock;
     private final Duration interval;
     private final Format format;
 
@@ -120,9 +121,10 @@ class Profiler {
     private Instant profilingStarted = null;
     private File tempFile;
 
-    Profiler(final Logger logger, final EventType eventType, final String alloc, final Duration interval, final Format format) {
+    Profiler(final Logger logger, final EventType eventType, final String alloc, final String lock, final Duration interval, final Format format) {
         this.logger = logger;
         this.alloc = alloc;
+        this.lock = lock;
         this.eventType = eventType;
         this.interval = interval;
         this.format = format;
@@ -167,7 +169,7 @@ class Profiler {
             // flight recorder is built on top of a file descriptor, so we need a file.
             tempFile = File.createTempFile("pyroscope", ".jfr");
             tempFile.deleteOnExit();
-            instance.execute(String.format("start,event=%s,alloc=%s,interval=%s,file=%s", eventType.id, alloc, interval.toNanos(), tempFile.toString()));
+            instance.execute(String.format("start,event=%s,alloc=%s,lock=%s,interval=%s,file=%s", eventType.id, alloc, lock, interval.toNanos(), tempFile.toString()));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -175,7 +177,7 @@ class Profiler {
 
     final private void restartJFR() {
         try {
-            instance.execute(String.format("start,event=%s,alloc=%s,interval=%s,file=%s", eventType.id, alloc, interval.toNanos(), tempFile.toString()));
+            instance.execute(String.format("start,event=%s,alloc=%s,lock=%s,interval=%s,file=%s", eventType.id, alloc, lock, interval.toNanos(), tempFile.toString()));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
