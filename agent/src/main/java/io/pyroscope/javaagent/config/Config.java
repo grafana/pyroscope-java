@@ -28,7 +28,7 @@ public final class Config {
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
     private static final String DEFAULT_PROFILER_ALLOC = "0";
-    private static final String DEFAULT_PROFILER_LOCK = "-1";
+    private static final String DEFAULT_PROFILER_LOCK = "0";
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
     private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
