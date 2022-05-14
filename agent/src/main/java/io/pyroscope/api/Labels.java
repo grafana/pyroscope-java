@@ -4,6 +4,7 @@ package io.pyroscope.api;
 import com.google.gson.annotations.SerializedName;
 import one.profiler.AsyncProfiler;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,28 +20,36 @@ public class Labels {
 
     private static final Function<String, Long> NEXT_STRING_ID = s -> stringCounter.incrementAndGet();
 
-
     static final ConcurrentHashMap<String, Long> keys = new ConcurrentHashMap<>();
-    static final RefCounted<String> values = new RefCounted<>(new AtomicCounterFactory(stringCounter));
-    static final RefCounted<Map<Long, Long>> contexts = new RefCounted<>(new AtomicCounterFactory(contextCounter));
+    static final RefCounted<String> values = new RefCounted<>(new AtomicCounterFactory<>(stringCounter));
+    static final RefCounted<Map<Long, Long>> contexts = new RefCounted<>(new AtomicCounterFactory<>(contextCounter));
 
-    static final ThreadLocal<Long> contextId = ThreadLocal.withInitial(() -> 0L); //todo use only one TL, make context a class
-    static final ThreadLocal<HashMap<Long, Long>> context = ThreadLocal.withInitial(() -> new HashMap<>());
+    static final ThreadLocal<Context> context = ThreadLocal.withInitial(() ->
+        new Context(0L, new LabelsMap(Collections.emptyMap()))
+    );
 
 
-    public static <T> T run(LabelsSet s, SafeCallable<T> c) {
-        try {
+    public static <T> T run(LabelsSet labels, SafeCallable<T> c) {
+        try (ScopedContext s = new ScopedContext(labels)) {
             return c.call();
-        } finally {
-            s.close();
         }
     }
 
-    public static void run(LabelsSet s, Runnable c) {
-        try {
+    public static void run(LabelsSet labels, Runnable c) {
+        try (ScopedContext s = new ScopedContext(labels)) {
             c.run();
-        } finally {
-            s.close();
+        }
+    }
+
+    public static class LabelsSet {
+        final Object[] args;
+
+        public LabelsSet(Object... args) {
+            this.args = args;
+            if (args.length % 2 != 0) {
+                throw new IllegalArgumentException("args.length % 2 != 0: " +
+                    "LabelsSet's  constructor arguments should be key-value pairs");
+            }
         }
     }
 
@@ -179,38 +188,27 @@ public class Labels {
         }
     }
 
-    public static class LabelsSet implements AutoCloseable {
-        final HashMap<Long, Long> prev;
-        final Long prevContextId;
 
-        public LabelsSet(Object... kvs) {
-            if (kvs.length % 2 != 0) {
-                throw new IllegalArgumentException("kvs.length % 2 != 0: " +
-                    "LabelSet's arguments should be key-value pairs");
-            }
+    static class ScopedContext implements AutoCloseable {
+        final Context prev;
+
+        public ScopedContext(LabelsSet labels) {
             prev = context.get();
-            prevContextId = contextId.get();
-
             HashMap<Long, Long> nextContext;
             ValueRef<Map<Long, Long>> contextRef;
 
             synchronized (lock) {
-                //todo oom case
-                nextContext = new HashMap<>(prev.size() + kvs.length / 2);
-                for (Map.Entry<Long, Long> it : prev.entrySet()) {
+                nextContext = new HashMap<>(prev.labels.labels.size() + labels.args.length / 2);
+                for (Map.Entry<Long, Long> it : prev.labels.labels.entrySet()) {
                     Long valueId = it.getValue();
                     ValueRef<String> ref = values.getRefById(valueId);
-                    if (ref != null) {
-                        ref.acquire();
-                        nextContext.put(it.getKey(), it.getValue());
-                    } else {
-                        throw new IllegalStateException(String.format("string %d not found", valueId));
-                    }
+                    ref.acquire();
+                    nextContext.put(it.getKey(), it.getValue());
                 }
 
-                for (int i = 0; i < kvs.length; i += 2) {
-                    Long k = key(kvs[i].toString());
-                    ValueRef<String> v = values.createRef(kvs[i + 1].toString());
+                for (int i = 0; i < labels.args.length; i += 2) {
+                    Long k = key(labels.args[i].toString());
+                    ValueRef<String> v = values.createRef(labels.args[i + 1].toString());
                     v.acquire();
                     Long prevValueId = nextContext.put(k, v.id);
                     if (prevValueId != null) {
@@ -231,19 +229,19 @@ public class Labels {
                 }
             }
 
-            context.set(nextContext);
-            contextId.set(contextRef.id);
-            AsyncProfiler.getInstance().setContextId(contextRef.id);
+            Long nextContextId = contextRef.id;
+            context.set(new Context(nextContextId, new LabelsMap(Collections.unmodifiableMap(nextContext))));
+            AsyncProfiler.getInstance().setContextId(nextContextId);
         }
-
 
         @Override
         public void close() {
+            Context currentContext = context.get();
             synchronized (lock) {
-                long counter = contexts.getRefById(contextId.get())
+                long counter = contexts.getRefById(currentContext.id)
                     .release();
                 if (counter == 0) {
-                    for (Long valueId : context.get().values()) {
+                    for (Long valueId : currentContext.labels.labels.values()) {
                         ValueRef<String> ref = values.getRefById(valueId);
                         if (ref != null) {
                             ref.release();
@@ -252,8 +250,40 @@ public class Labels {
                 }
             }
             context.set(prev);
-            contextId.set(prevContextId);
-            AsyncProfiler.getInstance().setContextId(prevContextId);
+            AsyncProfiler.getInstance().setContextId(prev.id);
+        }
+    }
+
+    static class LabelsMap {
+        public final Map<Long, Long> labels;
+
+        private LabelsMap(Map<Long, Long> labels) {
+            this.labels = labels;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            LabelsMap labelsMap = (LabelsMap) o;
+
+            return labels.equals(labelsMap.labels);
+        }
+
+        @Override
+        public int hashCode() {
+            return labels.hashCode();
+        }
+    }
+
+    static class Context {
+        public final Long id;
+        public final LabelsMap labels;
+
+        public Context(Long id, LabelsMap labels) {
+            this.id = id;
+            this.labels = labels;
         }
     }
 }
