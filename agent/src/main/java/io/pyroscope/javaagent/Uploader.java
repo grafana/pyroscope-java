@@ -99,7 +99,7 @@ final class Uploader implements Runnable {
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
             .newBuilder()
-            .addPathSegment("/ingest")
+            .addPathSegment("ingest")
             .addQueryParameter("name", config.timeseriesName)
             .addQueryParameter("units", snapshot.eventType.units.id)
             .addQueryParameter("aggregationType", snapshot.eventType.aggregationType.id)
