@@ -1,5 +1,6 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.api.Labels;
 import io.pyroscope.http.Format;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
@@ -150,7 +151,8 @@ class Profiler {
             eventType,
             profilingStarted,
             Instant.now(),
-            format == Format.JFR ? dumpJFR() : instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8)
+            format == Format.JFR ? dumpJFR() : instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8),
+            Labels.dump()
         );
 
         // TODO use `this.start()` or analogue

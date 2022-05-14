@@ -4,17 +4,14 @@ package io.pyroscope.api;
 import com.google.gson.annotations.SerializedName;
 import one.profiler.AsyncProfiler;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
-public class Tags {
-
+public class Labels {
     private static final Object lock = new Object();
 
     private static final AtomicLong stringCounter = new AtomicLong(0);
@@ -27,18 +24,28 @@ public class Tags {
     static final RefCounted<String> values = new RefCounted<>(new AtomicCounterFactory(stringCounter));
     static final RefCounted<Map<Long, Long>> contexts = new RefCounted<>(new AtomicCounterFactory(contextCounter));
 
-    static final ThreadLocal<Long> contextId = ThreadLocal.withInitial(() -> 0L);
+    static final ThreadLocal<Long> contextId = ThreadLocal.withInitial(() -> 0L); //todo use only one TL, make context a class
     static final ThreadLocal<HashMap<Long, Long>> context = ThreadLocal.withInitial(() -> new HashMap<>());
 
 
-    public static <T> T run(Scope s, SafeCallable<T> c) {
-        try (Scope ss = s) {
+    public static <T> T run(LabelsSet s, SafeCallable<T> c) {
+        try {
             return c.call();
+        } finally {
+            s.close();
         }
     }
 
-    public static Snapshot dump() {
-        Snapshot s = new Snapshot(new HashMap<>(), new HashMap<>());
+    public static void run(LabelsSet s, Runnable c) {
+        try {
+            c.run();
+        } finally {
+            s.close();
+        }
+    }
+
+    public static ContextsSnapshot dump() {
+        ContextsSnapshot s = new ContextsSnapshot(new HashMap<>(), new HashMap<>());
 
         for (Map.Entry<String, Long> it : keys.entrySet()) {
             s.strings.put(it.getValue(), it.getKey());
@@ -54,7 +61,6 @@ public class Tags {
     }
 
     private static void gc() {
-
         values.gc();
         contexts.gc();
     }
@@ -63,11 +69,6 @@ public class Tags {
     private static Long key(String s) {
         return keys.computeIfAbsent(s, NEXT_STRING_ID);
     }
-
-
-
-
-
 
     private static class AtomicCounterFactory<T> implements Function<T, ValueRef<T>> {
 
@@ -83,19 +84,18 @@ public class Tags {
         }
     }
 
-
-
-    public static class Snapshot {
+    public static class ContextsSnapshot {
         @SerializedName("contexts")
         public final HashMap<Long, Map<Long, Long>> contexts;
         @SerializedName("strings")
         public final HashMap<Long, String> strings;
 
-        public Snapshot(HashMap<Long, Map<Long, Long>> contexts, HashMap<Long, String> strings) {
+        public ContextsSnapshot(HashMap<Long, Map<Long, Long>> contexts, HashMap<Long, String> strings) {
             this.contexts = contexts;
             this.strings = strings;
         }
     }
+
     public interface SafeCallable<V> {
         V call();
     }
@@ -137,6 +137,7 @@ public class Tags {
             }
         }
     }
+
     public static class ValueRef<T> {
         public final T val;
         private final AtomicLong refCounter = new AtomicLong(0);
@@ -178,13 +179,14 @@ public class Tags {
         }
     }
 
-    public static class Scope implements AutoCloseable {
+    public static class LabelsSet implements AutoCloseable {
         final HashMap<Long, Long> prev;
         final Long prevContextId;
 
-        public Scope(Object... args) { //todo create constructor for 2, 4, 6 args
-            if (args.length %2  != 0) {
-                throw new IllegalArgumentException();
+        public LabelsSet(Object... kvs) {
+            if (kvs.length % 2 != 0) {
+                throw new IllegalArgumentException("kvs.length % 2 != 0: " +
+                    "LabelSet's arguments should be key-value pairs");
             }
             prev = context.get();
             prevContextId = contextId.get();
@@ -194,7 +196,7 @@ public class Tags {
 
             synchronized (lock) {
                 //todo oom case
-                nextContext = new HashMap<>(prev.size() + args.length / 2);
+                nextContext = new HashMap<>(prev.size() + kvs.length / 2);
                 for (Map.Entry<Long, Long> it : prev.entrySet()) {
                     Long valueId = it.getValue();
                     ValueRef<String> ref = values.getRefById(valueId);
@@ -202,13 +204,13 @@ public class Tags {
                         ref.acquire();
                         nextContext.put(it.getKey(), it.getValue());
                     } else {
-                        throw new IllegalStateException();//todo this should not happen, can we log the error
+                        throw new IllegalStateException(String.format("string %d not found", valueId));
                     }
                 }
 
-                for (int i = 0; i < args.length; i += 2) {
-                    Long k = key(args[i].toString());
-                    ValueRef<String> v = values.createRef(args[i + 1].toString());
+                for (int i = 0; i < kvs.length; i += 2) {
+                    Long k = key(kvs[i].toString());
+                    ValueRef<String> v = values.createRef(kvs[i + 1].toString());
                     v.acquire();
                     Long prevValueId = nextContext.put(k, v.id);
                     if (prevValueId != null) {
@@ -254,11 +256,4 @@ public class Tags {
             AsyncProfiler.getInstance().setContextId(prevContextId);
         }
     }
-
-
-
-
 }
-
-
-

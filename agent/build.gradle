@@ -23,7 +23,8 @@ def asyncProfilerVersion = "2.7"
 dependencies {
     implementation files("$buildDir/async-profiler/async-profiler.jar")
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
-
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.google.code.gson:gson:2.9.0")
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.10.0'
