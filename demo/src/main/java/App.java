@@ -1,6 +1,5 @@
-
-import io.pyroscope.api.Labels;
-import io.pyroscope.api.Labels.LabelsSet;
+import io.pyroscope.labels.Labels;
+import io.pyroscope.labels.LabelsSet;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
