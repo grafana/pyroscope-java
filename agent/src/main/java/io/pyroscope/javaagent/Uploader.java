@@ -58,8 +58,8 @@ final class Uploader implements Runnable {
                 RequestBody jfr = RequestBody.create(snapshot.data);
                 RequestBody requestBody = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
-                    .addFormDataPart("labels", null, labels)
-                    .addFormDataPart("jfr", null, jfr)
+                    .addFormDataPart("labels", "labels", labels)
+                    .addFormDataPart("jfr", "jfr", jfr)
                     .build();
                 Request.Builder request = new Request.Builder()
                     .post(requestBody)
