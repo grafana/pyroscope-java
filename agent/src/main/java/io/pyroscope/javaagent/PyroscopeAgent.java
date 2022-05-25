@@ -25,7 +25,6 @@ public class PyroscopeAgent {
         final Config config;
         final Logger logger;
         try {
-            Profiler.init();
             config = Config.build();
 
             logger = new SimpleLogger(
@@ -57,6 +56,7 @@ public class PyroscopeAgent {
                     }
                 });
             profiler.start();
+            logger.info("Profiling started");
 
             final Runnable dumpProfile = () -> {
                 try {
