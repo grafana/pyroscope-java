@@ -159,7 +159,7 @@ class Profiler {
             sb.append(",alloc=").append(alloc);
         }
         if (lock != null && !lock.isEmpty()) {
-            sb.append(",lock=").append(alloc);
+            sb.append(",lock=").append(lock);
         }
         sb.append(",interval=").append(interval.toNanos())
             .append(",file=").append(tempJFRFile.toString());
