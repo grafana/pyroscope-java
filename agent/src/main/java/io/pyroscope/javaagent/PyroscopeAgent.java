@@ -1,7 +1,6 @@
 package io.pyroscope.javaagent;
 
 import io.pyroscope.javaagent.config.Config;
-import one.profiler.Events;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ParameterizedNoReferenceMessageFactory;
 import org.apache.logging.log4j.simple.SimpleLogger;
@@ -15,10 +14,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class PyroscopeAgent {
-    // The number of snapshots simultaneously stored in memory is limited by this.
-    // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 1 MB.
-    private static final int UPLOAD_QUEUE_CAPACITY = 200;
-    private static final OverfillQueue<Snapshot> uploadQueue = new OverfillQueue<>(UPLOAD_QUEUE_CAPACITY);
 
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
@@ -39,6 +34,10 @@ public class PyroscopeAgent {
             PreConfigLogger.LOGGER.error("Error starting profiler", e);
             return;
         }
+        logger.debug("Config {}", config);
+
+        final OverfillQueue<Snapshot> pushQueue = new OverfillQueue<>(config.pushQueueCapacity);
+
 
         try {
             final Profiler profiler = new Profiler(
@@ -60,7 +59,7 @@ public class PyroscopeAgent {
 
             final Runnable dumpProfile = () -> {
                 try {
-                    uploadQueue.put(profiler.dump());
+                    pushQueue.put(profiler.dump());
                 } catch (final InterruptedException ignored) {
                     // It's fine to swallow InterruptedException here and exit.
                     // It's a cue to end the work and exit and we have nothing to clean up.
@@ -69,7 +68,7 @@ public class PyroscopeAgent {
             executor.scheduleAtFixedRate(dumpProfile,
                     config.uploadInterval.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
 
-            final Thread uploaderThread = new Thread(new Uploader(logger, uploadQueue, config));
+            final Thread uploaderThread = new Thread(new Uploader(logger, pushQueue, config));
             uploaderThread.setDaemon(true);
             uploaderThread.start();
         } catch (final Throwable e) {
