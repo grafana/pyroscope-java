@@ -163,11 +163,7 @@ class Profiler {
         }
         sb.append(",interval=").append(interval.toNanos())
             .append(",file=").append(tempJFRFile.toString());
-        String cmd = sb.toString();
-
-        logger.debug("jfr cmd {}", cmd);
-
-        return cmd;
+        return sb.toString();
     }
 
     final synchronized Snapshot dump() {
