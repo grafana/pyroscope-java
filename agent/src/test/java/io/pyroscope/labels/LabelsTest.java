@@ -63,7 +63,7 @@ public class LabelsTest {
                 assertEquals(2, snapshot.strings.size());
                 assertEquals("k1", snapshot.strings.get(1L));
                 assertEquals("v1", snapshot.strings.get(2L));
-                assertEquals(Map.of(1L, 2L), snapshot.contexts.get(1L));
+                assertEquals(mapOf(1L, 2L), snapshot.contexts.get(1L));
                 assertEquals(1, ctxRef.refCount.get());
                 assertEquals(1, k1.refCount.get());
                 assertEquals(1, v1.refCount.get());
@@ -79,7 +79,7 @@ public class LabelsTest {
             assertEquals(2, snapshot.strings.size());
             assertEquals("k1", snapshot.strings.get(1L));
             assertEquals("v1", snapshot.strings.get(2L));
-            assertEquals(Map.of(1L, 2L), snapshot.contexts.get(1L));
+            assertEquals(mapOf(1L, 2L), snapshot.contexts.get(1L));
             assertEquals(-1, k1.refCount.get());
             assertEquals(-1, v1.refCount.get());
             assertEquals(-1, ctxRef.refCount.get());
@@ -125,7 +125,7 @@ public class LabelsTest {
                     assertEquals(2, snapshot.strings.size());
                     assertEquals("k1", snapshot.strings.get(1L));
                     assertEquals("v1", snapshot.strings.get(2L));
-                    assertEquals(Map.of(1L, 2L), snapshot.contexts.get(1L));
+                    assertEquals(mapOf(1L, 2L), snapshot.contexts.get(1L));
                     assertEquals(1, k1.refCount.get());
                     assertEquals(1, v1.refCount.get());
                     assertEquals(2, ctxRef.refCount.get());
@@ -185,7 +185,7 @@ public class LabelsTest {
                         assertEquals("v2", snapshot.strings.get(3L));
                         assertEquals("k2", snapshot.strings.get(4L));
                         assertEquals("v3", snapshot.strings.get(5L));
-                        assertEquals(Map.of(1L, 2L), snapshot.contexts.get(1L));
+                        assertEquals(mapOf(1L, 2L), snapshot.contexts.get(1L));
                         assertEquals(3, k1.refCount.get());
                         assertEquals(2, v2.refCount.get());
                         assertEquals(1, ctxRef.refCount.get());
@@ -230,5 +230,11 @@ public class LabelsTest {
         assertEquals(0, ScopedContext.context.get().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
+    }
+
+    private static Map<Long, Long> mapOf(Long k, Long v) {
+        HashMap<Long, Long> res = new HashMap<>();
+        res.put(k, v);
+        return res;
     }
 }

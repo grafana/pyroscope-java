@@ -61,12 +61,13 @@ class Profiler {
      * @return
      * @throws FileNotFoundException
      */
-    private static InputStream loadResource(String fileName) throws FileNotFoundException {
+    private static InputStream loadResource(String fileName) throws IOException {
         InputStream res = Profiler.class.getResourceAsStream("/" + fileName);
         if (res != null) {
             return res; // from shadowJar
         }
-        return new FileInputStream("./build/async-profiler/native/" + fileName); // from gradle build dir
+        Path filePath = Paths.get("build", "async-profiler", "native", fileName);
+        return Files.newInputStream(filePath);
     }
 
     /**
