@@ -1,7 +1,7 @@
 package io.pyroscope.javaagent;
 
-import io.pyroscope.api.Labels;
 import io.pyroscope.http.Format;
+import io.pyroscope.labels.Labels;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +26,7 @@ class Profiler {
     private final Format format;
 
     private static String libraryPath;
+
     static {
         try {
             deployLibrary();
@@ -46,7 +47,7 @@ class Profiler {
         targetDir.mkdirs();
 
         try (final InputStream is = Objects.requireNonNull(
-                Profiler.class.getResourceAsStream("/" + fileName))) {
+            Profiler.class.getResourceAsStream("/" + fileName))) {
             final Path target = targetDir.toPath().resolve(targetLibraryFileName(fileName)).toAbsolutePath();
             Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
             libraryPath = target.toString();
@@ -95,7 +96,7 @@ class Profiler {
      * <p>Adds the checksum to the library file name.</p>
      *
      * <p>E.g. {@code libasyncProfiler-linux-x64.so} ->
-     *     {@code libasyncProfiler-linux-x64-7b43b7cc6c864dd729cc7dcdb6e3db8f5ee5b4a4.so}</p>
+     * {@code libasyncProfiler-linux-x64-7b43b7cc6c864dd729cc7dcdb6e3db8f5ee5b4a4.so}</p>
      */
     private static String targetLibraryFileName(final String libraryFileName) throws IOException {
         if (!libraryFileName.endsWith(".so")) {
@@ -105,22 +106,18 @@ class Profiler {
         final String checksumFileName = libraryFileName + ".sha1";
         String checksum;
         try (final InputStream is = Objects.requireNonNull(
-                Profiler.class.getResourceAsStream("/" + checksumFileName))) {
+            Profiler.class.getResourceAsStream("/" + checksumFileName))) {
             checksum = InputStreamUtils.readToString(is);
         }
 
         return libraryFileName.substring(0, libraryFileName.length() - 3) + "-" + checksum + ".so";
     }
 
-    public static void init() {
-        // Do nothing, rely in the static initialization in the static block.
-    }
-
     private final AsyncProfiler instance = AsyncProfiler.getInstance(libraryPath);
 
     // TODO this is actually start of snapshot, not profiling as a whole
     private Instant profilingStarted = null;
-    private File tempFile;
+    private final File tempJFRFile;
 
     Profiler(final Logger logger, final EventType eventType, final String alloc, final String lock, final Duration interval, final Format format) {
         this.logger = logger;
@@ -129,17 +126,45 @@ class Profiler {
         this.eventType = eventType;
         this.interval = interval;
         this.format = format;
+
+        if (format == Format.JFR) {
+            try {
+                // flight recorder is built on top of a file descriptor, so we need a file.
+                tempJFRFile = File.createTempFile("pyroscope", ".jfr");
+                tempJFRFile.deleteOnExit();
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        } else {
+            tempJFRFile = null;
+        }
     }
 
-    // TODO new method for starting new snapshot/batch
     final synchronized void start() {
         if (format == Format.JFR) {
-            startJFR();
+            try {
+                instance.execute(createJFRCommand());
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
         } else {
             instance.start(eventType.id, interval.toNanos());
         }
         profilingStarted = Instant.now();
-        logger.info("Profiling started");
+    }
+
+    private String createJFRCommand() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("start,event=").append(eventType.id);
+        if (alloc != null && !alloc.isEmpty()) {
+            sb.append(",alloc=").append(alloc);
+        }
+        if (lock != null && !lock.isEmpty()) {
+            sb.append(",lock=").append(lock);
+        }
+        sb.append(",interval=").append(interval.toNanos())
+            .append(",file=").append(tempJFRFile.toString());
+        return sb.toString();
     }
 
     final synchronized Snapshot dump() {
@@ -147,49 +172,35 @@ class Profiler {
             throw new IllegalStateException("Profiling is not started");
         }
 
-        final Snapshot result = new Snapshot(
-            eventType,
-            profilingStarted,
-            Instant.now(),
-            format == Format.JFR ? dumpJFR() : instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8),
-            Labels.dump()
-        );
+        instance.stop();
 
-        // TODO use `this.start()` or analogue
-        profilingStarted = Instant.now();
-        if (format == Format.JFR) {
-            restartJFR();
-        } else {
-            instance.stop();
-            instance.start(eventType.id, interval.toNanos());
-        }
+        Snapshot result = dumpImpl();
+
+        start();
+
         return result;
     }
 
-    final private void startJFR() {
-        try {
-            // flight recorder is built on top of a file descriptor, so we need a file.
-            tempFile = File.createTempFile("pyroscope", ".jfr");
-            tempFile.deleteOnExit();
-            instance.execute(String.format("start,event=%s,alloc=%s,lock=%s,interval=%s,file=%s", eventType.id, alloc, lock, interval.toNanos(), tempFile.toString()));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+    private Snapshot dumpImpl() {
+        final byte[] data;
+        if (format == Format.JFR) {
+            data = dumpJFR();
+        } else {
+            data = instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8);
         }
+        return new Snapshot(
+            eventType,
+            profilingStarted,
+            Instant.now(),
+            data,
+            Labels.dump()
+        );
     }
 
-    final private void restartJFR() {
+    private byte[] dumpJFR() {
         try {
-            instance.execute(String.format("start,event=%s,alloc=%s,lock=%s,interval=%s,file=%s", eventType.id, alloc, lock, interval.toNanos(), tempFile.toString()));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    final private byte[] dumpJFR() {
-        try {
-            instance.stop();
-            byte[] bytes = new byte[(int) tempFile.length()];
-            try (DataInputStream ds = new DataInputStream(new FileInputStream(tempFile))) {
+            byte[] bytes = new byte[(int) tempJFRFile.length()];
+            try (DataInputStream ds = new DataInputStream(new FileInputStream(tempJFRFile))) {
                 ds.readFully(bytes);
             }
             return bytes;

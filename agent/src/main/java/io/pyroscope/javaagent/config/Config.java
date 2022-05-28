@@ -23,15 +23,19 @@ public final class Config {
     private static final String PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG = "PYROSCOPE_ADHOC_SERVER_ADDRESS";
     private static final String PYROSCOPE_AUTH_TOKEN_CONFIG = "PYROSCOPE_AUTH_TOKEN";
     private static final String PYROSCOPE_FORMAT_CONFIG = "PYROSCOPE_FORMAT";
+    private static final String PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG = "PYROSCOPE_PUSH_QUEUE_CAPACITY";
 
     private static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
-    private static final String DEFAULT_PROFILER_ALLOC = "0";
-    private static final String DEFAULT_PROFILER_LOCK = "0";
+    private static final String DEFAULT_PROFILER_ALLOC = "";
+    private static final String DEFAULT_PROFILER_LOCK = "";
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
     private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
+    // The number of snapshots simultaneously stored in memory is limited by this.
+    // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
+    private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 32;
 
     public final String spyName = DEFAULT_SPY_NAME;
     public final String applicationName;
@@ -45,6 +49,7 @@ public final class Config {
     public final String authToken;
     public final String timeseriesName;
     public final Format format;
+    public final int pushQueueCapacity;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -55,7 +60,8 @@ public final class Config {
            final Level logLevel,
            final String serverAddress,
            final String authToken,
-           final Format format
+           final Format format,
+           final int pushQueueCapacity
         ) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
@@ -68,10 +74,30 @@ public final class Config {
         this.authToken = authToken;
         this.timeseriesName = timeseriesName(applicationName, profilingEvent, format);
         this.format = format;
+        this.pushQueueCapacity = pushQueueCapacity;
     }
 
     public long profilingIntervalInHertz() {
         return durationToHertz(this.profilingInterval);
+    }
+
+    @Override
+    public String toString() {
+        return "Config{" +
+            "spyName='" + spyName + '\'' +
+            ", applicationName='" + applicationName + '\'' +
+            ", profilingInterval=" + profilingInterval +
+            ", profilingEvent=" + profilingEvent +
+            ", profilingAlloc='" + profilingAlloc + '\'' +
+            ", profilingLock='" + profilingLock + '\'' +
+            ", uploadInterval=" + uploadInterval +
+            ", logLevel=" + logLevel +
+            ", serverAddress='" + serverAddress + '\'' +
+            ", authToken='" + authToken + '\'' +
+            ", timeseriesName='" + timeseriesName + '\'' +
+            ", format=" + format +
+            ", pushQueueCapacity=" + pushQueueCapacity +
+            '}';
     }
 
     private static long durationToHertz(Duration duration) {
@@ -90,7 +116,8 @@ public final class Config {
             logLevel(),
             serverAddress(),
             authToken(),
-            format()
+            format(),
+            pushQueueCapacity()
         );
     }
 
@@ -231,6 +258,23 @@ public final class Config {
             default:
                 PreConfigLogger.LOGGER.warn("Unknown format {}, using {}", format, DEFAULT_FORMAT);
                 return DEFAULT_FORMAT;
+        }
+    }
+
+    private static int pushQueueCapacity() {
+        final String strPushQueueCapacity = System.getenv(PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG);
+        if (strPushQueueCapacity == null || strPushQueueCapacity.isEmpty()) {
+            return DEFAULT_PUSH_QUEUE_CAPACITY;
+        }
+        try {
+            int pushQueueCapacity = Integer.parseInt(strPushQueueCapacity);
+            if (pushQueueCapacity <= 0) {
+                return DEFAULT_PUSH_QUEUE_CAPACITY;
+            } else {
+                return pushQueueCapacity;
+            }
+        } catch (NumberFormatException e) {
+            return DEFAULT_PUSH_QUEUE_CAPACITY;
         }
     }
 }

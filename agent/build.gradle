@@ -19,7 +19,7 @@ repositories {
     mavenCentral()
 }
 
-def asyncProfilerVersion = "2.7"
+def asyncProfilerVersion = "2.8.0.1"
 dependencies {
     implementation files("$buildDir/async-profiler/async-profiler.jar")
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
@@ -83,8 +83,10 @@ task asyncProfilerLib {
 
     doLast {
         suffixes.forEach { suffix, ext ->
+//            def repo = "https://github.com/jvm-profiling-tools/async-profiler"
+            def repo = "https://github.com/pyroscope-io/async-profiler"
             download {
-                src "https://github.com/jvm-profiling-tools/async-profiler/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
+                src "$repo/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
                 dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
                 overwrite true
             }
