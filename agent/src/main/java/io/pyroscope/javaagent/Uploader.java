@@ -1,9 +1,7 @@
 package io.pyroscope.javaagent;
 
-import com.google.gson.Gson;
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
-import kotlin.text.Charsets;
 import okhttp3.*;
 import org.apache.logging.log4j.Logger;
 
@@ -13,12 +11,11 @@ import java.util.Random;
 
 final class Uploader implements Runnable {
     private static final Duration TIMEOUT = Duration.ofSeconds(10);
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
     private final Logger logger;
     private final OverfillQueue<Snapshot> uploadQueue;
     private final Config config;
     private final OkHttpClient client;
-    private final Gson gson = new Gson();
 
     Uploader(final Logger logger, final OverfillQueue<Snapshot> uploadQueue, final Config config) {
         this.logger = logger;
@@ -54,7 +51,7 @@ final class Uploader implements Runnable {
         while (!success) {
             logger.debug("Upload attempt");
             try {
-                RequestBody labels = RequestBody.create(gson.toJson(snapshot.labels), JSON);
+                RequestBody labels = RequestBody.create(snapshot.labels.toByteArray(), PROTOBUF);
                 RequestBody jfr = RequestBody.create(snapshot.data);
                 RequestBody requestBody = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)

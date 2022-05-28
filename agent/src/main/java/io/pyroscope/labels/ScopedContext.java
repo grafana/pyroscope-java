@@ -15,7 +15,7 @@ class ScopedContext implements AutoCloseable {
     final Context current;
     final Ref<Map<Ref<String>, Ref<String>>> currentRef;
 
-    public ScopedContext(LabelsSet labels) {
+    ScopedContext(LabelsSet labels) {
         previous = context.get();
         Map<Ref<String>, Ref<String>> nextContext = new HashMap<>(
                 previous.labels.size() + labels.args.length / 2

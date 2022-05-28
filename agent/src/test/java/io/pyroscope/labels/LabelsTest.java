@@ -2,7 +2,7 @@ package io.pyroscope.labels;
 
 
 import io.pyroscope.javaagent.TestAsyncProfilerHelper;
-import one.profiler.AsyncProfiler;
+import io.pyroscope.labels.pb.JfrLabels.Snapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class LabelsTest {
     static {
@@ -58,12 +57,12 @@ public class LabelsTest {
             assertEquals(1, ctxRef.refCount.get());
 
             {
-                ContextsSnapshot snapshot = Labels.dump();
-                assertEquals(1, snapshot.contexts.size());
-                assertEquals(2, snapshot.strings.size());
-                assertEquals("k1", snapshot.strings.get(1L));
-                assertEquals("v1", snapshot.strings.get(2L));
-                assertEquals(mapOf(1L, 2L), snapshot.contexts.get(1L));
+                Snapshot snapshot = Labels.dump();
+                assertEquals(1, snapshot.getContextsCount());
+                assertEquals(2, snapshot.getStringsCount());
+                assertEquals("k1", snapshot.getStringsMap().get(1L));
+                assertEquals("v1", snapshot.getStringsMap().get(2L));
+                assertEquals(mapOf(1L, 2L), snapshot.getContextsMap().get(1L).getLabelsMap());
                 assertEquals(1, ctxRef.refCount.get());
                 assertEquals(1, k1.refCount.get());
                 assertEquals(1, v1.refCount.get());
@@ -74,21 +73,21 @@ public class LabelsTest {
         assertEquals(1, k1.refCount.get());
         assertEquals(1, v1.refCount.get());
         {
-            ContextsSnapshot snapshot = Labels.dump();
-            assertEquals(1, snapshot.contexts.size());
-            assertEquals(2, snapshot.strings.size());
-            assertEquals("k1", snapshot.strings.get(1L));
-            assertEquals("v1", snapshot.strings.get(2L));
-            assertEquals(mapOf(1L, 2L), snapshot.contexts.get(1L));
+            Snapshot snapshot = Labels.dump();
+            assertEquals(1, snapshot.getContextsCount());
+            assertEquals(2, snapshot.getStringsCount());
+            assertEquals("k1", snapshot.getStringsMap().get(1L));
+            assertEquals("v1", snapshot.getStringsMap().get(2L));
+            assertEquals(mapOf(1L, 2L), snapshot.getContextsMap().get(1L).getLabelsMap());
             assertEquals(-1, k1.refCount.get());
             assertEquals(-1, v1.refCount.get());
             assertEquals(-1, ctxRef.refCount.get());
         }
 
         {
-            ContextsSnapshot snapshot = Labels.dump();
-            assertEquals(0, snapshot.contexts.size());
-            assertEquals(0, snapshot.strings.size());
+            Snapshot snapshot = Labels.dump();
+            assertEquals(0, snapshot.getContextsCount());
+            assertEquals(0, snapshot.getStringsCount());
             assertEquals(-1, k1.refCount.get());
             assertEquals(-1, v1.refCount.get());
             assertEquals(-1, ctxRef.refCount.get());
@@ -120,12 +119,12 @@ public class LabelsTest {
                 assertEquals(2, ctxRef.refCount.get());
 
                 {
-                    ContextsSnapshot snapshot = Labels.dump();
-                    assertEquals(1, snapshot.contexts.size());
-                    assertEquals(2, snapshot.strings.size());
-                    assertEquals("k1", snapshot.strings.get(1L));
-                    assertEquals("v1", snapshot.strings.get(2L));
-                    assertEquals(mapOf(1L, 2L), snapshot.contexts.get(1L));
+                    Snapshot snapshot = Labels.dump();
+                    assertEquals(1, snapshot.getContextsCount());
+                    assertEquals(2, snapshot.getStringsCount());
+                    assertEquals("k1", snapshot.getStringsMap().get(1L));
+                    assertEquals("v1", snapshot.getStringsMap().get(2L));
+                    assertEquals(mapOf(1L, 2L), snapshot.getContextsMap().get(1L).getLabelsMap());
                     assertEquals(1, k1.refCount.get());
                     assertEquals(1, v1.refCount.get());
                     assertEquals(2, ctxRef.refCount.get());
@@ -177,15 +176,15 @@ public class LabelsTest {
                     assertEquals(1, ctxRef.refCount.get());
 
                     {
-                        ContextsSnapshot snapshot = Labels.dump();
-                        assertEquals(3, snapshot.contexts.size());
-                        assertEquals(5, snapshot.strings.size());
-                        assertEquals("k1", snapshot.strings.get(1L));
-                        assertEquals("v1", snapshot.strings.get(2L));
-                        assertEquals("v2", snapshot.strings.get(3L));
-                        assertEquals("k2", snapshot.strings.get(4L));
-                        assertEquals("v3", snapshot.strings.get(5L));
-                        assertEquals(mapOf(1L, 2L), snapshot.contexts.get(1L));
+                        Snapshot snapshot = Labels.dump();
+                        assertEquals(3, snapshot.getContextsCount());
+                        assertEquals(5, snapshot.getStringsCount());
+                        assertEquals("k1", snapshot.getStringsMap().get(1L));
+                        assertEquals("v1", snapshot.getStringsMap().get(2L));
+                        assertEquals("v2", snapshot.getStringsMap().get(3L));
+                        assertEquals("k2", snapshot.getStringsMap().get(4L));
+                        assertEquals("v3", snapshot.getStringsMap().get(5L));
+                        assertEquals(mapOf(1L, 2L), snapshot.getContextsMap().get(1L).getLabelsMap());
                         assertEquals(3, k1.refCount.get());
                         assertEquals(2, v2.refCount.get());
                         assertEquals(1, ctxRef.refCount.get());
@@ -226,7 +225,7 @@ public class LabelsTest {
         }
         e.shutdown();
         e.awaitTermination(100, TimeUnit.SECONDS);
-        ContextsSnapshot res = Labels.dump();
+        Snapshot res = Labels.dump();
         assertEquals(0, ScopedContext.context.get().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());

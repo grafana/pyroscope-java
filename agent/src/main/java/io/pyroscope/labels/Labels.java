@@ -1,6 +1,8 @@
 package io.pyroscope.labels;
 
 
+import io.pyroscope.labels.pb.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -19,22 +21,24 @@ public class Labels {
         }
     }
 
-    public static ContextsSnapshot dump() {
-        ContextsSnapshot s = new ContextsSnapshot(new HashMap<>(), new HashMap<>());
+    public static JfrLabels.Snapshot dump() {
+        JfrLabels.Snapshot.Builder sb = JfrLabels.Snapshot.newBuilder();
 
         for (Ref<String> it : RefCounted.strings.valueToRef.values()) {
-            s.strings.put(it.id, it.val);
+            sb.putStrings(it.id, it.val);
         }
         for (Ref<Map<Ref<String>, Ref<String>>> it : RefCounted.contexts.valueToRef.values()) {
+
             HashMap<Long, Long> context = new HashMap<>();
+            JfrLabels.Context.Builder cb = JfrLabels.Context.newBuilder();
             for (Map.Entry<Ref<String>, Ref<String>> kv : it.val.entrySet()) {
-                context.put(kv.getKey().id, kv.getValue().id);
+                cb.putLabels(kv.getKey().id, kv.getValue().id);
             }
-            s.contexts.put(it.id, context);
+            sb.putContexts(it.id, cb.build());
         }
         RefCounted.contexts.gc();
         RefCounted.strings.gc();
-        return s;
+        return sb.build();
     }
 
 }
