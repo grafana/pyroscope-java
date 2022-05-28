@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos, windows]
+        os: [ubuntu, macos]
         java: ['8', '11', '17']
     steps:
       - uses: actions/checkout@v2
