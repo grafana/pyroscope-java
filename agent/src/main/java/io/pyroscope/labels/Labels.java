@@ -3,6 +3,7 @@ package io.pyroscope.labels;
 
 import io.pyroscope.labels.pb.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -19,6 +20,16 @@ public class Labels {
         try (ScopedContext s = new ScopedContext(labels)) {
             c.run();
         }
+    }
+
+    private static Map<String, String> staticLabels = Collections.emptyMap();
+
+    public static void setStaticLabels(Map<String, String> labels) {
+        staticLabels = Collections.unmodifiableMap(labels);
+    }
+
+    public static Map<String, String> getStaticLabels() {
+        return staticLabels;
     }
 
     public static JfrLabels.Snapshot dump() {

@@ -2,12 +2,16 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.labels.Labels;
 import okhttp3.*;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 final class Uploader implements Runnable {
     private static final Duration TIMEOUT = Duration.ofSeconds(10);
@@ -106,7 +110,7 @@ final class Uploader implements Runnable {
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
             .newBuilder()
             .addPathSegment("ingest")
-            .addQueryParameter("name", config.timeseriesName)
+            .addQueryParameter("name", nameWithStaticLabels())
             .addQueryParameter("units", snapshot.eventType.units.id)
             .addQueryParameter("aggregationType", snapshot.eventType.aggregationType.id)
             .addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()))
@@ -116,5 +120,27 @@ final class Uploader implements Runnable {
         if (config.format == Format.JFR)
             builder.addQueryParameter("format", "jfr");
         return builder.build();
+    }
+
+    private String nameWithStaticLabels() {
+        Map<String, String> labels = Labels.getStaticLabels();
+        if (labels.isEmpty()) {
+            return config.timeseriesName;
+        } else {
+            StringBuilder sb = new StringBuilder(config.timeseriesName)
+                .append("{");
+            TreeMap<String, String> sortedMap = new TreeMap<>(labels);
+            int i = 0;
+            for (String key : sortedMap.keySet()) {
+                if (i++ != 0) {
+                    sb.append(",");
+                }
+                sb.append(key)
+                    .append("=")
+                    .append(labels.get(key));
+            }
+            sb.append("}");
+            return sb.toString();
+        }
     }
 }
