@@ -43,43 +43,52 @@ final class Uploader implements Runnable {
     }
 
     private void uploadSnapshot(final Snapshot snapshot) throws InterruptedException {
-        logger.debug("Uploading {}", snapshot);
         final HttpUrl url = urlForSnapshot(snapshot);
-
         final ExponentialBackoff exponentialBackoff = new ExponentialBackoff(1_000, 30_000, new Random());
         boolean success = false;
         while (!success) {
-            logger.debug("Upload attempt");
-            try {
-                RequestBody labels = RequestBody.create(snapshot.labels.toByteArray(), PROTOBUF);
-                RequestBody jfr = RequestBody.create(snapshot.data);
-                RequestBody requestBody = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("labels", "labels", labels)
-                    .addFormDataPart("jfr", "jfr", jfr)
-                    .build();
-                Request.Builder request = new Request.Builder()
-                    .post(requestBody)
-                    .url(url);
-
-                if (config.authToken != null && !config.authToken.isEmpty()) {
-                    request.header("Authorization", "Bearer " + config.authToken);
+            final RequestBody requestBody;
+            if (config.format == Format.JFR) {
+                byte[] labels = snapshot.labels.toByteArray();
+                logger.debug("Upload attempt. JFR: {}, labels: {}", snapshot.data.length, labels.length);
+                MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM);
+                bodyBuilder.addFormDataPart(
+                    /* name */ "jfr",
+                    /* filename */ "jfr",
+                    RequestBody.create(snapshot.data)
+                );
+                if (labels.length > 0) {
+                    bodyBuilder.addFormDataPart(
+                        /* name */ "labels",
+                        /* filename */ "labels",
+                        RequestBody.create(labels, PROTOBUF)
+                    );
                 }
-
-                try (Response response = client.newCall(request.build()).execute()) {
-                    int status = response.code();
-                    if (status >= 400) {
-                        ResponseBody body = response.body();
-                        final String responseBody;
-                        if (body == null) {
-                            responseBody = "";
-                        } else {
-                            responseBody = body.string();
-                        }
-                        logger.error("Error uploading snapshot: {} {}", status, responseBody);
+                requestBody = bodyBuilder.build();
+            } else {
+                logger.debug("Upload attempt. collapsed: {}", snapshot.data.length);
+                requestBody = RequestBody.create(snapshot.data);
+            }
+            Request.Builder request = new Request.Builder()
+                .post(requestBody)
+                .url(url);
+            if (config.authToken != null && !config.authToken.isEmpty()) {
+                request.header("Authorization", "Bearer " + config.authToken);
+            }
+            try (Response response = client.newCall(request.build()).execute()) {
+                int status = response.code();
+                if (status >= 400) {
+                    ResponseBody body = response.body();
+                    final String responseBody;
+                    if (body == null) {
+                        responseBody = "";
                     } else {
-                        success = true;
+                        responseBody = body.string();
                     }
+                    logger.error("Error uploading snapshot: {} {}", status, responseBody);
+                } else {
+                    success = true;
                 }
             } catch (final IOException e) {
                 logger.error("Error uploading snapshot: {}", e.getMessage());
