@@ -1,6 +1,7 @@
 import io.pyroscope.labels.Pyroscope;
 import io.pyroscope.labels.LabelsSet;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,7 +10,7 @@ public class App {
     public static final int N_THREADS = 8;
 
     public static void main(String[] args) {
-        Pyroscope.setStaticLabels(Map.of("region", "us-east-1"));
+        Pyroscope.setStaticLabels(createStaticLabels());
         ExecutorService executors = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < N_THREADS; i++) {
             executors.submit(() -> {
@@ -26,6 +27,12 @@ public class App {
                 );
             });
         }
+    }
+
+    private static Map<String, String> createStaticLabels() {
+        Map<String, String> staticLabels = new HashMap<>();
+        staticLabels.put("region", "us-east-1");
+        return staticLabels;
     }
 
     private static long fib(Long n) throws InterruptedException {
