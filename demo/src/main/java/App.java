@@ -1,6 +1,7 @@
-import io.pyroscope.labels.Labels;
+import io.pyroscope.labels.Pyroscope;
 import io.pyroscope.labels.LabelsSet;
 
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -8,10 +9,11 @@ public class App {
     public static final int N_THREADS = 8;
 
     public static void main(String[] args) {
+        Pyroscope.setStaticLabels(Map.of("region", "us-east-1"));
         ExecutorService executors = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < N_THREADS; i++) {
             executors.submit(() -> {
-                Labels.run(new LabelsSet("thread_name", Thread.currentThread().getName()), () -> {
+                Pyroscope.LabelsWrapper.run(new LabelsSet("thread_name", Thread.currentThread().getName()), () -> {
                         while (true) {
                             try {
                                 fib(32L);

@@ -2,13 +2,12 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.labels.Labels;
+import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -123,7 +122,7 @@ final class Uploader implements Runnable {
     }
 
     private String nameWithStaticLabels() {
-        Map<String, String> labels = Labels.getStaticLabels();
+        Map<String, String> labels = Pyroscope.getStaticLabels();
         if (labels.isEmpty()) {
             return config.timeseriesName;
         } else {

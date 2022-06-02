@@ -1,7 +1,7 @@
 package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
-import io.pyroscope.labels.Labels;
+import io.pyroscope.labels.Pyroscope;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
 import org.apache.logging.log4j.Logger;
@@ -208,7 +208,7 @@ class Profiler {
             profilingStarted,
             Instant.now(),
             data,
-            Labels.dump()
+            Pyroscope.LabelsWrapper.dump()
         );
     }
 

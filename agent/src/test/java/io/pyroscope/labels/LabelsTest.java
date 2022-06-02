@@ -24,7 +24,7 @@ public class LabelsTest {
     void setUp() {
         RefCounted.strings.resetForTesting();
         RefCounted.contexts.resetForTesting();
-        Labels.dump();
+        Pyroscope.LabelsWrapper.dump();
     }
 
     Map<String, Ref<String>> stringRefMap(Map<Ref<String>, Ref<String>> labels) {
@@ -57,7 +57,7 @@ public class LabelsTest {
             assertEquals(1, ctxRef.refCount.get());
 
             {
-                Snapshot snapshot = Labels.dump();
+                Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
                 assertEquals(1, snapshot.getContextsCount());
                 assertEquals(2, snapshot.getStringsCount());
                 assertEquals("k1", snapshot.getStringsMap().get(1L));
@@ -73,7 +73,7 @@ public class LabelsTest {
         assertEquals(1, k1.refCount.get());
         assertEquals(1, v1.refCount.get());
         {
-            Snapshot snapshot = Labels.dump();
+            Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
             assertEquals(1, snapshot.getContextsCount());
             assertEquals(2, snapshot.getStringsCount());
             assertEquals("k1", snapshot.getStringsMap().get(1L));
@@ -85,7 +85,7 @@ public class LabelsTest {
         }
 
         {
-            Snapshot snapshot = Labels.dump();
+            Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
             assertEquals(0, snapshot.getContextsCount());
             assertEquals(0, snapshot.getStringsCount());
             assertEquals(-1, k1.refCount.get());
@@ -119,7 +119,7 @@ public class LabelsTest {
                 assertEquals(2, ctxRef.refCount.get());
 
                 {
-                    Snapshot snapshot = Labels.dump();
+                    Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
                     assertEquals(1, snapshot.getContextsCount());
                     assertEquals(2, snapshot.getStringsCount());
                     assertEquals("k1", snapshot.getStringsMap().get(1L));
@@ -133,7 +133,7 @@ public class LabelsTest {
             assertEquals(1, ctxRef.refCount.get());
         }
         assertEquals(0, ctxRef.refCount.get());
-        Labels.dump();
+        Pyroscope.LabelsWrapper.dump();
         assertEquals(-1L, ctxRef.refCount.get());
     }
 
@@ -176,7 +176,7 @@ public class LabelsTest {
                     assertEquals(1, ctxRef.refCount.get());
 
                     {
-                        Snapshot snapshot = Labels.dump();
+                        Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
                         assertEquals(3, snapshot.getContextsCount());
                         assertEquals(5, snapshot.getStringsCount());
                         assertEquals("k1", snapshot.getStringsMap().get(1L));
@@ -194,7 +194,7 @@ public class LabelsTest {
             }
 
         }
-        Labels.dump();
+        Pyroscope.LabelsWrapper.dump();
         assertEquals(0, ScopedContext.context.get().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
@@ -211,10 +211,10 @@ public class LabelsTest {
                 for (int j = 0; j < 10000; j++) {
                     String k = "s" + r.nextInt(20);
                     String v = "s" + r.nextInt(20);
-                    Labels.run(new LabelsSet(k, v), () -> {
+                    Pyroscope.LabelsWrapper.run(new LabelsSet(k, v), () -> {
                         String k2 = "s" + r.nextInt(20);
                         String v2 = "s" + r.nextInt(20);
-                        Labels.run(new LabelsSet(k2, v2), () -> {
+                        Pyroscope.LabelsWrapper.run(new LabelsSet(k2, v2), () -> {
 
                         });
 
@@ -225,7 +225,7 @@ public class LabelsTest {
         }
         e.shutdown();
         e.awaitTermination(100, TimeUnit.SECONDS);
-        Snapshot res = Labels.dump();
+        Snapshot res = Pyroscope.LabelsWrapper.dump();
         assertEquals(0, ScopedContext.context.get().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
