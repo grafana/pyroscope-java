@@ -49,8 +49,8 @@ There are several environment variables that define how multiple event configura
 
 - `PYROSCOPE_FORMAT` sets the profiler output format. The default is `collapsed`, but in order to support multiple formats it must be set to `jfr`.
 - `PYROSCOPE_PROFILER_EVENT` sets the profiler event. With JFR format enabled, this event refers to one of the possible CPU profiling events: `itimer`, `cpu`, `wall`. The default is `itimer`.
-- `PYROSCOPE_PROFILER_ALLOC` sets the allocation threshold to register the events, in bytes (equivalent to `--alloc=` in `async-profiler`). The default value is 0, which means that allocation profiling is disabled. Setting it to `1` will register all the events.
-- `PYROSCOPE_PROFILER_LOCK` sets the lock threshold to register the events, in nanoseconds (equivalent to `--lock=` in `async-profiler`). The default value is 0, which means that allocation profiling is disabled.
+- `PYROSCOPE_PROFILER_ALLOC` sets the allocation threshold to register the events, in bytes (equivalent to `--alloc=` in `async-profiler`). The default value is "" - empty string, which means that allocation profiling is disabled. Setting it to `0` will register all the events.
+- `PYROSCOPE_PROFILER_LOCK` sets the lock threshold to register the events, in nanoseconds (equivalent to `--lock=` in `async-profiler`). The default value is "" - empty string, which means that lock profiling is disabled. Setting it to `0` will register all the events.
 
 ## Building
 
