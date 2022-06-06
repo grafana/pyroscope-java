@@ -1,6 +1,7 @@
 package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
+import io.pyroscope.labels.Pyroscope;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
 import org.apache.logging.log4j.Logger;
@@ -8,13 +9,13 @@ import org.apache.logging.log4j.Logger;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Objects;
 
 class Profiler {
     private final Logger logger;
@@ -24,11 +25,11 @@ class Profiler {
     private final Duration interval;
     private final Format format;
 
-    private static String libraryPath;
+    static final String libraryPath;
 
     static {
         try {
-            deployLibrary();
+            libraryPath = deployLibrary();
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -36,8 +37,10 @@ class Profiler {
 
     /**
      * Extracts the profiler library file from the JAR and puts it in the temp directory.
+     *
+     * @return path to the extracted library
      */
-    private static void deployLibrary() throws IOException {
+    private static String deployLibrary() throws IOException {
         final String fileName = libraryFileName();
 
         final String userName = System.getProperty("user.name");
@@ -45,12 +48,26 @@ class Profiler {
         final File targetDir = new File(tmpDir, userName + "-pyroscope/");
         targetDir.mkdirs();
 
-        try (final InputStream is = Objects.requireNonNull(
-            Profiler.class.getResourceAsStream("/" + fileName))) {
+        try (final InputStream is = loadResource(fileName)) {
             final Path target = targetDir.toPath().resolve(targetLibraryFileName(fileName)).toAbsolutePath();
             Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
-            libraryPath = target.toString();
+            return target.toString();
         }
+    }
+
+    /**
+     * load resource either from jar resources for production or from local file system for testing
+     * @param fileName
+     * @return
+     * @throws FileNotFoundException
+     */
+    private static InputStream loadResource(String fileName) throws IOException {
+        InputStream res = Profiler.class.getResourceAsStream("/" + fileName);
+        if (res != null) {
+            return res; // from shadowJar
+        }
+        Path filePath = Paths.get("build", "async-profiler", "native", fileName);
+        return Files.newInputStream(filePath);
     }
 
     /**
@@ -104,8 +121,7 @@ class Profiler {
 
         final String checksumFileName = libraryFileName + ".sha1";
         String checksum;
-        try (final InputStream is = Objects.requireNonNull(
-            Profiler.class.getResourceAsStream("/" + checksumFileName))) {
+        try (final InputStream is = loadResource(checksumFileName)) {
             checksum = InputStreamUtils.readToString(is);
         }
 
@@ -191,7 +207,8 @@ class Profiler {
             eventType,
             profilingStarted,
             Instant.now(),
-            data
+            data,
+            Pyroscope.LabelsWrapper.dump()
         );
     }
 
