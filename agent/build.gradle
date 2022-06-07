@@ -179,8 +179,8 @@ publishing {
     repositories {
         maven {
             credentials {
-                username project.nexusUsername
-                password project.nexusPassword
+                username project.hasProperty('nexusUsername') ? project.nexusUsername : ''
+                password project.hasProperty('nexusPassword') ? project.nexusPassword : ''
             }
             url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
         }
