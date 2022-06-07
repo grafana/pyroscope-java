@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -106,6 +107,8 @@ final class Uploader implements Runnable {
     }
 
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
+        Instant started = DateUtils.truncatedTo(snapshot.started, config.uploadInterval);
+        Instant finished = started.plus(config.uploadInterval);
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
             .newBuilder()
             .addPathSegment("ingest")
@@ -113,8 +116,8 @@ final class Uploader implements Runnable {
             .addQueryParameter("units", snapshot.eventType.units.id)
             .addQueryParameter("aggregationType", snapshot.eventType.aggregationType.id)
             .addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()))
-            .addQueryParameter("from", Long.toString(snapshot.started.getEpochSecond()))
-            .addQueryParameter("until", Long.toString(snapshot.finished.getEpochSecond()))
+            .addQueryParameter("from", Long.toString(started.getEpochSecond()))
+            .addQueryParameter("until", Long.toString(finished.getEpochSecond()))
             .addQueryParameter("spyName", config.spyName);
         if (config.format == Format.JFR)
             builder.addQueryParameter("format", "jfr");

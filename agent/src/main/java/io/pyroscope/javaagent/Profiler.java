@@ -206,7 +206,6 @@ class Profiler {
         return new Snapshot(
             eventType,
             profilingStarted,
-            Instant.now(),
             data,
             Pyroscope.LabelsWrapper.dump()
         );
