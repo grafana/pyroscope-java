@@ -8,7 +8,11 @@ targetCompatibility = JavaVersion.VERSION_1_8
 repositories {
     mavenCentral()
 }
-
 dependencies {
-    implementation(project(":agent"))
+    if (project.hasProperty("pyroscopeDev")) {
+        implementation(project(":agent"))
+    } else {
+        implementation('io.pyroscope:agent:0.8.0')
+    }
 }
+

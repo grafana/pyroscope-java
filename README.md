@@ -52,6 +52,32 @@ There are several environment variables that define how multiple event configura
 - `PYROSCOPE_PROFILER_ALLOC` sets the allocation threshold to register the events, in bytes (equivalent to `--alloc=` in `async-profiler`). The default value is "" - empty string, which means that allocation profiling is disabled. Setting it to `0` will register all the events.
 - `PYROSCOPE_PROFILER_LOCK` sets the lock threshold to register the events, in nanoseconds (equivalent to `--lock=` in `async-profiler`). The default value is "" - empty string, which means that lock profiling is disabled. Setting it to `0` will register all the events.
 
+### Labels
+
+It is possible to add dynamic tags (labels) to the profiling data. These tags can be used to filter the data in the UI.
+
+Add pyroscope dependency to your `build.gradle`:
+```kotlin
+implementation("io.pyroscope:agent:${pyroscope_version}")
+```
+Add labels dynamically:
+```java
+import io.pyroscope.labels.LabelsSet;
+import io.pyroscope.labels.Pyroscope;
+
+Pyroscope.LabelsWrapper.run(new LabelsSet("controller", "slow_controller"), () -> {
+    slowCode();
+});
+```
+
+It is also possible to possible to add static tags (labels) to the profiling data:
+
+```java
+import io.pyroscope.labels.Pyroscope;
+
+Pyroscope.setStaticLabels(Map.of("REGION", System.getenv("REGION")));
+```
+
 ## Building
 
 If you want to build the agent JAR yourself, from this repo run:

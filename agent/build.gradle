@@ -4,6 +4,8 @@ import java.security.MessageDigest
 
 plugins {
     id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 
     // https://github.com/michel-kraemer/gradle-download-task
     id "de.undercouch.download" version "4.1.1"
@@ -20,6 +22,7 @@ repositories {
 }
 
 def asyncProfilerVersion = "2.8.0.2"
+def pyroscopeVersion = "0.8.0"
 dependencies {
     implementation files("$buildDir/async-profiler/async-profiler.jar")
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
@@ -47,6 +50,11 @@ test {
     useJUnitPlatform()
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 shadowJar {
     exclude 'Log4j-*'
     exclude 'META-INF/org/apache/logging/log4j/**'
@@ -60,6 +68,7 @@ shadowJar {
     archiveFileName = "pyroscope.jar"
 
     minimize()
+    archiveClassifier.set('')
 }
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
@@ -133,3 +142,51 @@ task asyncProfilerLib {
 clean.dependsOn 'cleanAsyncProfilerLib'
 compileJava.dependsOn 'asyncProfilerLib'
 relocateShadowJar.dependsOn 'asyncProfilerLib'
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            groupId = 'io.pyroscope'
+            artifactId = 'agent'
+            version = pyroscopeVersion
+            artifacts = [ shadowJar, javadocJar, sourcesJar ]
+            pom {
+                name = 'Pyroscope Java agent'
+                description = 'The Java profiling agent for Pyroscope.io. Based on async-profiler.'
+                url = 'https://pyroscope.io'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'pyroscope'
+                        name = 'Pyroscope'
+                        email = 'anatoly@pyroscope.io'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/pyroscope-io/pyroscope-java.git'
+                    developerConnection = 'scm:git:ssh://github.com/pyroscope-io/pyroscope-java.git'
+                    url = 'https://github.com/pyroscope-io/pyroscope-java'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username project.hasProperty('nexusUsername') ? project.nexusUsername : ''
+                password project.hasProperty('nexusPassword') ? project.nexusPassword : ''
+            }
+            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.shadow
+}
