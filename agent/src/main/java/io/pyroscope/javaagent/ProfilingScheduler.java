@@ -39,6 +39,7 @@ public class ProfilingScheduler {
             Snapshot snapshot = profiler.dump(
                 alignProfilingIntervalStartTime(this.profilingIntervalStartTime, config.uploadInterval)
             );
+            profilingIntervalStartTime = Instant.now();
             try {
                 pushQueue.put(snapshot);
             } catch (final InterruptedException ignored) {
