@@ -52,27 +52,9 @@ public class PyroscopeAgent {
                     config.uploadInterval,
                     config.format);
 
-            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-                    public Thread newThread(Runnable r) {
-                        Thread t = Executors.defaultThreadFactory().newThread(r);
-                        t.setDaemon(true);
-                        return t;
-                    }
-                });
-
-            Duration firstProfilingDuration = profiler.startFirst();
+            final ProfilingScheduler scheduler = new ProfilingScheduler(config, profiler, pushQueue);
+            scheduler.start();
             logger.info("Profiling started");
-
-            final Runnable dumpProfile = () -> {
-                try {
-                    pushQueue.put(profiler.dump());
-                } catch (final InterruptedException ignored) {
-                    // It's fine to swallow InterruptedException here and exit.
-                    // It's a cue to end the work and exit and we have nothing to clean up.
-                }
-            };
-            executor.scheduleAtFixedRate(dumpProfile,
-                firstProfilingDuration.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
 
             final Thread uploaderThread = new Thread(new Uploader(logger, pushQueue, config));
             uploaderThread.setDaemon(true);

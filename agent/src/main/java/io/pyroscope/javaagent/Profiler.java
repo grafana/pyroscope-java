@@ -17,8 +17,6 @@ import java.nio.file.*;
 import java.time.Duration;
 import java.time.Instant;
 
-import static io.pyroscope.javaagent.DateUtils.truncate;
-
 class Profiler {
     private final Logger logger;
     private final EventType eventType;
@@ -133,7 +131,6 @@ class Profiler {
 
     private final AsyncProfiler instance = AsyncProfiler.getInstance(libraryPath);
 
-    private Instant profilingIntervalStartTime = null;
     private final File tempJFRFile;
 
     Profiler(final Logger logger, final EventType eventType, final String alloc, final String lock, final Duration interval, Duration uploadInterval, final Format format) {
@@ -155,44 +152,6 @@ class Profiler {
             }
         } else {
             tempJFRFile = null;
-        }
-    }
-
-    /**
-     * Starts the first profiling interval.
-     * profilingIntervalStartTime is set to a current time aligned to upload interval
-     * Duration of the first profiling interval will be smaller than uploadInterval for alignment.
-     * <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">...</a>
-     * @return Duration of the first profiling interval
-     */
-    final synchronized Duration startFirst() {
-        Instant now = Instant.now();
-        Instant prevUploadInterval = truncate(now, uploadInterval);
-        Instant nextUploadInterval = prevUploadInterval.plus(uploadInterval);
-        Duration firstProfilingDuration = Duration.between(now, nextUploadInterval);
-        start();
-        profilingIntervalStartTime = prevUploadInterval;
-        return firstProfilingDuration;
-    }
-
-    /**
-     * Aligns profilingIntervalStartTime to the closest aligned upload time either forward or backward
-     * For example if upload interval is 10s and profilingIntervalStartTime is 00:00.01 it will return 00:00
-     * and if profilingIntervalStartTime is 00:09.239 it will return 00:10
-     * <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">...</a>
-     * @param profilingIntervalStartTime the time to align
-     * @param uploadInterval
-     * @return the aligned
-     */
-    public static Instant alignProfilingIntervalStartTime(Instant profilingIntervalStartTime, Duration uploadInterval) {
-        Instant prev = truncate(profilingIntervalStartTime, uploadInterval);
-        Instant next = prev.plus(uploadInterval);
-        Duration d1 = Duration.between(prev, profilingIntervalStartTime);
-        Duration d2 = Duration.between(profilingIntervalStartTime, next);
-        if (d1.compareTo(d2) < 0) {
-            return prev;
-        } else {
-            return next;
         }
     }
 
@@ -222,22 +181,17 @@ class Profiler {
         return sb.toString();
     }
 
-    final synchronized Snapshot dump() {
-        if (profilingIntervalStartTime == null) {
-            throw new IllegalStateException("Profiling is not started");
-        }
-
+    final synchronized Snapshot dump(Instant profilingIntervalStartTime) {
         instance.stop();
 
-        Snapshot result = dumpImpl();
+        Snapshot result = dumpImpl(profilingIntervalStartTime);
 
         start();
-        profilingIntervalStartTime = Instant.now();
 
         return result;
     }
 
-    private Snapshot dumpImpl() {
+    private Snapshot dumpImpl(Instant profilingIntervalStartTime) {
         final byte[] data;
         if (format == Format.JFR) {
             data = dumpJFR();
@@ -246,7 +200,7 @@ class Profiler {
         }
         return new Snapshot(
             eventType,
-            alignProfilingIntervalStartTime(profilingIntervalStartTime, uploadInterval),
+            profilingIntervalStartTime,
             data,
             Pyroscope.LabelsWrapper.dump()
         );
