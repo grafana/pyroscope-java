@@ -23,7 +23,6 @@ class Profiler {
     private final String alloc;
     private final String lock;
     private final Duration interval;
-    private final Duration uploadInterval;
     private final Format format;
 
     static final String libraryPath;
@@ -133,13 +132,12 @@ class Profiler {
 
     private final File tempJFRFile;
 
-    Profiler(final Logger logger, final EventType eventType, final String alloc, final String lock, final Duration interval, Duration uploadInterval, final Format format) {
+    Profiler(final Logger logger, final EventType eventType, final String alloc, final String lock, final Duration interval, final Format format) {
         this.logger = logger;
         this.alloc = alloc;
         this.lock = lock;
         this.eventType = eventType;
         this.interval = interval;
-        this.uploadInterval = uploadInterval;
         this.format = format;
 
         if (format == Format.JFR) {

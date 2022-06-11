@@ -7,15 +7,7 @@ import org.apache.logging.log4j.simple.SimpleLogger;
 import org.apache.logging.log4j.util.PropertiesUtil;
 
 import java.lang.instrument.Instrumentation;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-
-import static io.pyroscope.javaagent.DateUtils.truncate;
 
 public class PyroscopeAgent {
 
@@ -49,8 +41,7 @@ public class PyroscopeAgent {
                     config.profilingAlloc,
                     config.profilingLock,
                     config.profilingInterval,
-                    config.uploadInterval,
-                    config.format);
+                config.format);
 
             final ProfilingScheduler scheduler = new ProfilingScheduler(config, profiler, pushQueue);
             scheduler.start();
