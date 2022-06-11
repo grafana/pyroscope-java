@@ -63,7 +63,6 @@ public class ProfilingScheduler {
         Instant prevUploadInterval = truncate(now, config.uploadInterval);
         Instant nextUploadInterval = prevUploadInterval.plus(config.uploadInterval);
         Duration firstProfilingDuration = Duration.between(now, nextUploadInterval);
-        System.out.println(firstProfilingDuration);
         profiler.start();
         profilingIntervalStartTime = prevUploadInterval;
         return firstProfilingDuration;
