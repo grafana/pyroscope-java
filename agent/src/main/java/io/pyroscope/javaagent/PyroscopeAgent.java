@@ -7,11 +7,15 @@ import org.apache.logging.log4j.simple.SimpleLogger;
 import org.apache.logging.log4j.util.PropertiesUtil;
 
 import java.lang.instrument.Instrumentation;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import static io.pyroscope.javaagent.DateUtils.truncate;
 
 public class PyroscopeAgent {
 
@@ -45,6 +49,7 @@ public class PyroscopeAgent {
                     config.profilingAlloc,
                     config.profilingLock,
                     config.profilingInterval,
+                    config.uploadInterval,
                     config.format);
 
             final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -54,7 +59,8 @@ public class PyroscopeAgent {
                         return t;
                     }
                 });
-            profiler.start();
+
+            Duration firstProfilingDuration = profiler.startFirst();
             logger.info("Profiling started");
 
             final Runnable dumpProfile = () -> {
@@ -66,7 +72,7 @@ public class PyroscopeAgent {
                 }
             };
             executor.scheduleAtFixedRate(dumpProfile,
-                    config.uploadInterval.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
+                firstProfilingDuration.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
 
             final Thread uploaderThread = new Thread(new Uploader(logger, pushQueue, config));
             uploaderThread.setDaemon(true);

@@ -107,7 +107,7 @@ final class Uploader implements Runnable {
     }
 
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
-        Instant started = DateUtils.truncatedTo(snapshot.started, config.uploadInterval);
+        Instant started = snapshot.started;
         Instant finished = started.plus(config.uploadInterval);
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
             .newBuilder()

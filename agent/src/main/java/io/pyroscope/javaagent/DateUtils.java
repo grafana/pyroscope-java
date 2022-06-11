@@ -12,12 +12,12 @@ class DateUtils {
      * copy-paste from java.time.Instant#truncatedTo(java.time.temporal.TemporalUnit)
      * to support Duration instead of TemporalUnit
      */
-    public static Instant truncatedTo(Instant thiz, Duration unitDur) {
+    public static Instant truncate(Instant it, Duration unitDur) {
         long dur = unitDur.toNanos();
-        long seconds = thiz.getLong(ChronoField.INSTANT_SECONDS);
-        long nanos = thiz.getLong(ChronoField.NANO_OF_SECOND);
+        long seconds = it.getLong(ChronoField.INSTANT_SECONDS);
+        long nanos = it.getLong(ChronoField.NANO_OF_SECOND);
         long nod = (seconds % SECONDS_PER_DAY) * NANOS_PER_SECOND + nanos;
         long result = (nod / dur) * dur;
-        return thiz.plusNanos(result - nod);
+        return it.plusNanos(result - nod);
     }
 }
