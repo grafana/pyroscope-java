@@ -130,8 +130,6 @@ class Profiler {
 
     private final AsyncProfiler instance = AsyncProfiler.getInstance(libraryPath);
 
-    // TODO this is actually start of snapshot, not profiling as a whole
-    private Instant profilingStarted = null;
     private final File tempJFRFile;
 
     Profiler(final Logger logger, final EventType eventType, final String alloc, final String lock, final Duration interval, final Format format) {
@@ -165,7 +163,6 @@ class Profiler {
         } else {
             instance.start(eventType.id, interval.toNanos());
         }
-        profilingStarted = Instant.now();
     }
 
     private String createJFRCommand() {
@@ -182,21 +179,17 @@ class Profiler {
         return sb.toString();
     }
 
-    final synchronized Snapshot dump() {
-        if (profilingStarted == null) {
-            throw new IllegalStateException("Profiling is not started");
-        }
-
+    final synchronized Snapshot dump(Instant profilingIntervalStartTime) {
         instance.stop();
 
-        Snapshot result = dumpImpl();
+        Snapshot result = dumpImpl(profilingIntervalStartTime);
 
         start();
 
         return result;
     }
 
-    private Snapshot dumpImpl() {
+    private Snapshot dumpImpl(Instant profilingIntervalStartTime) {
         final byte[] data;
         if (format == Format.JFR) {
             data = dumpJFR();
@@ -205,8 +198,7 @@ class Profiler {
         }
         return new Snapshot(
             eventType,
-            profilingStarted,
-            Instant.now(),
+            profilingIntervalStartTime,
             data,
             Pyroscope.LabelsWrapper.dump()
         );

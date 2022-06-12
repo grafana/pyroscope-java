@@ -8,10 +8,6 @@ import org.apache.logging.log4j.util.PropertiesUtil;
 
 import java.lang.instrument.Instrumentation;
 import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 public class PyroscopeAgent {
 
@@ -45,28 +41,11 @@ public class PyroscopeAgent {
                     config.profilingAlloc,
                     config.profilingLock,
                     config.profilingInterval,
-                    config.format);
+                config.format);
 
-            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-                    public Thread newThread(Runnable r) {
-                        Thread t = Executors.defaultThreadFactory().newThread(r);
-                        t.setDaemon(true);
-                        return t;
-                    }
-                });
-            profiler.start();
+            final ProfilingScheduler scheduler = new ProfilingScheduler(config, profiler, pushQueue);
+            scheduler.start();
             logger.info("Profiling started");
-
-            final Runnable dumpProfile = () -> {
-                try {
-                    pushQueue.put(profiler.dump());
-                } catch (final InterruptedException ignored) {
-                    // It's fine to swallow InterruptedException here and exit.
-                    // It's a cue to end the work and exit and we have nothing to clean up.
-                }
-            };
-            executor.scheduleAtFixedRate(dumpProfile,
-                    config.uploadInterval.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
 
             final Thread uploaderThread = new Thread(new Uploader(logger, pushQueue, config));
             uploaderThread.setDaemon(true);
