@@ -1,3 +1,4 @@
 rootProject.name = 'pyroscope-javaagent'
 include('agent')
 include('demo')
+include('otelpyroscope')

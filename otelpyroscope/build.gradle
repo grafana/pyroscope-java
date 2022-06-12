@@ -8,6 +8,10 @@ targetCompatibility = JavaVersion.VERSION_1_8
 repositories {
     mavenCentral()
 }
+
 dependencies {
     implementation(project(":agent"))
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.15.0")
+    implementation('io.opentelemetry:opentelemetry-api')
+    implementation('io.opentelemetry:opentelemetry-sdk')
 }
