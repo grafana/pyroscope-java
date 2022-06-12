@@ -22,7 +22,7 @@ repositories {
 }
 
 def asyncProfilerVersion = "2.8.0.2"
-def pyroscopeVersion = "0.8.0"
+def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     implementation files("$buildDir/async-profiler/async-profiler.jar")
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
@@ -190,3 +190,4 @@ publishing {
 signing {
     sign publishing.publications.shadow
 }
+
