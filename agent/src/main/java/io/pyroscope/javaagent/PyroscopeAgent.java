@@ -16,9 +16,8 @@ public class PyroscopeAgent {
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
         final Config config;
-        final ConfigurationProvider configProvider = new DefaultConfigurationProvider();
         try {
-            config = Config.build(configProvider);
+            config = Config.build(new DefaultConfigurationProvider());
         } catch (final Throwable e) {
             LoggerUtils.PRECONFIG_LOGGER.error("Error starting profiler", e);
             return;
