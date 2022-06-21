@@ -1,57 +1,104 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.javaagent.api.ConfigurationProvider;
+import io.pyroscope.javaagent.api.Exporter;
+import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.impl.ContinuousProfilingScheduler;
+import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
+import io.pyroscope.javaagent.impl.PyroscopeExporter;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ParameterizedNoReferenceMessageFactory;
-import org.apache.logging.log4j.simple.SimpleLogger;
-import org.apache.logging.log4j.util.PropertiesUtil;
 
 import java.lang.instrument.Instrumentation;
-import java.util.Properties;
 
 public class PyroscopeAgent {
 
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
         final Config config;
-        final Logger logger;
+        final ConfigurationProvider configProvider = new DefaultConfigurationProvider();
         try {
-            config = Config.build();
-
-            logger = new SimpleLogger(
-                    "PyroscopeAgent", config.logLevel,
-                    false, true, true, false,
-                    "yyyy-MM-dd HH:mm:ss.SSS",
-                    ParameterizedNoReferenceMessageFactory.INSTANCE,
-                    new PropertiesUtil(new Properties()),
-                    System.err);
+            config = Config.build(configProvider);
         } catch (final Throwable e) {
-            PreConfigLogger.LOGGER.error("Error starting profiler", e);
+            LoggerUtils.PRECONFIG_LOGGER.error("Error starting profiler", e);
             return;
         }
-        logger.debug("Config {}", config);
+        start(config);
+    }
 
-        final OverfillQueue<Snapshot> pushQueue = new OverfillQueue<>(config.pushQueueCapacity);
-
-
+    public static void start() {
+        start(new Config.Builder().build());
+    }
+    public static void start(Config config) {
+        start(new Options.Builder(config).build());
+    }
+    public static void start(Options options) {
+        Logger logger = options.logger;
+        logger.debug("Config {}", options.config);
         try {
-            final Profiler profiler = new Profiler(
-                    logger,
-                    config.profilingEvent,
-                    config.profilingAlloc,
-                    config.profilingLock,
-                    config.profilingInterval,
-                config.format);
-
-            final ProfilingScheduler scheduler = new ProfilingScheduler(config, profiler, pushQueue);
-            scheduler.start();
+            options.scheduler.start(options.profiler);
             logger.info("Profiling started");
-
-            final Thread uploaderThread = new Thread(new Uploader(logger, pushQueue, config));
-            uploaderThread.setDaemon(true);
-            uploaderThread.start();
         } catch (final Throwable e) {
             logger.error("Error starting profiler", e);
         }
     }
+
+    public static class Options {
+        final Config config;
+        final Exporter exporter;
+        final ProfilingScheduler scheduler;
+        final Logger logger;
+        final Profiler profiler;
+
+        private Options(Builder b) {
+            this.config = b.config;
+            this.profiler = b.profiler;
+            this.exporter = b.exporter;
+            this.scheduler = b.scheduler;
+            this.logger = b.logger;
+        }
+
+        public static class Builder {
+            final Config config;
+            final Profiler profiler;
+            Exporter exporter;
+            ProfilingScheduler scheduler;
+            Logger logger;
+
+            public Builder(Config config) {
+                this.config = config;
+                this.profiler = new Profiler(config);
+            }
+
+            public Builder setExporter(Exporter exporter) {
+                this.exporter = exporter;
+                return this;
+            }
+
+            public Builder setScheduler(ProfilingScheduler scheduler) {
+                this.scheduler = scheduler;
+                return this;
+            }
+
+            public Builder setLogger(Logger logger) {
+                this.logger = logger;
+                return this;
+            }
+
+            public Options build() {
+                if (logger == null) {
+                    logger = LoggerUtils.createDefaultPyroscopeLogger(config.logLevel);
+                }
+                if (exporter == null) {
+                    exporter = new PyroscopeExporter(config, logger);
+                }
+                if (scheduler == null) {
+                    scheduler = new ContinuousProfilingScheduler(config, exporter);
+                }
+                return new Options(this);
+            }
+        }
+
+    }
+
 }

@@ -1,3 +1,5 @@
+import io.pyroscope.javaagent.PyroscopeAgent;
+import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.Pyroscope;
 import io.pyroscope.labels.LabelsSet;
 
@@ -10,6 +12,7 @@ public class App {
     public static final int N_THREADS = 8;
 
     public static void main(String[] args) {
+        PyroscopeAgent.start();
         Pyroscope.setStaticLabels(createStaticLabels());
         ExecutorService executors = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < N_THREADS; i++) {

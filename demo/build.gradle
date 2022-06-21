@@ -9,7 +9,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    if (project.hasProperty("pyroscopeDev")) {
+    if (!project.hasProperty("pyroscopeDev")) {
         implementation(project(":agent"))
     } else {
         implementation('io.pyroscope:agent:0.8.1') // todo deduplicate version usage, make jenkins update it

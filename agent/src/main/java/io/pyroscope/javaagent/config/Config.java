@@ -2,8 +2,11 @@ package io.pyroscope.javaagent.config;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
-import io.pyroscope.javaagent.PreConfigLogger;
+import io.pyroscope.javaagent.LoggerUtils;
+import io.pyroscope.javaagent.api.ConfigurationProvider;
+import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -25,7 +28,7 @@ public final class Config {
     private static final String PYROSCOPE_FORMAT_CONFIG = "PYROSCOPE_FORMAT";
     private static final String PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG = "PYROSCOPE_PUSH_QUEUE_CAPACITY";
 
-    private static final String DEFAULT_SPY_NAME = "javaspy";
+    public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
     private static final String DEFAULT_PROFILER_ALLOC = "";
@@ -37,7 +40,6 @@ public final class Config {
     // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
     private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 32;
 
-    public final String spyName = DEFAULT_SPY_NAME;
     public final String applicationName;
     public final Duration profilingInterval;
     public final EventType profilingEvent;
@@ -84,8 +86,7 @@ public final class Config {
     @Override
     public String toString() {
         return "Config{" +
-            "spyName='" + spyName + '\'' +
-            ", applicationName='" + applicationName + '\'' +
+            "applicationName='" + applicationName + '\'' +
             ", profilingInterval=" + profilingInterval +
             ", profilingEvent=" + profilingEvent +
             ", profilingAlloc='" + profilingAlloc + '\'' +
@@ -106,49 +107,60 @@ public final class Config {
     }
 
     public static Config build() {
+        return build(new DefaultConfigurationProvider());
+    }
+
+    public static Config build(ConfigurationProvider configurationProvider) {
         return new Config(
-            applicationName(),
-            profilingInterval(),
-            profilingEvent(),
-            profilingAlloc(),
-            profilingLock(),
-            uploadInterval(),
-            logLevel(),
-            serverAddress(),
-            authToken(),
-            format(),
-            pushQueueCapacity()
+            applicationName(configurationProvider),
+            profilingInterval(configurationProvider),
+            profilingEvent(configurationProvider),
+            profilingAlloc(configurationProvider),
+            profilingLock(configurationProvider),
+            uploadInterval(configurationProvider),
+            logLevel(configurationProvider),
+            serverAddress(configurationProvider),
+            authToken(configurationProvider),
+            format(configurationProvider),
+            pushQueueCapacity(configurationProvider)
         );
     }
 
-    private static String applicationName() {
-        String applicationName = System.getenv(PYROSCOPE_APPLICATION_NAME_CONFIG);
+    private static String applicationName(ConfigurationProvider configurationProvider) {
+        String applicationName = configurationProvider.get(PYROSCOPE_APPLICATION_NAME_CONFIG);
         if (applicationName == null || applicationName.isEmpty()) {
-            PreConfigLogger.LOGGER.info("We recommend specifying application name via env variable {}",
-                    PYROSCOPE_APPLICATION_NAME_CONFIG);
-            // TODO transfer name generation algorithm from the Go implementation.
-
-            final UUID uuid = UUID.randomUUID();
-            final ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
-            byteBuffer.putLong(uuid.getMostSignificantBits());
-            byteBuffer.putLong(uuid.getLeastSignificantBits());
-            final String random = Base64.getUrlEncoder().withoutPadding().encodeToString(byteBuffer.array());
-            applicationName = DEFAULT_SPY_NAME + "." +  random;
-
-            PreConfigLogger.LOGGER.info("For now we chose the name for you and it's {}", applicationName);
+            applicationName = generateApplicationName();
         }
         return applicationName;
     }
 
-    private static Duration profilingInterval() {
-        final String profilingIntervalStr = System.getenv(PYROSCOPE_PROFILING_INTERVAL_CONFIG);
+    @NotNull
+    private static String generateApplicationName() {
+        String applicationName;
+        LoggerUtils.PRECONFIG_LOGGER.info("We recommend specifying application name via env variable {}",
+                PYROSCOPE_APPLICATION_NAME_CONFIG);
+        // TODO transfer name generation algorithm from the Go implementation.
+
+        final UUID uuid = UUID.randomUUID();
+        final ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
+        byteBuffer.putLong(uuid.getMostSignificantBits());
+        byteBuffer.putLong(uuid.getLeastSignificantBits());
+        final String random = Base64.getUrlEncoder().withoutPadding().encodeToString(byteBuffer.array());
+        applicationName = DEFAULT_SPY_NAME + "." +  random;
+
+        LoggerUtils.PRECONFIG_LOGGER.info("For now we chose the name for you and it's {}", applicationName);
+        return applicationName;
+    }
+
+    private static Duration profilingInterval(ConfigurationProvider configurationProvider) {
+        final String profilingIntervalStr = configurationProvider.get(PYROSCOPE_PROFILING_INTERVAL_CONFIG);
         if (profilingIntervalStr == null || profilingIntervalStr.isEmpty()) {
             return DEFAULT_PROFILING_INTERVAL;
         }
         try {
             return IntervalParser.parse(profilingIntervalStr);
         } catch (final NumberFormatException e) {
-            PreConfigLogger.LOGGER.warn("Invalid {} value {}, using {}ms",
+            LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}ms",
                     PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL.toMillis());
             return DEFAULT_PROFILING_INTERVAL;
         }
@@ -160,9 +172,9 @@ public final class Config {
         return applicationName + "." + eventType.id;
     }
 
-    private static EventType profilingEvent() {
+    private static EventType profilingEvent(ConfigurationProvider configurationProvider) {
         final String profilingEventStr =
-            System.getenv(PYROSCOPE_PROFILER_EVENT_CONFIG);
+            configurationProvider.get(PYROSCOPE_PROFILER_EVENT_CONFIG);
         if (profilingEventStr == null || profilingEventStr.isEmpty()) {
             return DEFAULT_PROFILER_EVENT;
         }
@@ -172,44 +184,44 @@ public final class Config {
         try {
             return EventType.fromId(lowerCaseTrimmed);
         } catch (IllegalArgumentException e) {
-            PreConfigLogger.LOGGER.warn("Invalid {} value {}, using {}",
+            LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}",
                     PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
             return DEFAULT_PROFILER_EVENT;
         }
     }
 
-    private static String profilingAlloc() {
-        final String profilingAlloc = System.getenv(PYROSCOPE_PROFILER_ALLOC_CONFIG);
+    private static String profilingAlloc(ConfigurationProvider configurationProvider) {
+        final String profilingAlloc = configurationProvider.get(PYROSCOPE_PROFILER_ALLOC_CONFIG);
         if (profilingAlloc == null || profilingAlloc.isEmpty()) {
             return DEFAULT_PROFILER_ALLOC;
         }
         return profilingAlloc.trim().toLowerCase();
     }
 
-    private static String profilingLock() {
-        final String profilingLock = System.getenv(PYROSCOPE_PROFILER_LOCK_CONFIG);
+    private static String profilingLock(ConfigurationProvider configurationProvider) {
+        final String profilingLock = configurationProvider.get(PYROSCOPE_PROFILER_LOCK_CONFIG);
         if (profilingLock == null || profilingLock.isEmpty()) {
             return DEFAULT_PROFILER_LOCK;
         }
         return profilingLock.trim().toLowerCase();
     }
 
-    private static Duration uploadInterval() {
-        final String uploadIntervalStr = System.getenv(PYROSCOPE_UPLOAD_INTERVAL_CONFIG);
+    private static Duration uploadInterval(ConfigurationProvider configurationProvider) {
+        final String uploadIntervalStr = configurationProvider.get(PYROSCOPE_UPLOAD_INTERVAL_CONFIG);
         if (uploadIntervalStr == null || uploadIntervalStr.isEmpty()) {
             return DEFAULT_UPLOAD_INTERVAL;
         }
         try {
             return IntervalParser.parse(uploadIntervalStr);
         } catch (final NumberFormatException e) {
-            PreConfigLogger.LOGGER.warn("Invalid {} value {}, using {}",
+            LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}",
                     PYROSCOPE_UPLOAD_INTERVAL_CONFIG, uploadIntervalStr, DEFAULT_UPLOAD_INTERVAL);
             return DEFAULT_UPLOAD_INTERVAL;
         }
    }
 
-    private static Level logLevel() {
-        final String logLevel = System.getenv(PYROSCOPE_LOG_LEVEL_CONFIG);
+    private static Level logLevel(ConfigurationProvider configurationProvider) {
+        final String logLevel = configurationProvider.get(PYROSCOPE_LOG_LEVEL_CONFIG);
         if (logLevel == null || logLevel.isEmpty()) {
             return Level.INFO;
         }
@@ -223,18 +235,18 @@ public final class Config {
             case "error":
                 return Level.ERROR;
             default:
-                PreConfigLogger.LOGGER.warn("Unknown log level {}, using INFO", logLevel);
+                LoggerUtils.PRECONFIG_LOGGER.warn("Unknown log level {}, using INFO", logLevel);
                 return Level.INFO;
         }
     }
 
-    private static String serverAddress() {
-        String serverAddress = System.getenv(PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG);
+    private static String serverAddress(ConfigurationProvider configurationProvider) {
+        String serverAddress = configurationProvider.get(PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG);
         if (serverAddress == null || serverAddress.isEmpty()) {
-            serverAddress = System.getenv(PYROSCOPE_SERVER_ADDRESS_CONFIG);
+            serverAddress = configurationProvider.get(PYROSCOPE_SERVER_ADDRESS_CONFIG);
         }
         if (serverAddress == null || serverAddress.isEmpty()) {
-            PreConfigLogger.LOGGER.warn("{} is not defined, using {}",
+            LoggerUtils.PRECONFIG_LOGGER.warn("{} is not defined, using {}",
                     PYROSCOPE_SERVER_ADDRESS_CONFIG, DEFAULT_SERVER_ADDRESS);
             serverAddress = DEFAULT_SERVER_ADDRESS;
 
@@ -242,12 +254,12 @@ public final class Config {
         return serverAddress;
     }
 
-    private static String authToken() {
-        return System.getenv(PYROSCOPE_AUTH_TOKEN_CONFIG);
+    private static String authToken(ConfigurationProvider configurationProvider) {
+        return configurationProvider.get(PYROSCOPE_AUTH_TOKEN_CONFIG);
     }
 
-    private static Format format() {
-        final String format = System.getenv(PYROSCOPE_FORMAT_CONFIG);
+    private static Format format(ConfigurationProvider configurationProvider) {
+        final String format = configurationProvider.get(PYROSCOPE_FORMAT_CONFIG);
         if (format == null || format.isEmpty())
             return DEFAULT_FORMAT;
         switch (format.trim().toLowerCase()) {
@@ -256,13 +268,13 @@ public final class Config {
             case "jfr":
                 return Format.JFR;
             default:
-                PreConfigLogger.LOGGER.warn("Unknown format {}, using {}", format, DEFAULT_FORMAT);
+                LoggerUtils.PRECONFIG_LOGGER.warn("Unknown format {}, using {}", format, DEFAULT_FORMAT);
                 return DEFAULT_FORMAT;
         }
     }
 
-    private static int pushQueueCapacity() {
-        final String strPushQueueCapacity = System.getenv(PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG);
+    private static int pushQueueCapacity(ConfigurationProvider configurationProvider) {
+        final String strPushQueueCapacity = configurationProvider.get(PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG);
         if (strPushQueueCapacity == null || strPushQueueCapacity.isEmpty()) {
             return DEFAULT_PUSH_QUEUE_CAPACITY;
         }
@@ -275,6 +287,94 @@ public final class Config {
             }
         } catch (NumberFormatException e) {
             return DEFAULT_PUSH_QUEUE_CAPACITY;
+        }
+    }
+
+    public static class Builder {
+        public String applicationName = null;
+        public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
+        public EventType profilingEvent = DEFAULT_PROFILER_EVENT;
+        public String profilingAlloc = "";
+        public String profilingLock = "";
+        public Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
+        public Level logLevel = Level.INFO;
+        public String serverAddress = DEFAULT_SERVER_ADDRESS;
+        public String authToken = null;
+        public Format format = DEFAULT_FORMAT;
+        public int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
+
+
+        public Builder setApplicationName(String applicationName) {
+            this.applicationName = applicationName;
+            return this;
+        }
+
+        public Builder setProfilingInterval(Duration profilingInterval) {
+            this.profilingInterval = profilingInterval;
+            return this;
+        }
+
+        public Builder setProfilingEvent(EventType profilingEvent) {
+            this.profilingEvent = profilingEvent;
+            return this;
+        }
+
+        public Builder setProfilingAlloc(String profilingAlloc) {
+            this.profilingAlloc = profilingAlloc;
+            return this;
+        }
+
+        public Builder setProfilingLock(String profilingLock) {
+            this.profilingLock = profilingLock;
+            return this;
+        }
+
+        public Builder setUploadInterval(Duration uploadInterval) {
+            this.uploadInterval = uploadInterval;
+            return this;
+        }
+
+        public Builder setLogLevel(Level logLevel) {
+            this.logLevel = logLevel;
+            return this;
+        }
+
+        public Builder setServerAddress(String serverAddress) {
+            this.serverAddress = serverAddress;
+            return this;
+        }
+
+        public Builder setAuthToken(String authToken) {
+            this.authToken = authToken;
+            return this;
+        }
+
+        public Builder setFormat(Format format) {
+            this.format = format;
+            return this;
+        }
+
+        public Builder setPushQueueCapacity(int pushQueueCapacity) {
+            this.pushQueueCapacity = pushQueueCapacity;
+            return this;
+        }
+
+        public Config build() {
+            if (applicationName == null || applicationName.isEmpty()) {
+                applicationName = generateApplicationName();
+            }
+            return new Config(applicationName,
+                profilingInterval,
+                profilingEvent,
+                profilingAlloc,
+                profilingLock,
+                uploadInterval,
+                logLevel,
+                serverAddress,
+                authToken,
+                format,
+                pushQueueCapacity
+            );
         }
     }
 }

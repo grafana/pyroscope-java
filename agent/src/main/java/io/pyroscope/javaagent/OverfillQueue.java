@@ -12,13 +12,13 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @param <E> the type of elements.
  */
-final class OverfillQueue<E> {
+public final class OverfillQueue<E> {
     private final ArrayBlockingQueue<E> innerQueue;
     // Guards innerQueue.
     private final ReentrantLock lock = new ReentrantLock(false);
     private final Condition notEmpty = lock.newCondition();
 
-    OverfillQueue(final int capacity) {
+    public OverfillQueue(final int capacity) {
         if (capacity < 1) {
             throw new IllegalArgumentException("Capacity must be >= 1");
         }

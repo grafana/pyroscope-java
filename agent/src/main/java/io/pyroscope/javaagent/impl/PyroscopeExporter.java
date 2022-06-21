@@ -1,6 +1,9 @@
-package io.pyroscope.javaagent;
+package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.OverfillQueue;
+import io.pyroscope.javaagent.Snapshot;
+import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
@@ -13,38 +16,53 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-final class Uploader implements Runnable {
-    private static final Duration TIMEOUT = Duration.ofSeconds(10);
-    private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
-    private final Logger logger;
-    private final OverfillQueue<Snapshot> uploadQueue;
-    private final Config config;
-    private final OkHttpClient client;
+public class PyroscopeExporter implements Exporter {
+    private static final Duration TIMEOUT = Duration.ofSeconds(10);//todo allow configuration
 
-    Uploader(final Logger logger, final OverfillQueue<Snapshot> uploadQueue, final Config config) {
-        this.logger = logger;
-        this.uploadQueue = uploadQueue;
+    private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
+
+    final Config config;
+    final Logger logger;
+    final OkHttpClient client;
+    final OverfillQueue<Snapshot> queue;
+    private final Thread thread;
+
+    public PyroscopeExporter(Config config, Logger logger) {
         this.config = config;
+        this.logger = logger;
+        this.queue  = new OverfillQueue<>(config.pushQueueCapacity);;
         this.client = new OkHttpClient.Builder()
             .connectTimeout(TIMEOUT)
             .readTimeout(TIMEOUT)
             .callTimeout(TIMEOUT)
             .build();
+
+        this.thread = new Thread(this::uploadLoop);
+        this.thread.start();
     }
 
-    @Override
-    public void run() {
+    private void uploadLoop() {
         logger.debug("Uploading started");
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                final Snapshot snapshot = uploadQueue.take();
+                final Snapshot snapshot = queue.take();
                 uploadSnapshot(snapshot);
             }
         } catch (final InterruptedException e) {
-            logger.debug("Uploader interrupted");
+            logger.debug("Uploading interrupted");
             Thread.currentThread().interrupt();
         }
     }
+
+    @Override
+    public void export(Snapshot snapshot) {
+        try {
+            queue.put(snapshot);
+        } catch (final InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
 
     private void uploadSnapshot(final Snapshot snapshot) throws InterruptedException {
         final HttpUrl url = urlForSnapshot(snapshot);
@@ -118,7 +136,7 @@ final class Uploader implements Runnable {
             .addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()))
             .addQueryParameter("from", Long.toString(started.getEpochSecond()))
             .addQueryParameter("until", Long.toString(finished.getEpochSecond()))
-            .addQueryParameter("spyName", config.spyName);
+            .addQueryParameter("spyName", Config.DEFAULT_SPY_NAME);
         if (config.format == Format.JFR)
             builder.addQueryParameter("format", "jfr");
         return builder.build();
@@ -145,4 +163,5 @@ final class Uploader implements Runnable {
             return sb.toString();
         }
     }
+
 }
