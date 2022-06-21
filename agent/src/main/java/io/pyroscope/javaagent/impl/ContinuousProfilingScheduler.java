@@ -27,11 +27,9 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
     private final Exporter exporter;
     private Instant profilingIntervalStartTime;
 
-
     public ContinuousProfilingScheduler(Config config, Exporter exporter) {
         this.config = config;
         this.exporter = exporter;
-
     }
 
     @Override

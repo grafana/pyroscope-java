@@ -44,7 +44,6 @@ public class PyroscopeAgent {
 
     public static class Options {
         final Config config;
-        final Exporter exporter;
         final ProfilingScheduler scheduler;
         final Logger logger;
         final Profiler profiler;
@@ -52,7 +51,6 @@ public class PyroscopeAgent {
         private Options(Builder b) {
             this.config = b.config;
             this.profiler = b.profiler;
-            this.exporter = b.exporter;
             this.scheduler = b.scheduler;
             this.logger = b.logger;
         }
@@ -88,10 +86,10 @@ public class PyroscopeAgent {
                 if (logger == null) {
                     logger = LoggerUtils.createDefaultPyroscopeLogger(config.logLevel);
                 }
-                if (exporter == null) {
-                    exporter = new PyroscopeExporter(config, logger);
-                }
                 if (scheduler == null) {
+                    if (exporter == null) {
+                        exporter = new PyroscopeExporter(config, logger);
+                    }
                     scheduler = new ContinuousProfilingScheduler(config, exporter);
                 }
                 return new Options(this);
