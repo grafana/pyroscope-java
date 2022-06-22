@@ -14,6 +14,10 @@ import java.util.Base64;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * Config allows to tweak parameters of existing pyroscope components at start time
+ * through pyroscope.properties file or System.getevn - see io.pyroscope.javaagent.impl.DefaultConfigurationProvider
+ */
 public final class Config {
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
@@ -111,7 +115,7 @@ public final class Config {
     }
 
     public static Config build() {
-        return build(new DefaultConfigurationProvider());
+        return build(DefaultConfigurationProvider.INSTANCE);
     }
 
     public static Config build(ConfigurationProvider configurationProvider) {

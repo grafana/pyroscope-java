@@ -6,7 +6,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Delegates configuration provision to pyroscope.properties file
+ * or to System.getenv if the file does not exist
+ */
 public class DefaultConfigurationProvider implements ConfigurationProvider {
+    public static final DefaultConfigurationProvider INSTANCE = new DefaultConfigurationProvider();
     public static final String PYROSCOPE_PROPERTIES = "pyroscope.properties";
     final ConfigurationProvider delegate;
 

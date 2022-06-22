@@ -17,7 +17,7 @@ public class PyroscopeAgent {
                                final Instrumentation inst) {
         final Config config;
         try {
-            config = Config.build(new DefaultConfigurationProvider());
+            config = Config.build(DefaultConfigurationProvider.INSTANCE);
         } catch (final Throwable e) {
             LoggerUtils.PRECONFIG_LOGGER.error("Error starting profiler", e);
             return;
@@ -28,6 +28,7 @@ public class PyroscopeAgent {
     public static void start() {
         start(new Config.Builder().build());
     }
+
     public static void start(Config config) {
         start(new Options.Builder(config).build());
     }
@@ -42,6 +43,12 @@ public class PyroscopeAgent {
         }
     }
 
+    /**
+     * Options allow to swap pyroscope components:
+     * - io.pyroscope.javaagent.api.ProfilingScheduler
+     * - org.apache.logging.log4j.Logger
+     * - io.pyroscope.javaagent.api.Exporter for io.pyroscope.javaagent.impl.ContinuousProfilingScheduler
+     */
     public static class Options {
         final Config config;
         final ProfilingScheduler scheduler;
