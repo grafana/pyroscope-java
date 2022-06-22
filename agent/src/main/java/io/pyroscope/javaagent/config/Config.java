@@ -64,7 +64,7 @@ public final class Config {
            final String authToken,
            final Format format,
            final int pushQueueCapacity
-        ) {
+    ) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -99,6 +99,10 @@ public final class Config {
             ", format=" + format +
             ", pushQueueCapacity=" + pushQueueCapacity +
             '}';
+    }
+
+    public Builder newBuilder() {
+        return new Builder(this);
     }
 
     private static long durationToHertz(Duration duration) {
@@ -138,7 +142,7 @@ public final class Config {
     private static String generateApplicationName() {
         String applicationName;
         LoggerUtils.PRECONFIG_LOGGER.info("We recommend specifying application name via env variable {}",
-                PYROSCOPE_APPLICATION_NAME_CONFIG);
+            PYROSCOPE_APPLICATION_NAME_CONFIG);
         // TODO transfer name generation algorithm from the Go implementation.
 
         final UUID uuid = UUID.randomUUID();
@@ -146,7 +150,7 @@ public final class Config {
         byteBuffer.putLong(uuid.getMostSignificantBits());
         byteBuffer.putLong(uuid.getLeastSignificantBits());
         final String random = Base64.getUrlEncoder().withoutPadding().encodeToString(byteBuffer.array());
-        applicationName = DEFAULT_SPY_NAME + "." +  random;
+        applicationName = DEFAULT_SPY_NAME + "." + random;
 
         LoggerUtils.PRECONFIG_LOGGER.info("For now we chose the name for you and it's {}", applicationName);
         return applicationName;
@@ -161,7 +165,7 @@ public final class Config {
             return IntervalParser.parse(profilingIntervalStr);
         } catch (final NumberFormatException e) {
             LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}ms",
-                    PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL.toMillis());
+                PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL.toMillis());
             return DEFAULT_PROFILING_INTERVAL;
         }
     }
@@ -185,7 +189,7 @@ public final class Config {
             return EventType.fromId(lowerCaseTrimmed);
         } catch (IllegalArgumentException e) {
             LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}",
-                    PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
+                PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
             return DEFAULT_PROFILER_EVENT;
         }
     }
@@ -215,10 +219,10 @@ public final class Config {
             return IntervalParser.parse(uploadIntervalStr);
         } catch (final NumberFormatException e) {
             LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}",
-                    PYROSCOPE_UPLOAD_INTERVAL_CONFIG, uploadIntervalStr, DEFAULT_UPLOAD_INTERVAL);
+                PYROSCOPE_UPLOAD_INTERVAL_CONFIG, uploadIntervalStr, DEFAULT_UPLOAD_INTERVAL);
             return DEFAULT_UPLOAD_INTERVAL;
         }
-   }
+    }
 
     private static Level logLevel(ConfigurationProvider configurationProvider) {
         final String logLevel = configurationProvider.get(PYROSCOPE_LOG_LEVEL_CONFIG);
@@ -247,7 +251,7 @@ public final class Config {
         }
         if (serverAddress == null || serverAddress.isEmpty()) {
             LoggerUtils.PRECONFIG_LOGGER.warn("{} is not defined, using {}",
-                    PYROSCOPE_SERVER_ADDRESS_CONFIG, DEFAULT_SERVER_ADDRESS);
+                PYROSCOPE_SERVER_ADDRESS_CONFIG, DEFAULT_SERVER_ADDRESS);
             serverAddress = DEFAULT_SERVER_ADDRESS;
 
         }
@@ -303,6 +307,22 @@ public final class Config {
         public Format format = DEFAULT_FORMAT;
         public int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
 
+        public Builder() {
+        }
+
+        public Builder(Config buildUpon) {
+            applicationName = buildUpon.applicationName;
+            profilingInterval = buildUpon.profilingInterval;
+            profilingEvent = buildUpon.profilingEvent;
+            profilingAlloc = buildUpon.profilingAlloc;
+            profilingLock = buildUpon.profilingLock;
+            uploadInterval = buildUpon.uploadInterval;
+            logLevel = buildUpon.logLevel;
+            serverAddress = buildUpon.serverAddress;
+            authToken = buildUpon.authToken;
+            format = buildUpon.format;
+            pushQueueCapacity = buildUpon.pushQueueCapacity;
+        }
 
         public Builder setApplicationName(String applicationName) {
             this.applicationName = applicationName;
