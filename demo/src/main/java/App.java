@@ -1,7 +1,9 @@
+import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.PyroscopeAgent;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.Pyroscope;
 import io.pyroscope.labels.LabelsSet;
+import org.apache.logging.log4j.Level;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +14,14 @@ public class App {
     public static final int N_THREADS = 8;
 
     public static void main(String[] args) {
-        PyroscopeAgent.start();
+        PyroscopeAgent.start(
+            new Config.Builder()
+                .setApplicationName("demo.app")
+                .setServerAddress("http://localhost:4040")
+                .setFormat(Format.JFR)
+                .setLogLevel(Level.DEBUG)
+                .build()
+        );
         Pyroscope.setStaticLabels(createStaticLabels());
         ExecutorService executors = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < N_THREADS; i++) {
