@@ -2,10 +2,10 @@ package io.pyroscope.javaagent.config;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
-import io.pyroscope.javaagent.LoggerUtils;
 import io.pyroscope.javaagent.api.ConfigurationProvider;
+import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
-import org.apache.logging.log4j.Level;
+import io.pyroscope.javaagent.impl.DefaultLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
@@ -50,7 +50,7 @@ public final class Config {
     public final String profilingAlloc;
     public final String profilingLock;
     public final Duration uploadInterval;
-    public final Level logLevel;
+    public final Logger.Level logLevel;
     public final String serverAddress;
     public final String authToken;
     public final String timeseriesName;
@@ -63,7 +63,7 @@ public final class Config {
            final String profilingAlloc,
            final String profilingLock,
            final Duration uploadInterval,
-           final Level logLevel,
+           final Logger.Level logLevel,
            final String serverAddress,
            final String authToken,
            final Format format,
@@ -145,7 +145,7 @@ public final class Config {
     @NotNull
     private static String generateApplicationName() {
         String applicationName;
-        LoggerUtils.PRECONFIG_LOGGER.info("We recommend specifying application name via env variable {}",
+        DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.INFO, "We recommend specifying application name via env variable %s",
             PYROSCOPE_APPLICATION_NAME_CONFIG);
         // TODO transfer name generation algorithm from the Go implementation.
 
@@ -156,7 +156,7 @@ public final class Config {
         final String random = Base64.getUrlEncoder().withoutPadding().encodeToString(byteBuffer.array());
         applicationName = DEFAULT_SPY_NAME + "." + random;
 
-        LoggerUtils.PRECONFIG_LOGGER.info("For now we chose the name for you and it's {}", applicationName);
+        DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.INFO, "For now we chose the name for you and it's %s", applicationName);
         return applicationName;
     }
 
@@ -168,7 +168,7 @@ public final class Config {
         try {
             return IntervalParser.parse(profilingIntervalStr);
         } catch (final NumberFormatException e) {
-            LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}ms",
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %sms",
                 PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL.toMillis());
             return DEFAULT_PROFILING_INTERVAL;
         }
@@ -192,7 +192,7 @@ public final class Config {
         try {
             return EventType.fromId(lowerCaseTrimmed);
         } catch (IllegalArgumentException e) {
-            LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}",
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
                 PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
             return DEFAULT_PROFILER_EVENT;
         }
@@ -222,29 +222,29 @@ public final class Config {
         try {
             return IntervalParser.parse(uploadIntervalStr);
         } catch (final NumberFormatException e) {
-            LoggerUtils.PRECONFIG_LOGGER.warn("Invalid {} value {}, using {}",
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
                 PYROSCOPE_UPLOAD_INTERVAL_CONFIG, uploadIntervalStr, DEFAULT_UPLOAD_INTERVAL);
             return DEFAULT_UPLOAD_INTERVAL;
         }
     }
 
-    private static Level logLevel(ConfigurationProvider configurationProvider) {
+    private static Logger.Level logLevel(ConfigurationProvider configurationProvider) {
         final String logLevel = configurationProvider.get(PYROSCOPE_LOG_LEVEL_CONFIG);
         if (logLevel == null || logLevel.isEmpty()) {
-            return Level.INFO;
+            return Logger.Level.INFO;
         }
         switch (logLevel.toLowerCase(Locale.ROOT)) {
             case "debug":
-                return Level.DEBUG;
+                return Logger.Level.DEBUG;
             case "info":
-                return Level.INFO;
+                return Logger.Level.INFO;
             case "warn":
-                return Level.WARN;
+                return Logger.Level.WARN;
             case "error":
-                return Level.ERROR;
+                return Logger.Level.ERROR;
             default:
-                LoggerUtils.PRECONFIG_LOGGER.warn("Unknown log level {}, using INFO", logLevel);
-                return Level.INFO;
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Unknown log level %s, using INFO", logLevel);
+                return Logger.Level.INFO;
         }
     }
 
@@ -254,7 +254,7 @@ public final class Config {
             serverAddress = configurationProvider.get(PYROSCOPE_SERVER_ADDRESS_CONFIG);
         }
         if (serverAddress == null || serverAddress.isEmpty()) {
-            LoggerUtils.PRECONFIG_LOGGER.warn("{} is not defined, using {}",
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "%s is not defined, using %s",
                 PYROSCOPE_SERVER_ADDRESS_CONFIG, DEFAULT_SERVER_ADDRESS);
             serverAddress = DEFAULT_SERVER_ADDRESS;
 
@@ -276,7 +276,7 @@ public final class Config {
             case "jfr":
                 return Format.JFR;
             default:
-                LoggerUtils.PRECONFIG_LOGGER.warn("Unknown format {}, using {}", format, DEFAULT_FORMAT);
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Unknown format %s, using %s", format, DEFAULT_FORMAT);
                 return DEFAULT_FORMAT;
         }
     }
@@ -305,7 +305,7 @@ public final class Config {
         public String profilingAlloc = "";
         public String profilingLock = "";
         public Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
-        public Level logLevel = Level.INFO;
+        public Logger.Level logLevel = Logger.Level.INFO;
         public String serverAddress = DEFAULT_SERVER_ADDRESS;
         public String authToken = null;
         public Format format = DEFAULT_FORMAT;
@@ -358,7 +358,7 @@ public final class Config {
             return this;
         }
 
-        public Builder setLogLevel(Level logLevel) {
+        public Builder setLogLevel(Logger.Level logLevel) {
             this.logLevel = logLevel;
             return this;
         }

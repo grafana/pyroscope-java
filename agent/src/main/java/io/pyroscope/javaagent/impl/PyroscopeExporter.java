@@ -4,10 +4,10 @@ import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.OverfillQueue;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
+import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -24,45 +24,26 @@ public class PyroscopeExporter implements Exporter {
     final Config config;
     final Logger logger;
     final OkHttpClient client;
-    final OverfillQueue<Snapshot> queue;
-    private final Thread thread;
 
     public PyroscopeExporter(Config config, Logger logger) {
         this.config = config;
         this.logger = logger;
-        this.queue  = new OverfillQueue<>(config.pushQueueCapacity);;
         this.client = new OkHttpClient.Builder()
             .connectTimeout(TIMEOUT)
             .readTimeout(TIMEOUT)
             .callTimeout(TIMEOUT)
             .build();
 
-        this.thread = new Thread(this::uploadLoop);
-        this.thread.start();
-    }
-
-    private void uploadLoop() {
-        logger.debug("Uploading started");
-        try {
-            while (!Thread.currentThread().isInterrupted()) {
-                final Snapshot snapshot = queue.take();
-                uploadSnapshot(snapshot);
-            }
-        } catch (final InterruptedException e) {
-            logger.debug("Uploading interrupted");
-            Thread.currentThread().interrupt();
-        }
     }
 
     @Override
     public void export(Snapshot snapshot) {
         try {
-            queue.put(snapshot);
+            uploadSnapshot(snapshot);
         } catch (final InterruptedException ignored) {
             Thread.currentThread().interrupt();
         }
     }
-
 
     private void uploadSnapshot(final Snapshot snapshot) throws InterruptedException {
         final HttpUrl url = urlForSnapshot(snapshot);
@@ -72,7 +53,7 @@ public class PyroscopeExporter implements Exporter {
             final RequestBody requestBody;
             if (config.format == Format.JFR) {
                 byte[] labels = snapshot.labels.toByteArray();
-                logger.debug("Upload attempt. JFR: {}, labels: {}", snapshot.data.length, labels.length);
+                logger.log(Logger.Level.DEBUG, "Upload attempt. JFR: %s, labels: %s", snapshot.data.length, labels.length);
                 MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM);
                 bodyBuilder.addFormDataPart(
@@ -89,7 +70,7 @@ public class PyroscopeExporter implements Exporter {
                 }
                 requestBody = bodyBuilder.build();
             } else {
-                logger.debug("Upload attempt. collapsed: {}", snapshot.data.length);
+                logger.log(Logger.Level.DEBUG, "Upload attempt. collapsed: %s", snapshot.data.length);
                 requestBody = RequestBody.create(snapshot.data);
             }
             Request.Builder request = new Request.Builder()
@@ -108,17 +89,17 @@ public class PyroscopeExporter implements Exporter {
                     } else {
                         responseBody = body.string();
                     }
-                    logger.error("Error uploading snapshot: {} {}", status, responseBody);
+                    logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s %s", status, responseBody);
                 } else {
                     success = true;
                 }
             } catch (final IOException e) {
-                logger.error("Error uploading snapshot: {}", e.getMessage());
+                logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s", e.getMessage());
             }
 
             if (!success) {
                 final int backoff = exponentialBackoff.error();
-                logger.debug("Backing off for {} ms", backoff);
+                logger.log(Logger.Level.DEBUG, "Backing off for %s ms", backoff);
                 Thread.sleep(backoff);
             }
         }

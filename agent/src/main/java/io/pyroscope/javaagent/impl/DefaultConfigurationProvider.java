@@ -1,7 +1,7 @@
 package io.pyroscope.javaagent.impl;
 
-import io.pyroscope.javaagent.LoggerUtils;
 import io.pyroscope.javaagent.api.ConfigurationProvider;
+import io.pyroscope.javaagent.api.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,7 +41,7 @@ public class DefaultConfigurationProvider implements ConfigurationProvider {
         } catch (IOException ignored) {
         }
         if (!configFile.equals(DEFAULT_CONFIGURATION_FILE) && delegates.size() == 2) {
-            LoggerUtils.PRECONFIG_LOGGER.warn("{} configuration file was specified but was not found", configFile);
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "%s configuration file was specified but was not found", configFile);
         }
     }
 

@@ -1,13 +1,10 @@
 package io.pyroscope.javaagent;
 
-import io.pyroscope.javaagent.api.ConfigurationProvider;
 import io.pyroscope.javaagent.api.Exporter;
+import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.javaagent.impl.ContinuousProfilingScheduler;
-import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
-import io.pyroscope.javaagent.impl.PyroscopeExporter;
-import org.apache.logging.log4j.Logger;
+import io.pyroscope.javaagent.impl.*;
 
 import java.lang.instrument.Instrumentation;
 
@@ -19,7 +16,7 @@ public class PyroscopeAgent {
         try {
             config = Config.build(DefaultConfigurationProvider.INSTANCE);
         } catch (final Throwable e) {
-            LoggerUtils.PRECONFIG_LOGGER.error("Error starting profiler", e);
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Error starting profiler", e);
             return;
         }
         start(config);
@@ -32,14 +29,15 @@ public class PyroscopeAgent {
     public static void start(Config config) {
         start(new Options.Builder(config).build());
     }
+
     public static void start(Options options) {
         Logger logger = options.logger;
-        logger.debug("Config {}", options.config);
+        logger.log(Logger.Level.DEBUG, "Config %s", options.config);
         try {
             options.scheduler.start(options.profiler);
-            logger.info("Profiling started");
+            logger.log(Logger.Level.INFO, "Profiling started");
         } catch (final Throwable e) {
-            logger.error("Error starting profiler", e);
+            logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
         }
     }
 
@@ -91,11 +89,11 @@ public class PyroscopeAgent {
 
             public Options build() {
                 if (logger == null) {
-                    logger = LoggerUtils.createDefaultPyroscopeLogger(config.logLevel);
+                    logger = new DefaultLogger(config.logLevel, System.err);
                 }
                 if (scheduler == null) {
                     if (exporter == null) {
-                        exporter = new PyroscopeExporter(config, logger);
+                        exporter = new QueuedExporter(config, new PyroscopeExporter(config, logger), logger);
                     }
                     scheduler = new ContinuousProfilingScheduler(config, exporter);
                 }

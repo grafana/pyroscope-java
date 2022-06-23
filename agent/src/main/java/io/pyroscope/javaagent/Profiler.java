@@ -5,7 +5,6 @@ import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.Pyroscope;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
-import org.apache.logging.log4j.Logger;
 
 import java.io.DataInputStream;
 import java.io.File;
