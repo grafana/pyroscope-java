@@ -1,46 +1,67 @@
 package io.pyroscope.javaagent.impl;
 
+import io.pyroscope.javaagent.LoggerUtils;
 import io.pyroscope.javaagent.api.ConfigurationProvider;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Delegates configuration provision to pyroscope.properties file
- * or to System.getenv if the file does not exist
+ * Delegates configuration provision to multiple sources
+ * - System.getProperties
+ * - System.getenv
+ * - pyroscope.properties configuration file
+ * pyroscope.properties file can be overridden by PYROSCOPE_CONFIGURATION_FILE_CONFIG
  */
 public class DefaultConfigurationProvider implements ConfigurationProvider {
+    private static final String PYROSCOPE_CONFIGURATION_FILE_CONFIG = "PYROSCOPE_CONFIGURATION_FILE";
+    private static final String DEFAULT_CONFIGURATION_FILE = "pyroscope.properties";
+
     public static final DefaultConfigurationProvider INSTANCE = new DefaultConfigurationProvider();
-    public static final String PYROSCOPE_PROPERTIES = "pyroscope.properties";
-    final ConfigurationProvider delegate;
+
+    final List<ConfigurationProvider> delegates = new ArrayList<>();
 
     public DefaultConfigurationProvider() {
-        ConfigurationProvider d = null;
+        delegates.add(new PropertiesConfigurationProvider(System.getProperties()));
+        delegates.add(new EnvConfigurationProvider());
+        String configFile = getPropertiesFile();
         try {
-            d = new PropertiesConfigurationProvider(
-                Files.newInputStream(Paths.get(PYROSCOPE_PROPERTIES))
-            );
+            delegates.add(new PropertiesConfigurationProvider(
+                Files.newInputStream(Paths.get(configFile))
+            ));
         } catch (IOException ignored) {
         }
-        if (d == null) {
-            try {
-                d = new PropertiesConfigurationProvider(
-                    this.getClass().getResourceAsStream(PYROSCOPE_PROPERTIES)
-                );
-            } catch (IOException ignored) {
-            }
+        try {
+            delegates.add(new PropertiesConfigurationProvider(
+                this.getClass().getResourceAsStream(configFile)
+            ));
+        } catch (IOException ignored) {
         }
-        if (d == null) {
-            d = new EnvConfigurationProvider();
+        if (!configFile.equals(DEFAULT_CONFIGURATION_FILE) && delegates.size() == 2) {
+            LoggerUtils.PRECONFIG_LOGGER.warn("{} configuration file was specified but was not found", configFile);
         }
-        this.delegate = d;
     }
-
-
 
     @Override
     public String get(String key) {
-        return delegate.get(key);
+        for (int i = 0; i < delegates.size(); i++) {
+            String v = delegates.get(i).get(key);
+            if (v != null) {
+                return v;
+            }
+        }
+        return null;
     }
+
+    private String getPropertiesFile() {
+        String f = get(PYROSCOPE_CONFIGURATION_FILE_CONFIG);
+        if (f == null) {
+            return DEFAULT_CONFIGURATION_FILE;
+        }
+        return f;
+    }
+
 }

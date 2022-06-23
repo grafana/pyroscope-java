@@ -4,6 +4,7 @@ import io.pyroscope.javaagent.api.ConfigurationProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Properties;
 
 public class PropertiesConfigurationProvider implements ConfigurationProvider {
@@ -20,6 +21,12 @@ public class PropertiesConfigurationProvider implements ConfigurationProvider {
 
     @Override
     public String get(String key) {
-        return properties.getProperty(key);
+        String v = properties.getProperty(key);
+        if (v == null) {
+            String k2 = key.toLowerCase(Locale.ROOT)
+                .replace('_', '.');
+            v = properties.getProperty(k2);
+        }
+        return v;
     }
 }
