@@ -9,11 +9,6 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    if (!project.hasProperty("pyroscopeDev")) {
-        implementation(project(":agent"))
-    } else {
-        def pyroscopeVersion = project.properties['pyroscope_version']
-        implementation("io.pyroscope:agent:${pyroscopeVersion}")
-    }
+    implementation(project(":agent"))
 }
 
