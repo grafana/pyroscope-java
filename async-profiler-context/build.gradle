@@ -8,7 +8,7 @@ plugins {
     id 'signing'
 
     // https://github.com/michel-kraemer/gradle-download-task
-//    id "de.undercouch.download" version "4.1.1"
+    id "de.undercouch.download" version "4.1.1"
 
     // https://github.com/johnrengelman/shadow
     id "com.github.johnrengelman.shadow" version "7.0.0"
@@ -21,11 +21,12 @@ repositories {
     mavenCentral()
 }
 
+def asyncProfilerVersion = "2.8.0.2"
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
-    api project(":async-profiler-context")
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    api files("$buildDir/async-profiler/async-profiler.jar")
+//    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
+//    implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation 'com.google.protobuf:protobuf-java:3.21.1'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
@@ -76,12 +77,78 @@ task relocateShadowJar(type: ConfigureShadowRelocation) {
 }
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
+task asyncProfilerLib {
+    def suffixes = [
+        ['linux-arm64', 'tar.gz'],
+        ['linux-x64', 'tar.gz'],
+        ['macos', 'zip']
+    ]
+
+    def asyncProfilerDir = file("$buildDir/async-profiler")
+    outputs.file "$asyncProfilerDir/async-profiler.jar"
+    suffixes.forEach { suffix ->
+        outputs.file "$asyncProfilerDir/native/libasyncProfiler-${suffix}.so"
+    }
+
+    doLast {
+        suffixes.forEach { suffix, ext ->
+//            def repo = "https://github.com/jvm-profiling-tools/async-profiler"
+            def repo = "https://github.com/pyroscope-io/async-profiler"
+            download {
+                src "$repo/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
+                dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
+                overwrite true
+            }
+
+            // Extract the native library files.
+            copy {
+                if (ext == "zip") {
+                    from zipTree("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
+                } else {
+                    from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"))
+                }
+                include '**/libasyncProfiler.so'
+                eachFile {
+                    it.relativePath = new RelativePath(true, "native/", "libasyncProfiler-${suffix}.so")
+                }
+                includeEmptyDirs false
+                into asyncProfilerDir
+            }
+
+            // Write checksums for the library files.
+            // They are used for the library deployment.
+            def sha1 = MessageDigest.getInstance('SHA1')
+            sha1.update(file("$asyncProfilerDir/native/libasyncProfiler-${suffix}.so").toPath().readBytes())
+            def hexString = new StringBuilder()
+            for (b in sha1.digest()) {
+                hexString.append(String.format('%01x', b & 0xFF))
+            }
+            new File("$asyncProfilerDir/native/libasyncProfiler-${suffix}.so.sha1").text = hexString
+        }
+
+        // Extract the Java library.
+        copy {
+            from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-linux-x64.tar.gz"))
+            include '**/async-profiler.jar'
+            eachFile {
+                it.relativePath = new RelativePath(true, it.relativePath.segments.drop(2))
+            }
+            includeEmptyDirs false
+            into asyncProfilerDir
+        }
+    }
+}
+
+clean.dependsOn 'cleanAsyncProfilerLib'
+compileJava.dependsOn 'asyncProfilerLib'
+relocateShadowJar.dependsOn 'asyncProfilerLib'
+
 publishing {
     publications {
         shadow(MavenPublication) { publication ->
             project.shadow.component(publication)
             groupId = 'io.pyroscope'
-            artifactId = 'agent'
+            artifactId = 'async-profiler-context'
             version = pyroscopeVersion
             artifacts = [ shadowJar, javadocJar, sourcesJar ]
             pom {
