@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 
-final class IntervalParser {
+public final class IntervalParser {
     public static Duration parse(final String str) throws NumberFormatException {
         final long amount;
         final TemporalUnit unit;

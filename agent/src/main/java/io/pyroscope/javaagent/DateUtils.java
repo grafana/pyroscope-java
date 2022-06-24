@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoField;
 
-class DateUtils {
+public class DateUtils {
     static final long NANOS_PER_SECOND = 1_000_000_000L;
     static final long SECONDS_PER_DAY = 86400;
 

@@ -1,10 +1,13 @@
-package io.pyroscope.javaagent;
+package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.OverfillQueue;
+import io.pyroscope.javaagent.Snapshot;
+import io.pyroscope.javaagent.api.Exporter;
+import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -13,35 +16,31 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-final class Uploader implements Runnable {
-    private static final Duration TIMEOUT = Duration.ofSeconds(10);
-    private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
-    private final Logger logger;
-    private final OverfillQueue<Snapshot> uploadQueue;
-    private final Config config;
-    private final OkHttpClient client;
+public class PyroscopeExporter implements Exporter {
+    private static final Duration TIMEOUT = Duration.ofSeconds(10);//todo allow configuration
 
-    Uploader(final Logger logger, final OverfillQueue<Snapshot> uploadQueue, final Config config) {
-        this.logger = logger;
-        this.uploadQueue = uploadQueue;
+    private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
+
+    final Config config;
+    final Logger logger;
+    final OkHttpClient client;
+
+    public PyroscopeExporter(Config config, Logger logger) {
         this.config = config;
+        this.logger = logger;
         this.client = new OkHttpClient.Builder()
             .connectTimeout(TIMEOUT)
             .readTimeout(TIMEOUT)
             .callTimeout(TIMEOUT)
             .build();
+
     }
 
     @Override
-    public void run() {
-        logger.debug("Uploading started");
+    public void export(Snapshot snapshot) {
         try {
-            while (!Thread.currentThread().isInterrupted()) {
-                final Snapshot snapshot = uploadQueue.take();
-                uploadSnapshot(snapshot);
-            }
-        } catch (final InterruptedException e) {
-            logger.debug("Uploader interrupted");
+            uploadSnapshot(snapshot);
+        } catch (final InterruptedException ignored) {
             Thread.currentThread().interrupt();
         }
     }
@@ -54,7 +53,7 @@ final class Uploader implements Runnable {
             final RequestBody requestBody;
             if (config.format == Format.JFR) {
                 byte[] labels = snapshot.labels.toByteArray();
-                logger.debug("Upload attempt. JFR: {}, labels: {}", snapshot.data.length, labels.length);
+                logger.log(Logger.Level.DEBUG, "Upload attempt. JFR: %s, labels: %s", snapshot.data.length, labels.length);
                 MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM);
                 bodyBuilder.addFormDataPart(
@@ -71,7 +70,7 @@ final class Uploader implements Runnable {
                 }
                 requestBody = bodyBuilder.build();
             } else {
-                logger.debug("Upload attempt. collapsed: {}", snapshot.data.length);
+                logger.log(Logger.Level.DEBUG, "Upload attempt. collapsed: %s", snapshot.data.length);
                 requestBody = RequestBody.create(snapshot.data);
             }
             Request.Builder request = new Request.Builder()
@@ -90,17 +89,17 @@ final class Uploader implements Runnable {
                     } else {
                         responseBody = body.string();
                     }
-                    logger.error("Error uploading snapshot: {} {}", status, responseBody);
+                    logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s %s", status, responseBody);
                 } else {
                     success = true;
                 }
             } catch (final IOException e) {
-                logger.error("Error uploading snapshot: {}", e.getMessage());
+                logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s", e.getMessage());
             }
 
             if (!success) {
                 final int backoff = exponentialBackoff.error();
-                logger.debug("Backing off for {} ms", backoff);
+                logger.log(Logger.Level.DEBUG, "Backing off for %s ms", backoff);
                 Thread.sleep(backoff);
             }
         }
@@ -118,7 +117,7 @@ final class Uploader implements Runnable {
             .addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()))
             .addQueryParameter("from", Long.toString(started.getEpochSecond()))
             .addQueryParameter("until", Long.toString(finished.getEpochSecond()))
-            .addQueryParameter("spyName", config.spyName);
+            .addQueryParameter("spyName", Config.DEFAULT_SPY_NAME);
         if (config.format == Format.JFR)
             builder.addQueryParameter("format", "jfr");
         return builder.build();
@@ -145,4 +144,5 @@ final class Uploader implements Runnable {
             return sb.toString();
         }
     }
+
 }
