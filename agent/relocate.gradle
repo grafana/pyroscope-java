@@ -9,7 +9,11 @@ import org.gradle.api.tasks.TaskAction
 
 import java.util.jar.JarFile
 
-
+/**
+* https://github.com/johnrengelman/shadow/blob/master/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
+ * same as original but does not relocate packages containing the prefix
+ * - avoid relocating twice, avoid relocated unneeded classes
+*/
 class ConfigureShadowRelocation extends DefaultTask {
 
     @Input
