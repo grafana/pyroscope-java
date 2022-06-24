@@ -7,9 +7,6 @@ plugins {
     id 'maven-publish'
     id 'signing'
 
-    // https://github.com/michel-kraemer/gradle-download-task
-//    id "de.undercouch.download" version "4.1.1"
-
     // https://github.com/johnrengelman/shadow
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
@@ -34,10 +31,6 @@ dependencies {
 }
 
 jar {
-    from("$buildDir/async-profiler/native") {
-        include "**.so"
-    }
-
     manifest {
         attributes(
                 'Premain-Class': 'io.pyroscope.javaagent.PyroscopeAgent'
@@ -68,6 +61,10 @@ shadowJar {
 
     minimize()
     archiveClassifier.set('')
+
+    dependencies {
+        exclude(project(':async-profiler-context'))
+    }
 }
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {

@@ -35,12 +35,7 @@ dependencies {
 jar {
     from("$buildDir/async-profiler/native") {
         include "**.so"
-    }
-
-    manifest {
-        attributes(
-                'Premain-Class': 'io.pyroscope.javaagent.PyroscopeAgent'
-        )
+        include "**.so.sha1"
     }
 }
 
@@ -63,7 +58,7 @@ shadowJar {
         include "**.so.sha1"
     }
 
-    archiveFileName = "pyroscope.jar"
+    archiveFileName = "async-profiler-context.jar"
 
     minimize()
     archiveClassifier.set('')
@@ -151,7 +146,7 @@ publishing {
             artifacts = [ shadowJar, javadocJar, sourcesJar ]
             pom {
                 name = 'Pyroscope Java agent'
-                description = 'The Java profiling agent for Pyroscope.io. Based on async-profiler.'
+                description = 'async-profiler fork with contextID functionality and bundled shared libs'
                 url = 'https://pyroscope.io'
                 licenses {
                     license {
