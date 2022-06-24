@@ -1,10 +1,10 @@
 package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.Pyroscope;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
-import org.apache.logging.log4j.Logger;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -17,8 +17,7 @@ import java.nio.file.*;
 import java.time.Duration;
 import java.time.Instant;
 
-class Profiler {
-    private final Logger logger;
+public final class Profiler {
     private final EventType eventType;
     private final String alloc;
     private final String lock;
@@ -34,6 +33,8 @@ class Profiler {
             throw new RuntimeException(e);
         }
     }
+
+    private final Config config;
 
     /**
      * Extracts the profiler library file from the JAR and puts it in the temp directory.
@@ -132,13 +133,13 @@ class Profiler {
 
     private final File tempJFRFile;
 
-    Profiler(final Logger logger, final EventType eventType, final String alloc, final String lock, final Duration interval, final Format format) {
-        this.logger = logger;
-        this.alloc = alloc;
-        this.lock = lock;
-        this.eventType = eventType;
-        this.interval = interval;
-        this.format = format;
+    Profiler(Config config) {
+        this.config = config;
+        this.alloc = config.profilingAlloc;
+        this.lock = config.profilingLock;
+        this.eventType = config.profilingEvent;
+        this.interval = config.profilingInterval;
+        this.format = config.format;
 
         if (format == Format.JFR) {
             try {
@@ -153,7 +154,7 @@ class Profiler {
         }
     }
 
-    final synchronized void start() {
+    public final synchronized void start() {
         if (format == Format.JFR) {
             try {
                 instance.execute(createJFRCommand());
@@ -179,7 +180,7 @@ class Profiler {
         return sb.toString();
     }
 
-    final synchronized Snapshot dump(Instant profilingIntervalStartTime) {
+    public final synchronized Snapshot dump(Instant profilingIntervalStartTime) {
         instance.stop();
 
         Snapshot result = dumpImpl(profilingIntervalStartTime);
@@ -197,6 +198,7 @@ class Profiler {
             data = instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8);
         }
         return new Snapshot(
+            format,
             eventType,
             profilingIntervalStartTime,
             data,

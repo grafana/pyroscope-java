@@ -1,4 +1,4 @@
-package io.pyroscope.javaagent;
+package io.pyroscope.javaagent.impl;
 
 import java.util.Random;
 

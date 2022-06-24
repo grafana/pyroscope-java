@@ -1,4 +1,4 @@
-package io.pyroscope.javaagent;
+package io.pyroscope.javaagent.impl;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
