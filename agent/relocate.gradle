@@ -39,6 +39,9 @@ class ConfigureShadowRelocation extends DefaultTask {
                     if (entry.name.endsWith(".class") && entry.name != "module-info.class") {
                         def strPackage = entry.name[0..entry.name.lastIndexOf('/') - 1].replaceAll('/', '.')
                         if (!strPackage.contains(prefix)) {
+                            if (!packages.contains(strPackage)) {
+                                println("relocating $strPackage")
+                            }
                             packages << strPackage
                         }
                     }

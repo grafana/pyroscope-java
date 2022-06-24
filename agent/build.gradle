@@ -60,9 +60,6 @@ shadowJar {
     minimize()
     archiveClassifier.set('')
 
-    dependencies {
-        exclude(project(':async-profiler-context'))
-    }
 }
 
 apply from: "relocate.gradle"
