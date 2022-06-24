@@ -1,6 +1,4 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
-import java.security.MessageDigest
+import java.util.jar.JarFile
 
 plugins {
     id 'java-library'
@@ -67,11 +65,7 @@ shadowJar {
     }
 }
 
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
-    prefix = "io.pyroscope"
-}
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
+apply from: "relocate.gradle"
 
 publishing {
     publications {
