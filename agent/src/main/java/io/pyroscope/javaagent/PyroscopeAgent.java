@@ -7,8 +7,10 @@ import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.*;
 
 import java.lang.instrument.Instrumentation;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PyroscopeAgent {
+    private static final AtomicBoolean started = new AtomicBoolean(false);
 
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
@@ -16,7 +18,7 @@ public class PyroscopeAgent {
         try {
             config = Config.build(DefaultConfigurationProvider.INSTANCE);
         } catch (final Throwable e) {
-            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Error starting profiler", e);
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Error starting profiler %s", e);
             return;
         }
         start(config);
@@ -32,6 +34,10 @@ public class PyroscopeAgent {
 
     public static void start(Options options) {
         Logger logger = options.logger;
+        if (!started.compareAndSet(false, true)) {
+            logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
+            return;
+        }
         logger.log(Logger.Level.DEBUG, "Config %s", options.config);
         try {
             options.scheduler.start(options.profiler);

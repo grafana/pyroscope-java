@@ -2,7 +2,9 @@ import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.PyroscopeAgent;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
+import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.labels.Pyroscope;
 import io.pyroscope.labels.LabelsSet;
 
@@ -17,10 +19,12 @@ public class App {
     public static void main(String[] args) {
         PyroscopeAgent.start(
             new PyroscopeAgent.Options.Builder(
-                new Config.Builder()
+                Config.build(new DefaultConfigurationProvider())
+                    .newBuilder()
                     .setApplicationName("demo.app")
                     .setServerAddress("http://localhost:4040")
                     .setFormat(Format.JFR)
+                    .setLogLevel(Logger.Level.DEBUG)
                     .build())
                 .setExporter(new MyStdoutExporter())
                 .build()

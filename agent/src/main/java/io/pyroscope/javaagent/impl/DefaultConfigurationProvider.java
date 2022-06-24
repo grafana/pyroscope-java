@@ -4,6 +4,7 @@ import io.pyroscope.javaagent.api.ConfigurationProvider;
 import io.pyroscope.javaagent.api.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,9 +36,10 @@ public class DefaultConfigurationProvider implements ConfigurationProvider {
         } catch (IOException ignored) {
         }
         try {
-            delegates.add(new PropertiesConfigurationProvider(
-                this.getClass().getResourceAsStream(configFile)
-            ));
+            InputStream res = this.getClass().getResourceAsStream(configFile);
+            if (res != null) {
+                delegates.add(new PropertiesConfigurationProvider(res));
+            }
         } catch (IOException ignored) {
         }
         if (!configFile.equals(DEFAULT_CONFIGURATION_FILE) && delegates.size() == 2) {
