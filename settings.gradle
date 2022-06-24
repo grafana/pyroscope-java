@@ -1,4 +1,4 @@
 rootProject.name = 'pyroscope-javaagent'
 include('agent')
-include('async-profiler-context') // todo better name?
+include('async-profiler-context')
 include('demo')
