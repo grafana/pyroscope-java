@@ -15,7 +15,12 @@ public class QueuedExporter implements Exporter {
     public QueuedExporter(Config config, Exporter impl, Logger logger) {
         this.impl = impl;
         this.logger = logger;
-        this.thread = new Thread(this::exportLoop);
+        this.thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                exportLoop();
+            }
+        });
         this.queue = new OverfillQueue<>(config.pushQueueCapacity);
 
         this.thread.start();

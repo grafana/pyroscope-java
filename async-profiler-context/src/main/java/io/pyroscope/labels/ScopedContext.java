@@ -7,9 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 class ScopedContext implements AutoCloseable {
-    static final ThreadLocal<Context> context = ThreadLocal.withInitial(() ->
-            new Context(0L, Collections.emptyMap())
-    );
+    static final ThreadLocal<Context> context = new ThreadLocal<Context>() {
+        @Override
+        protected Context initialValue() {
+            return new Context(0L, Collections.<Ref<String>, Ref<String>>emptyMap());
+        }
+    };
 
     final Context previous;
     final Context current;

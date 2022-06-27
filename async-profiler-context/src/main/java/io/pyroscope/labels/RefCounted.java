@@ -7,16 +7,22 @@ import java.util.concurrent.atomic.AtomicLong;
 
 class RefCounted<T> {
 
-    public static final RefCounted<String> strings = new RefCounted<>((String) -> {
+    public static final RefCounted<String> strings = new RefCounted<>(new ReleasedCallback<String>() {
+        @Override
+        public void released(String String) {
+        }
     });
 
     public static final RefCounted<Map<Ref<String>, Ref<String>>> contexts = new RefCounted<>(
-            (Map<Ref<String>, Ref<String>> context) -> {
+        new ReleasedCallback<Map<Ref<String>, Ref<String>>>() {
+            @Override
+            public void released(Map<Ref<String>, Ref<String>> context) {
                 for (Map.Entry<Ref<String>, Ref<String>> it : context.entrySet()) {
                     it.getKey().refCount.decrementAndGet();
                     it.getValue().refCount.decrementAndGet();
                 }
             }
+        }
     );
 
     public final ReleasedCallback<T> releasedCallback;
@@ -35,23 +41,20 @@ class RefCounted<T> {
     Ref<T> acquireRef(T v, boolean[] outFresh) {
         outFresh[0] = false;
         while (true) {
-            Ref<T> res = valueToRef.computeIfAbsent(v, t -> {
-                Ref<T> ref = new Ref<>(t, idCounter.incrementAndGet());
+            Ref<T> fresh = new Ref<>(v, idCounter.incrementAndGet());
+            Ref<T> prev = valueToRef.putIfAbsent(v, fresh);
+            if (prev == null) {
                 outFresh[0] = true;
-                return ref;
-            });
-
-            if (outFresh[0]) {
-                return res;
+                return fresh;
             } else {
                 while (true) {
-                    long counter = res.refCount.get();
+                    long counter = prev.refCount.get();
                     if (counter < 0) {
                         break; // dead
                     }
-                    boolean success = res.refCount.compareAndSet(counter, counter + 1);
+                    boolean success = prev.refCount.compareAndSet(counter, counter + 1);
                     if (success) {
-                        return res;
+                        return prev;
                     }
                 }
             }

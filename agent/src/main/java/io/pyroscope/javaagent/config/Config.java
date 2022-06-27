@@ -1,16 +1,15 @@
 package io.pyroscope.javaagent.config;
 
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.Base64;
+import io.pyroscope.javaagent.DateUtils;
 import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.api.ConfigurationProvider;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
-import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.Base64;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -33,11 +32,11 @@ public final class Config {
     private static final String PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG = "PYROSCOPE_PUSH_QUEUE_CAPACITY";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
-    private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
+    private static final long DEFAULT_PROFILING_INTERVAL = 10_000_000L;
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
     private static final String DEFAULT_PROFILER_ALLOC = "";
     private static final String DEFAULT_PROFILER_LOCK = "";
-    private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
+    private static final long DEFAULT_UPLOAD_INTERVAL = 10 * DateUtils.NANOS_PER_SECOND;
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
     private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
     // The number of snapshots simultaneously stored in memory is limited by this.
@@ -45,11 +44,11 @@ public final class Config {
     private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 32;
 
     public final String applicationName;
-    public final Duration profilingInterval;
+    public final long profilingInterval;
     public final EventType profilingEvent;
     public final String profilingAlloc;
     public final String profilingLock;
-    public final Duration uploadInterval;
+    public final long uploadInterval;
     public final Logger.Level logLevel;
     public final String serverAddress;
     public final String authToken;
@@ -58,11 +57,11 @@ public final class Config {
     public final int pushQueueCapacity;
 
     Config(final String applicationName,
-           final Duration profilingInterval,
+           final long profilingInterval,
            final EventType profilingEvent,
            final String profilingAlloc,
            final String profilingLock,
-           final Duration uploadInterval,
+           final long uploadInterval,
            final Logger.Level logLevel,
            final String serverAddress,
            final String authToken,
@@ -109,9 +108,8 @@ public final class Config {
         return new Builder(this);
     }
 
-    private static long durationToHertz(Duration duration) {
-        Duration oneSecond = Duration.ofSeconds(1);
-        return oneSecond.toNanos() / duration.toNanos();
+    private static long durationToHertz(long duration) {
+        return DateUtils.NANOS_PER_SECOND / duration;
     }
 
     public static Config build() {
@@ -142,7 +140,6 @@ public final class Config {
         return applicationName;
     }
 
-    @NotNull
     private static String generateApplicationName() {
         String applicationName;
         DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.INFO, "We recommend specifying application name via env variable %s",
@@ -153,14 +150,14 @@ public final class Config {
         final ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
         byteBuffer.putLong(uuid.getMostSignificantBits());
         byteBuffer.putLong(uuid.getLeastSignificantBits());
-        final String random = Base64.getUrlEncoder().withoutPadding().encodeToString(byteBuffer.array());
+        final String random = Base64.encodeToString(byteBuffer.array(), Base64.NO_PADDING | Base64.URL_SAFE);
         applicationName = DEFAULT_SPY_NAME + "." + random;
 
         DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.INFO, "For now we chose the name for you and it's %s", applicationName);
         return applicationName;
     }
 
-    private static Duration profilingInterval(ConfigurationProvider configurationProvider) {
+    private static long profilingInterval(ConfigurationProvider configurationProvider) {
         final String profilingIntervalStr = configurationProvider.get(PYROSCOPE_PROFILING_INTERVAL_CONFIG);
         if (profilingIntervalStr == null || profilingIntervalStr.isEmpty()) {
             return DEFAULT_PROFILING_INTERVAL;
@@ -168,8 +165,8 @@ public final class Config {
         try {
             return IntervalParser.parse(profilingIntervalStr);
         } catch (final NumberFormatException e) {
-            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %sms",
-                PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL.toMillis());
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %sns",
+                PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL);
             return DEFAULT_PROFILING_INTERVAL;
         }
     }
@@ -214,7 +211,7 @@ public final class Config {
         return profilingLock.trim().toLowerCase();
     }
 
-    private static Duration uploadInterval(ConfigurationProvider configurationProvider) {
+    private static long uploadInterval(ConfigurationProvider configurationProvider) {
         final String uploadIntervalStr = configurationProvider.get(PYROSCOPE_UPLOAD_INTERVAL_CONFIG);
         if (uploadIntervalStr == null || uploadIntervalStr.isEmpty()) {
             return DEFAULT_UPLOAD_INTERVAL;
@@ -300,11 +297,11 @@ public final class Config {
 
     public static class Builder {
         public String applicationName = null;
-        public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
+        public long profilingInterval = DEFAULT_PROFILING_INTERVAL;
         public EventType profilingEvent = DEFAULT_PROFILER_EVENT;
         public String profilingAlloc = "";
         public String profilingLock = "";
-        public Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
+        public long uploadInterval = DEFAULT_UPLOAD_INTERVAL;
         public Logger.Level logLevel = Logger.Level.INFO;
         public String serverAddress = DEFAULT_SERVER_ADDRESS;
         public String authToken = null;
@@ -333,7 +330,7 @@ public final class Config {
             return this;
         }
 
-        public Builder setProfilingInterval(Duration profilingInterval) {
+        public Builder setProfilingInterval(long profilingInterval) {
             this.profilingInterval = profilingInterval;
             return this;
         }
@@ -353,7 +350,7 @@ public final class Config {
             return this;
         }
 
-        public Builder setUploadInterval(Duration uploadInterval) {
+        public Builder setUploadInterval(long uploadInterval) {
             this.uploadInterval = uploadInterval;
             return this;
         }

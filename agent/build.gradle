@@ -9,8 +9,8 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
 
 repositories {
     mavenCentral()
@@ -19,12 +19,9 @@ repositories {
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api project(":async-profiler-context")
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.squareup.okhttp3:okhttp:3.12.0")
     api 'com.google.protobuf:protobuf-java:3.21.1'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.10.0'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.10.0'
+    testImplementation('junit:junit:4.13')
 }
 
 jar {

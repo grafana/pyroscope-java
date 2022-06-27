@@ -12,14 +12,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
 
 public final class Profiler {
     private final EventType eventType;
     private final String alloc;
     private final String lock;
-    private final Duration interval;
+    private final long interval;
     private final Format format;
 
 
@@ -55,7 +53,7 @@ public final class Profiler {
                 throw new IllegalStateException(e);
             }
         } else {
-            instance.start(eventType.id, interval.toNanos());
+            instance.start(eventType.id, interval);
         }
     }
 
@@ -68,12 +66,12 @@ public final class Profiler {
         if (lock != null && !lock.isEmpty()) {
             sb.append(",lock=").append(lock);
         }
-        sb.append(",interval=").append(interval.toNanos())
+        sb.append(",interval=").append(interval)
             .append(",file=").append(tempJFRFile.toString());
         return sb.toString();
     }
 
-    public final synchronized Snapshot dump(Instant profilingIntervalStartTime) {
+    public final synchronized Snapshot dump(long profilingIntervalStartTime) {
         instance.stop();
 
         Snapshot result = dumpImpl(profilingIntervalStartTime);
@@ -83,7 +81,7 @@ public final class Profiler {
         return result;
     }
 
-    private Snapshot dumpImpl(Instant profilingIntervalStartTime) {
+    private Snapshot dumpImpl(long profilingIntervalStartTime) {
         final byte[] data;
         if (format == Format.JFR) {
             data = dumpJFR();

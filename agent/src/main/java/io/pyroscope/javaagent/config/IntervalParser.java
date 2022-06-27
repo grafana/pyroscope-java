@@ -1,24 +1,23 @@
 package io.pyroscope.javaagent.config;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
+import io.pyroscope.javaagent.DateUtils;
 
 public final class IntervalParser {
-    public static Duration parse(final String str) throws NumberFormatException {
+
+    public static long parse(final String str) throws NumberFormatException {
         final long amount;
-        final TemporalUnit unit;
+        final long unit;
         if (str.endsWith("ms")) {
-            unit = ChronoUnit.MILLIS;
+            unit = 1_000_000L;
             amount = Long.parseLong(str.substring(0, str.length() - 2));
         } else if (str.endsWith("us")) {
-            unit = ChronoUnit.MICROS;
+            unit = 1_000L;
             amount = Long.parseLong(str.substring(0, str.length() - 2));
         } else if (str.endsWith("s")) {
-            unit = ChronoUnit.SECONDS;
+            unit = DateUtils.NANOS_PER_SECOND;
             amount = Long.parseLong(str.substring(0, str.length() - 1));
         } else if (Character.isDigit(str.charAt(str.length() - 1))) {
-            unit = ChronoUnit.NANOS;
+            unit = 1L;
             amount = Long.parseLong(str);
         } else {
             throw new NumberFormatException("Cannot parse interval " + str);
@@ -28,6 +27,6 @@ public final class IntervalParser {
             throw new NumberFormatException("Interval must be positive, but " + str + " given");
         }
 
-        return Duration.of(amount, unit);
+        return amount * unit;
     }
 }

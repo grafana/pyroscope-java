@@ -1,6 +1,7 @@
 package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.DateUtils;
 import io.pyroscope.javaagent.OverfillQueue;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
@@ -10,16 +11,18 @@ import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 public class PyroscopeExporter implements Exporter {
-    private static final Duration TIMEOUT = Duration.ofSeconds(10);//todo allow configuration
+    private static final long TIMEOUT = 10 * DateUtils.NANOS_PER_SECOND;//todo allow configuration
 
     private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
+    private static final MediaType JFR = MediaType.parse("application/jfr");
+    private static final MediaType COLLAPSED = MediaType.parse("application/collapsed");
 
     final Config config;
     final Logger logger;
@@ -29,9 +32,9 @@ public class PyroscopeExporter implements Exporter {
         this.config = config;
         this.logger = logger;
         this.client = new OkHttpClient.Builder()
-            .connectTimeout(TIMEOUT)
-            .readTimeout(TIMEOUT)
-            .callTimeout(TIMEOUT)
+            .connectTimeout(TIMEOUT, TimeUnit.NANOSECONDS)
+            .readTimeout(TIMEOUT, TimeUnit.NANOSECONDS)
+            .callTimeout(TIMEOUT, TimeUnit.NANOSECONDS)
             .build();
 
     }
@@ -59,19 +62,19 @@ public class PyroscopeExporter implements Exporter {
                 bodyBuilder.addFormDataPart(
                     /* name */ "jfr",
                     /* filename */ "jfr",
-                    RequestBody.create(snapshot.data)
+                    RequestBody.create(JFR, snapshot.data)
                 );
                 if (labels.length > 0) {
                     bodyBuilder.addFormDataPart(
                         /* name */ "labels",
                         /* filename */ "labels",
-                        RequestBody.create(labels, PROTOBUF)
+                        RequestBody.create(PROTOBUF, labels)
                     );
                 }
                 requestBody = bodyBuilder.build();
             } else {
                 logger.log(Logger.Level.DEBUG, "Upload attempt. collapsed: %s", snapshot.data.length);
-                requestBody = RequestBody.create(snapshot.data);
+                requestBody = RequestBody.create(COLLAPSED, snapshot.data);
             }
             Request.Builder request = new Request.Builder()
                 .post(requestBody)
@@ -106,8 +109,8 @@ public class PyroscopeExporter implements Exporter {
     }
 
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
-        Instant started = snapshot.started;
-        Instant finished = started.plus(config.uploadInterval);
+        long started = snapshot.started;
+        long finished = started + config.uploadInterval;
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
             .newBuilder()
             .addPathSegment("ingest")
@@ -115,8 +118,8 @@ public class PyroscopeExporter implements Exporter {
             .addQueryParameter("units", snapshot.eventType.units.id)
             .addQueryParameter("aggregationType", snapshot.eventType.aggregationType.id)
             .addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()))
-            .addQueryParameter("from", Long.toString(started.getEpochSecond()))
-            .addQueryParameter("until", Long.toString(finished.getEpochSecond()))
+            .addQueryParameter("from", Long.toString(started / DateUtils.NANOS_PER_SECOND))
+            .addQueryParameter("until", Long.toString(finished / DateUtils.NANOS_PER_SECOND))
             .addQueryParameter("spyName", Config.DEFAULT_SPY_NAME);
         if (config.format == Format.JFR)
             builder.addQueryParameter("format", "jfr");

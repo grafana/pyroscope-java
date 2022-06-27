@@ -1,8 +1,5 @@
 package io.pyroscope.javaagent;
 
-import java.util.EnumSet;
-import java.util.Optional;
-
 import one.profiler.Events;
 import io.pyroscope.http.Units;
 import io.pyroscope.http.AggregationType;
@@ -36,11 +33,11 @@ public enum EventType {
     }
 
     public static EventType fromId(String id) throws IllegalArgumentException {
-        Optional<EventType> maybeEventType =
-            EnumSet.allOf(EventType.class)
-            .stream()
-            .filter(eventType -> eventType.id.equals(id))
-            .findAny();
-        return maybeEventType.orElseThrow(IllegalArgumentException::new);
+        for (EventType it : values()) {
+            if (it.id.equals(id)) {
+                return it;
+            }
+        }
+        throw new IllegalStateException(id);
     }
 }
