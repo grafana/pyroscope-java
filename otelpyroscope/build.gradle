@@ -1,5 +1,7 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -9,9 +11,67 @@ repositories {
     mavenCentral()
 }
 
+def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     implementation(project(":agent"))
     implementation platform("io.opentelemetry:opentelemetry-bom:1.15.0")
     implementation('io.opentelemetry:opentelemetry-api')
     implementation('io.opentelemetry:opentelemetry-sdk')
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+jar {
+    
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) { publication ->
+            from components.java
+            groupId = 'io.pyroscope'
+            artifactId = 'otel'
+            version = pyroscopeVersion
+            pom {
+                name = 'Pyroscope OTEL integration'
+                description = 'Pyroscope OTEL integration'
+                url = 'https://pyroscope.io'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'pyroscope'
+                        name = 'Pyroscope'
+                        email = 'anatoly@pyroscope.io'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/pyroscope-io/pyroscope-java.git'
+                    developerConnection = 'scm:git:ssh://github.com/pyroscope-io/pyroscope-java.git'
+                    url = 'https://github.com/pyroscope-io/pyroscope-java'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username project.hasProperty('nexusUsername') ? project.nexusUsername : ''
+                password project.hasProperty('nexusPassword') ? project.nexusPassword : ''
+            }
+            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }
