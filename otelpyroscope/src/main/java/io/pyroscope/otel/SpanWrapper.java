@@ -37,51 +37,49 @@ class SpanWrapper implements Span {
 
     @Override
     public <T> Span setAttribute(AttributeKey<T> key, T value) {
-        return span.setAttribute(key, value);
+        span.setAttribute(key, value);
+        return this;
     }
 
     @Override
     public Span addEvent(String name, Attributes attributes) {
-        return span.addEvent(name, attributes);
+        span.addEvent(name, attributes);
+        return this;
     }
 
     @Override
     public Span addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
-        return span.addEvent(name, attributes, timestamp, unit);
+        span.addEvent(name, attributes, timestamp, unit);
+        return this;
     }
 
     @Override
     public Span setStatus(StatusCode statusCode, String description) {
-        return span.setStatus(statusCode, description);
+        span.setStatus(statusCode, description);
+        return this;
     }
 
     @Override
     public Span recordException(Throwable exception, Attributes additionalAttributes) {
-        Span res = span.recordException(exception, additionalAttributes);
-        labels.close();
-        return res;
+        span.recordException(exception, additionalAttributes);
+        return this;
     }
 
     @Override
     public Span updateName(String name) {
-        return span.updateName(name);
+        span.updateName(name);
+        return this;
     }
 
     @Override
     public void end() {
-        span.setAttribute(PROFILE_ID_SPAN_ATTRIBUTE_KEY, profileId);
-        if (config.addProfileURL) {
-            span.setAttribute(PROFILE_URL_SPAN_ATTRIBUTE_KEY, buildUrl(config, profileId));
-        }
-        if (config.addProfileBaselineURLs) {
-            addBaselineURLs();
-        }
+        onSpanEnded();
         span.end();
-        labels.close();
     }
 
     @Override
     public void end(long timestamp, TimeUnit unit) {
+        onSpanEnded();
         span.end(timestamp, unit);
     }
 
@@ -93,6 +91,18 @@ class SpanWrapper implements Span {
     @Override
     public boolean isRecording() {
         return span.isRecording();
+    }
+
+
+    private void onSpanEnded() {
+        span.setAttribute(PROFILE_ID_SPAN_ATTRIBUTE_KEY, profileId);
+        if (config.addProfileURL) {
+            span.setAttribute(PROFILE_URL_SPAN_ATTRIBUTE_KEY, buildUrl(config, profileId));
+        }
+        if (config.addProfileBaselineURLs) {
+            addBaselineURLs();
+        }
+        labels.close();
     }
 
     private void addBaselineURLs() {

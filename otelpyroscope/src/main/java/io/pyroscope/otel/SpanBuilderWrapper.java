@@ -125,8 +125,9 @@ class SpanBuilderWrapper implements SpanBuilder {
     }
 
     public static boolean isRootSpan(ReadableSpan span) {
-        boolean remote = span.getSpanContext().isRemote();
-        boolean noParent = span.getParentSpanContext() == SpanContext.getInvalid();
+        SpanContext parent = span.getParentSpanContext();
+        boolean noParent = parent == SpanContext.getInvalid();
+        boolean remote = parent.isRemote();
         return remote || noParent;
     }
 }
