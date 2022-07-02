@@ -19,7 +19,7 @@ public class App {
     public static void main(String[] args) {
         PyroscopeAgent.start(
             new PyroscopeAgent.Options.Builder(
-                Config.build(new DefaultConfigurationProvider())
+                Config.build(DefaultConfigurationProvider.INSTANCE)
                     .newBuilder()
                     .setApplicationName("demo.app")
                     .setServerAddress("http://localhost:4040")

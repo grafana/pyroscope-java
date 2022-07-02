@@ -1,7 +1,7 @@
 package io.pyroscope.labels;
 
 
-import io.pyroscope.javaagent.TestAsyncProfilerHelper;
+import io.pyroscope.labels.io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.labels.pb.JfrLabels.Snapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LabelsTest {
     static {
-        TestAsyncProfilerHelper.loadAsyncProfiler();
+        PyroscopeAsyncProfiler.getAsyncProfiler();
     }
 
     @BeforeEach
