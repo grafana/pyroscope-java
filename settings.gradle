@@ -2,3 +2,4 @@ rootProject.name = 'pyroscope-javaagent'
 include('agent')
 include('async-profiler-context')
 include('demo')
+include('otelpyroscope')
