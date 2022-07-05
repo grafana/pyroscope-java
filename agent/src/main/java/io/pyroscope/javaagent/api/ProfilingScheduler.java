@@ -16,7 +16,7 @@ public interface ProfilingScheduler {
      * Here is an example of naive implementation
      * <pre>
      * public void start(Profiler profiler) {
-     *      new Thread(() -> {
+     *      new Thread(() -&#062; {
      *          while (true) {
      *              Instant startTime = Instant.now();
      *              profiler.start();
