@@ -17,12 +17,12 @@ jobs:
           java-version: 11
           java-package: jdk+fx
       - name: Generate Javadoc
-        run: ./gradlew aggregateJavadocs
+        run: ./gradlew javaDoc 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@3.5.9
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
           CLEAN: true
-          FOLDER: build/docs/javadoc
+          FOLDER: agent/build/docs/javadoc
           TARGET_FOLDER: javadoc
