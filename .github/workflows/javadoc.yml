@@ -19,7 +19,7 @@ jobs:
       - name: Generate Javadoc
         run: ./gradlew javaDoc 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@3.5.9
+        uses: JamesIves/github-pages-deploy-action@v4.3.4
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
