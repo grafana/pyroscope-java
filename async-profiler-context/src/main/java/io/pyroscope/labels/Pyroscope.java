@@ -10,8 +10,8 @@ import java.util.concurrent.Callable;
 public class Pyroscope {
     /**
      * LabelsWrapper accumulates dynamic labels and corelates them with async-profiler's contextId
-     * You are expected to call {@link LabelsWrapper#dump()} periodically, {@link io.pyroscope.javaagent.Profiler}
-     * does that. If you don't use {@link io.pyroscope.javaagent.Profiler}, you need to call {@link LabelsWrapper#dump()}
+     * You are expected to call {@link LabelsWrapper#dump()} periodically, ProfilerAgent
+     * does that. If you don't use ProfilerAgent, you need to call {@link LabelsWrapper#dump()}
      * yourself.
      */
     public static class LabelsWrapper {
