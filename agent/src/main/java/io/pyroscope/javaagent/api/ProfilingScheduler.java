@@ -10,11 +10,11 @@ import java.time.Instant;
 public interface ProfilingScheduler {
     /**
      * Use Profiler's to start, stop, dumpProfile
-     * {@link Profiler#start()}()
-     * {@link Profiler#stop()}()
-     * {@link Profiler#dumpProfile(Instant)}()
+     * {@link Profiler#start()}
+     * {@link Profiler#stop()}
+     * {@link Profiler#dumpProfile(Instant)}
      * Here is an example of naive implementation
-     * {@code
+     * <pre>
      * public void start(Profiler profiler) {
      *      new Thread(() -> {
      *          while (true) {
@@ -29,7 +29,7 @@ public interface ProfilingScheduler {
      *          }
      *      }).start();
      *  }
-     * }
+     * </pre>
      * The real-world example will be more complex since profile start and stop time should be aligned to 10s intervals
      * See {@link io.pyroscope.javaagent.impl.ContinuousProfilingScheduler} and <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">
      *     Github issue #40</a> for more details.
