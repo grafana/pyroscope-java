@@ -2,7 +2,6 @@ package io.pyroscope.javaagent.api;
 
 import io.pyroscope.javaagent.Profiler;
 
-import java.time.Instant;
 
 /**
  *
@@ -12,7 +11,7 @@ public interface ProfilingScheduler {
      * Use Profiler's to start, stop, dumpProfile
      * {@link Profiler#start()}
      * {@link Profiler#stop()}
-     * {@link Profiler#dumpProfile(Instant)}
+     * {@link Profiler#dumpProfile(long)}
      * Here is an example of naive implementation
      * <pre>
      * public void start(Profiler profiler) {

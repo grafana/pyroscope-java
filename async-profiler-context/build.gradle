@@ -26,10 +26,8 @@ def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$buildDir/async-profiler/async-profiler.jar")
     implementation 'com.google.protobuf:protobuf-java:3.21.1'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.10.0'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.10.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.2'
 }
 
 jar {

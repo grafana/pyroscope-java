@@ -5,7 +5,6 @@ import one.profiler.AsyncProfiler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 public class ScopedContext implements AutoCloseable {
     static final ThreadLocal<Context> context = new ThreadLocal<Context>() {
@@ -96,5 +95,10 @@ public class ScopedContext implements AutoCloseable {
         if (counter <= 0) {
             throw new AssertionError();
         }
+    }
+
+    public interface BiConsumer<T, U> {
+        void accept(T var1, U var2);
+
     }
 }

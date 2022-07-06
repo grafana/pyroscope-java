@@ -1,27 +1,27 @@
 package io.pyroscope.javaagent.config;
 
 import io.pyroscope.javaagent.DateUtils;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class IntervalParserTest {
     @Test
     public void testNanos() {
         NumberFormatException numberFormatException = assertThrows(
-                NumberFormatException.class, new ThrowingRunnable() {
+                NumberFormatException.class, new Executable() {
                 @Override
-                public void run() throws Throwable {
+                public void execute() throws Throwable {
                     IntervalParser.parse("-1");
                 }
             });
         assertEquals("Interval must be positive, but -1 given", numberFormatException.getMessage());
 
-        numberFormatException = assertThrows(NumberFormatException.class, new ThrowingRunnable() {
+        numberFormatException = assertThrows(NumberFormatException.class, new Executable() {
             @Override
-            public void run() throws Throwable {
+            public void execute() throws Throwable {
                 IntervalParser.parse("0");
             }
         });
@@ -33,17 +33,17 @@ public class IntervalParserTest {
     @Test
     public void testMicros() {
         NumberFormatException numberFormatException = assertThrows(
-                NumberFormatException.class, new ThrowingRunnable() {
+                NumberFormatException.class, new Executable() {
                 @Override
-                public void run() throws Throwable {
+                public void execute() throws Throwable {
                     IntervalParser.parse("-1us");
                 }
             });
         assertEquals("Interval must be positive, but -1us given", numberFormatException.getMessage());
 
-        numberFormatException = assertThrows(NumberFormatException.class, new ThrowingRunnable() {
+        numberFormatException = assertThrows(NumberFormatException.class, new Executable() {
             @Override
-            public void run() throws Throwable {
+            public void execute() throws Throwable {
                 IntervalParser.parse("0us");
             }
         });
@@ -55,17 +55,17 @@ public class IntervalParserTest {
     @Test
     public void testMillis() {
         NumberFormatException numberFormatException = assertThrows(
-                NumberFormatException.class, new ThrowingRunnable() {
+                NumberFormatException.class, new Executable() {
                 @Override
-                public void run() throws Throwable {
+                public void execute() throws Throwable {
                     IntervalParser.parse("-1ms");
                 }
             });
         assertEquals("Interval must be positive, but -1ms given", numberFormatException.getMessage());
 
-        numberFormatException = assertThrows(NumberFormatException.class, new ThrowingRunnable() {
+        numberFormatException = assertThrows(NumberFormatException.class, new Executable() {
             @Override
-            public void run() throws Throwable {
+            public void execute() throws Throwable {
                 IntervalParser.parse("0ms");
             }
         });
@@ -77,17 +77,17 @@ public class IntervalParserTest {
     @Test
     public void testSeconds() {
         NumberFormatException numberFormatException = assertThrows(
-                NumberFormatException.class, new ThrowingRunnable() {
+                NumberFormatException.class, new Executable() {
                 @Override
-                public void run() throws Throwable {
+                public void execute() throws Throwable {
                     IntervalParser.parse("-1s");
                 }
             });
         assertEquals("Interval must be positive, but -1s given", numberFormatException.getMessage());
 
-        numberFormatException = assertThrows(NumberFormatException.class, new ThrowingRunnable() {
+        numberFormatException = assertThrows(NumberFormatException.class, new Executable() {
             @Override
-            public void run() throws Throwable {
+            public void execute() throws Throwable {
                 IntervalParser.parse("0s");
             }
         });
@@ -99,12 +99,22 @@ public class IntervalParserTest {
     @Test
     public void testUnknownUnit() {
         NumberFormatException numberFormatException = assertThrows(
-                NumberFormatException.class, new ThrowingRunnable() {
+                NumberFormatException.class, new Executable() {
                 @Override
-                public void run() throws Throwable {
+                public void execute() throws Throwable {
                     IntervalParser.parse("10k");
                 }
             });
         assertEquals("Cannot parse interval 10k", numberFormatException.getMessage());
+    }
+    private <T> T assertThrows(Class<T> cls, Executable e) {
+        try {
+            e.execute();
+        } catch (Throwable th) {
+            if (th.getClass() == cls) {
+                return (T) th;
+            }
+        }
+        throw new AssertionError("not thrown ");
     }
 }
