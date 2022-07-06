@@ -139,7 +139,7 @@ publishing {
         shadow(MavenPublication) { publication ->
             project.shadow.component(publication)
             groupId = 'io.pyroscope'
-            artifactId = 'async-profiler-context'
+            artifactId = 'async-profiler-context-jdk7'
             version = pyroscopeVersion
             artifacts = [ shadowJar, javadocJar, sourcesJar ]
             pom {

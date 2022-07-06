@@ -70,7 +70,7 @@ publishing {
         shadow(MavenPublication) { publication ->
             project.shadow.component(publication)
             groupId = 'io.pyroscope'
-            artifactId = 'agent'
+            artifactId = 'agent-jdk7'
             version = pyroscopeVersion
             artifacts = [ shadowJar, javadocJar, sourcesJar ]
             pom {
