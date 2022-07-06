@@ -25,14 +25,14 @@ class SpanWrapper implements Span {
     final PyroscopeTelemetry.Config config;
     final ScopedContext labels;
     final String profileId;
-    final long startTimeSeconds;
+    final long startTimeMillis;
 
     public SpanWrapper(Span span, PyroscopeTelemetry.Config config, ScopedContext labels, String profileId) {
         this.span = span;
         this.config = config;
         this.labels = labels;
         this.profileId = profileId;
-        startTimeSeconds = now();
+        startTimeMillis = now();
     }
 
     @Override
@@ -97,7 +97,7 @@ class SpanWrapper implements Span {
     private void onSpanEnded() {
         span.setAttribute(PROFILE_ID_SPAN_ATTRIBUTE_KEY, profileId);
         if (config.addProfileURL) {
-            span.setAttribute(PROFILE_URL_SPAN_ATTRIBUTE_KEY, buildUrl(config, profileId));
+            span.setAttribute(PROFILE_URL_SPAN_ATTRIBUTE_KEY, buildProfileUrl());
         }
         if (config.addProfileBaselineURLs) {
             addBaselineURLs();
@@ -120,7 +120,7 @@ class SpanWrapper implements Span {
             writeLabel(qb, it.getKey(), it.getValue());
         }
         StringBuilder query = new StringBuilder();
-        String from = Long.toString(startTimeSeconds - 3600);
+        String from = Long.toString(startTimeMillis - 3600000);
         String until = Long.toString(now());
         String baseLineQuery = String.format("%s{%s}", config.appName, qb.toString());
         query.append("query=").append(urlEncode(baseLineQuery));
@@ -147,13 +147,17 @@ class SpanWrapper implements Span {
         sb.append(k).append("=\"").append(v).append("\"");
     }
 
-    public static String buildUrl(PyroscopeTelemetry.Config cfg, String profileId) {
-        String query = String.format("%s{%s=\"%s\"}", cfg.appName, LABEL_PROFILE_ID, profileId);
-        return String.format("%s?query=%s", cfg.pyroscopeEndpoint, urlEncode(query));
+    public String buildProfileUrl() {
+        String query = String.format("%s{%s=\"%s\"}", config.appName, LABEL_PROFILE_ID, profileId);
+        return String.format("%s?query=%s&from=%d&until=%d", config.pyroscopeEndpoint,
+            urlEncode(query),
+            startTimeMillis,
+            now()
+        );
     }
 
     private static long now() {
-        return System.currentTimeMillis() / 1000;
+        return System.currentTimeMillis();
     }
 
     private static String urlEncode(String query) {
