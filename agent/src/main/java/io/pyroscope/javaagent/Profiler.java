@@ -45,7 +45,10 @@ public final class Profiler {
         }
     }
 
-    public final synchronized void start() {
+    /**
+     * Start async-profiler
+     */
+    public synchronized void start() {
         if (format == Format.JFR) {
             try {
                 instance.execute(createJFRCommand());
@@ -55,6 +58,37 @@ public final class Profiler {
         } else {
             instance.start(eventType.id, interval);
         }
+    }
+
+    /**
+     * Stop async-profiler
+     */
+    public synchronized void stop() {
+        instance.stop();
+    }
+
+    /**
+     *
+     * @param profilingIntervalStartTime - time when profiling has been started
+     * @return Profiling data and dynamic labels as {@link Snapshot}
+     */
+    public synchronized Snapshot dumpProfile(long profilingIntervalStartTime) {
+        return dumpImpl(profilingIntervalStartTime);
+    }
+
+    /**
+     * Stop profiling, dump profiling data, start again
+     * Deprecated, use start, stop, dumpProfile methods instead
+     */
+    @Deprecated
+    public synchronized Snapshot dump(long profilingIntervalStartTime) {
+        instance.stop();
+
+        Snapshot result = dumpImpl(profilingIntervalStartTime);
+
+        start();
+
+        return result;
     }
 
     private String createJFRCommand() {
@@ -71,15 +105,6 @@ public final class Profiler {
         return sb.toString();
     }
 
-    public final synchronized Snapshot dump(long profilingIntervalStartTime) {
-        instance.stop();
-
-        Snapshot result = dumpImpl(profilingIntervalStartTime);
-
-        start();
-
-        return result;
-    }
 
     private Snapshot dumpImpl(long profilingIntervalStartTime) {
         final byte[] data;

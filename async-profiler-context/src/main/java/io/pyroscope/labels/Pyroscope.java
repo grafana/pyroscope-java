@@ -4,11 +4,16 @@ package io.pyroscope.labels;
 import io.pyroscope.labels.pb.*;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class Pyroscope {
+    /**
+     * LabelsWrapper accumulates dynamic labels and corelates them with async-profiler's contextId
+     * You are expected to call {@link LabelsWrapper#dump()} periodically, ProfilerAgent
+     * does that. If you don't use ProfilerAgent, you need to call {@link LabelsWrapper#dump()}
+     * yourself.
+     */
     public static class LabelsWrapper {
 
         public static <T> T run(LabelsSet labels, Callable<T> c) throws Exception {

@@ -5,8 +5,9 @@ import one.profiler.AsyncProfiler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
-class ScopedContext implements AutoCloseable {
+public class ScopedContext implements AutoCloseable {
     static final ThreadLocal<Context> context = new ThreadLocal<Context>() {
         @Override
         protected Context initialValue() {
@@ -17,8 +18,8 @@ class ScopedContext implements AutoCloseable {
     final Context previous;
     final Context current;
     final Ref<Map<Ref<String>, Ref<String>>> currentRef;
-
-    ScopedContext(LabelsSet labels) {
+    boolean closed = false;
+    public ScopedContext(LabelsSet labels) {
         previous = context.get();
         Map<Ref<String>, Ref<String>> nextContext = new HashMap<>(
                 previous.labels.size() + labels.args.length / 2
@@ -66,9 +67,19 @@ class ScopedContext implements AutoCloseable {
 
     @Override
     public void close() {
+        if (closed) {
+            return;
+        }
+        closed = true;
         currentRef.refCount.decrementAndGet();
         context.set(previous);
         AsyncProfiler.getInstance().setContextId(previous.id);
+    }
+
+    public void forEach(BiConsumer<String, String> consumer) {
+        for (Map.Entry<Ref<String>, Ref<String>> it : current.labels.entrySet()) {
+            consumer.accept(it.getKey().val, it.getValue().val);
+        }
     }
 
     static class Context {
