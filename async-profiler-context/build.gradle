@@ -21,7 +21,7 @@ repositories {
     mavenCentral()
 }
 
-def asyncProfilerVersion = "2.8.1.1"
+def asyncProfilerVersion = "2.8.1.5"
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$buildDir/async-profiler/async-profiler.jar")
@@ -74,6 +74,7 @@ task asyncProfilerLib {
     def suffixes = [
         ['linux-arm64', 'tar.gz'],
         ['linux-x64', 'tar.gz'],
+        ['linux-musl-x64', 'tar.gz'],
         ['macos', 'zip']
     ]
 
