@@ -12,14 +12,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
 
 public final class Profiler {
     private final EventType eventType;
     private final String alloc;
     private final String lock;
-    private final Duration interval;
+    private final long interval;
     private final Format format;
 
 
@@ -58,7 +56,7 @@ public final class Profiler {
                 throw new IllegalStateException(e);
             }
         } else {
-            instance.start(eventType.id, interval.toNanos());
+            instance.start(eventType.id, interval);
         }
     }
 
@@ -74,7 +72,7 @@ public final class Profiler {
      * @param profilingIntervalStartTime - time when profiling has been started
      * @return Profiling data and dynamic labels as {@link Snapshot}
      */
-    public synchronized Snapshot dumpProfile(Instant profilingIntervalStartTime) {
+    public synchronized Snapshot dumpProfile(long profilingIntervalStartTime) {
         return dumpImpl(profilingIntervalStartTime);
     }
 
@@ -83,7 +81,7 @@ public final class Profiler {
      * Deprecated, use start, stop, dumpProfile methods instead
      */
     @Deprecated
-    public synchronized Snapshot dump(Instant profilingIntervalStartTime) {
+    public synchronized Snapshot dump(long profilingIntervalStartTime) {
         instance.stop();
 
         Snapshot result = dumpImpl(profilingIntervalStartTime);
@@ -102,12 +100,13 @@ public final class Profiler {
         if (lock != null && !lock.isEmpty()) {
             sb.append(",lock=").append(lock);
         }
-        sb.append(",interval=").append(interval.toNanos())
+        sb.append(",interval=").append(interval)
             .append(",file=").append(tempJFRFile.toString());
         return sb.toString();
     }
 
-    private Snapshot dumpImpl(Instant profilingIntervalStartTime) {
+
+    private Snapshot dumpImpl(long profilingIntervalStartTime) {
         final byte[] data;
         if (format == Format.JFR) {
             data = dumpJFR();

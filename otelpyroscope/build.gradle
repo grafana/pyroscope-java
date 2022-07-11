@@ -34,7 +34,7 @@ publishing {
         mavenJava(MavenPublication) { publication ->
             from components.java
             groupId = 'io.pyroscope'
-            artifactId = 'otel'
+            artifactId = 'otel-jdk7'
             version = pyroscopeVersion
             pom {
                 name = 'Pyroscope OTEL integration'

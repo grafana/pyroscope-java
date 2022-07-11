@@ -26,7 +26,7 @@ public class App {
                     .setFormat(Format.JFR)
                     .setLogLevel(Logger.Level.DEBUG)
                     .build())
-                .setExporter(new MyStdoutExporter())
+//                .setExporter(new MyStdoutExporter())
                 .build()
         );
         Pyroscope.setStaticLabels(mapOf("region", "us-east-1"));
@@ -37,18 +37,24 @@ public class App {
     private static void appLogic() {
         ExecutorService executors = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < N_THREADS; i++) {
-            executors.submit(() -> {
-                Pyroscope.LabelsWrapper.run(new LabelsSet("thread_name", Thread.currentThread().getName()), () -> {
-                        while (true) {
-                            try {
-                                fib(32L);
-                            } catch (InterruptedException e) {
-                                Thread.currentThread().interrupt();
-                                break;
+            executors.submit(new Runnable() {
+                @Override
+                public void run() {
+                    Pyroscope.LabelsWrapper.run(new LabelsSet("thread_name", Thread.currentThread().getName()), new Runnable() {
+                            @Override
+                            public void run() {
+                                while (true) {
+                                    try {
+                                        fib(32L);
+                                    } catch (InterruptedException e) {
+                                        Thread.currentThread().interrupt();
+                                        break;
+                                    }
+                                }
                             }
                         }
-                    }
-                );
+                    );
+                }
             });
         }
     }

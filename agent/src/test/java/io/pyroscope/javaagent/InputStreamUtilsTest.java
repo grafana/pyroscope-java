@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class InputStreamUtilsTest {
     @Test
-    void test() throws IOException {
+    public void test() throws IOException {
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 10000; i++) {
             sb.append("test\n");

@@ -43,9 +43,9 @@ public class LabelsTest {
         Ref<String> v1;
         try (ScopedContext s = new ScopedContext(new LabelsSet("k1", "v1"))) {
             ctxRef = s.currentRef;
-            assertEquals(0, s.previous.id);
+            assertEquals(0, (long)s.previous.id);
             assertEquals(0, s.previous.labels.size());
-            assertEquals(1, s.current.id);
+            assertEquals(1, (long)s.current.id);
             assertEquals(1, s.current.labels.size());
             Map<String, Ref<String>> stringRefMap = stringRefMap(s.current.labels);
             k1 = stringRefMap.get("k1");
@@ -68,7 +68,7 @@ public class LabelsTest {
                 assertEquals(1, v1.refCount.get());
             }
         }
-        assertEquals(0, ScopedContext.context.get().id);
+        assertEquals(0, (long)ScopedContext.context.get().id);
         assertEquals(0, ctxRef.refCount.get());
         assertEquals(1, k1.refCount.get());
         assertEquals(1, v1.refCount.get());
@@ -105,9 +105,9 @@ public class LabelsTest {
         try (ScopedContext ignored = new ScopedContext(new LabelsSet("k1", "v1"))) {
             try (ScopedContext s = new ScopedContext(new LabelsSet("k1", "v1"))) {
                 ctxRef = s.currentRef;
-                assertEquals(1, s.previous.id);
+                assertEquals(1, (long)s.previous.id);
                 assertEquals(1, s.previous.labels.size());
-                assertEquals(1, s.current.id);
+                assertEquals(1, (long)s.current.id);
                 assertEquals(1, s.current.labels.size());
                 Map<String, Ref<String>> stringRefMap = stringRefMap(s.current.labels);
                 k1 = stringRefMap.get("k1");
@@ -162,9 +162,9 @@ public class LabelsTest {
 
                 try (ScopedContext s = new ScopedContext(new LabelsSet("k2", "v3"))) {
                     ctxRef = s.currentRef;
-                    assertEquals(2, s.previous.id);
+                    assertEquals(2, (long)s.previous.id);
                     assertEquals(1, s.previous.labels.size());
-                    assertEquals(3, s.current.id);
+                    assertEquals(3, (long)s.current.id);
                     assertEquals(2, s.current.labels.size());
                     Map<String, Ref<String>> stringRefMap = stringRefMap(s.current.labels);
                     k1 = stringRefMap.get("k1");
@@ -177,13 +177,14 @@ public class LabelsTest {
 
                     {
                         Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
+                        System.out.println(snapshot);
                         assertEquals(3, snapshot.getContextsCount());
                         assertEquals(5, snapshot.getStringsCount());
                         assertEquals("k1", snapshot.getStringsMap().get(1L));
                         assertEquals("v1", snapshot.getStringsMap().get(2L));
-                        assertEquals("v2", snapshot.getStringsMap().get(3L));
-                        assertEquals("k2", snapshot.getStringsMap().get(4L));
-                        assertEquals("v3", snapshot.getStringsMap().get(5L));
+                        assertEquals("v2", snapshot.getStringsMap().get(4L));
+                        assertEquals("k2", snapshot.getStringsMap().get(5L));
+                        assertEquals("v3", snapshot.getStringsMap().get(6L));
                         assertEquals(mapOf(1L, 2L), snapshot.getContextsMap().get(1L).getLabelsMap());
                         assertEquals(3, k1.refCount.get());
                         assertEquals(2, v2.refCount.get());
@@ -195,7 +196,7 @@ public class LabelsTest {
 
         }
         Pyroscope.LabelsWrapper.dump();
-        assertEquals(0, ScopedContext.context.get().id);
+        assertEquals(0, (long)ScopedContext.context.get().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
     }
@@ -205,28 +206,37 @@ public class LabelsTest {
         final int n = 8;
         final ExecutorService e = Executors.newFixedThreadPool(n);
         for (int i = 0; i < n; i++) {
-            e.submit(() -> {
-                final Random r = new Random();
+            e.submit(new Runnable() {
+                @Override
+                public void run() {
+                    final Random r = new Random();
 
-                for (int j = 0; j < 10000; j++) {
-                    String k = "s" + r.nextInt(20);
-                    String v = "s" + r.nextInt(20);
-                    Pyroscope.LabelsWrapper.run(new LabelsSet(k, v), () -> {
-                        String k2 = "s" + r.nextInt(20);
-                        String v2 = "s" + r.nextInt(20);
-                        Pyroscope.LabelsWrapper.run(new LabelsSet(k2, v2), () -> {
+                    for (int j = 0; j < 10000; j++) {
+                        String k = "s" + r.nextInt(20);
+                        String v = "s" + r.nextInt(20);
+                        Pyroscope.LabelsWrapper.run(new LabelsSet(k, v), new Runnable() {
+                            @Override
+                            public void run() {
+                                String k2 = "s" + r.nextInt(20);
+                                String v2 = "s" + r.nextInt(20);
+                                Pyroscope.LabelsWrapper.run(new LabelsSet(k2, v2), new Runnable() {
+                                    @Override
+                                    public void run() {
 
+                                    }
+                                });
+
+                            }
                         });
 
-                    });
-
+                    }
                 }
             });
         }
         e.shutdown();
         e.awaitTermination(100, TimeUnit.SECONDS);
         Snapshot res = Pyroscope.LabelsWrapper.dump();
-        assertEquals(0, ScopedContext.context.get().id);
+        assertEquals(0, (long)ScopedContext.context.get().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
     }

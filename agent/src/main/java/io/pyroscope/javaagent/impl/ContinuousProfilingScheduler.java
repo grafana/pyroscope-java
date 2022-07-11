@@ -7,10 +7,9 @@ import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static io.pyroscope.javaagent.DateUtils.truncate;
@@ -18,14 +17,17 @@ import static io.pyroscope.javaagent.DateUtils.truncate;
 public class ContinuousProfilingScheduler implements ProfilingScheduler {
     final Config config;
 
-    final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread t = Executors.defaultThreadFactory().newThread(r);
-        t.setName("PyroscopeProfilingScheduler");
-        t.setDaemon(true);
-        return t;
+    final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setName("PyroscopeProfilingScheduler");
+            t.setDaemon(true);
+            return t;
+        }
     });
     private final Exporter exporter;
-    private Instant profilingIntervalStartTime;
+    private long profilingIntervalStartTime;
 
     public ContinuousProfilingScheduler(Config config, Exporter exporter) {
         this.config = config;
@@ -33,17 +35,25 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
     }
 
     @Override
-    public void start(Profiler profiler) {
-        Duration firstProfilingDuration = startFirst(profiler);
-        final Runnable dumpProfile = () -> {
-            Snapshot snapshot = profiler.dump(
-                alignProfilingIntervalStartTime(this.profilingIntervalStartTime, config.uploadInterval)
-            );
-            profilingIntervalStartTime = Instant.now();
-            exporter.export(snapshot);
+    public void start(final Profiler profiler) {
+        long firstProfilingDuration = startFirst(profiler);
+        final Runnable dumpProfile = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Snapshot snapshot = profiler.dump(
+                        alignProfilingIntervalStartTime(ContinuousProfilingScheduler.this.profilingIntervalStartTime, config.uploadInterval)
+                    );
+                    profilingIntervalStartTime = System.currentTimeMillis() * 1000000;
+                    exporter.export(snapshot);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
         };
         executor.scheduleAtFixedRate(dumpProfile,
-            firstProfilingDuration.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
+            firstProfilingDuration, config.uploadInterval, TimeUnit.NANOSECONDS);
 
     }
 
@@ -55,11 +65,11 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
      *
      * @return Duration of the first profiling interval
      */
-    private Duration startFirst(Profiler profiler) {
-        Instant now = Instant.now();
-        Instant prevUploadInterval = truncate(now, config.uploadInterval);
-        Instant nextUploadInterval = prevUploadInterval.plus(config.uploadInterval);
-        Duration firstProfilingDuration = Duration.between(now, nextUploadInterval);
+    private long startFirst(Profiler profiler) {
+        long now = System.currentTimeMillis() * 1000000;
+        long prevUploadInterval = truncate(now, config.uploadInterval);
+        long nextUploadInterval = prevUploadInterval + config.uploadInterval;
+        long firstProfilingDuration = nextUploadInterval - now;
         profiler.start();
         profilingIntervalStartTime = prevUploadInterval;
         return firstProfilingDuration;
@@ -75,12 +85,12 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
      * @param uploadInterval
      * @return the aligned
      */
-    public static Instant alignProfilingIntervalStartTime(Instant profilingIntervalStartTime, Duration uploadInterval) {
-        Instant prev = truncate(profilingIntervalStartTime, uploadInterval);
-        Instant next = prev.plus(uploadInterval);
-        Duration d1 = Duration.between(prev, profilingIntervalStartTime);
-        Duration d2 = Duration.between(profilingIntervalStartTime, next);
-        if (d1.compareTo(d2) < 0) {
+    public static long alignProfilingIntervalStartTime(long profilingIntervalStartTime, long uploadInterval) {
+        long prev = truncate(profilingIntervalStartTime, uploadInterval);
+        long next = prev + uploadInterval;
+        long d1 = profilingIntervalStartTime - prev;
+        long d2 = next - profilingIntervalStartTime;
+        if (d1 < d2) {
             return prev;
         } else {
             return next;
