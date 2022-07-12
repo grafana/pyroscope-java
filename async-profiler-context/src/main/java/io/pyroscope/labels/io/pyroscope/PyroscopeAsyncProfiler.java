@@ -1,12 +1,13 @@
 package io.pyroscope.labels.io.pyroscope;
 
-import io.pyroscope.labels.Pyroscope;
 import one.profiler.AsyncProfiler;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +36,6 @@ public class PyroscopeAsyncProfiler {
      */
     private static String deployLibrary() throws IOException {
         final String fileName = libraryFileName();
-
         final String userName = System.getProperty("user.name");
         final String tmpDir = System.getProperty("java.io.tmpdir");
         final File targetDir = new File(tmpDir, userName + "-pyroscope/");
@@ -75,7 +75,11 @@ public class PyroscopeAsyncProfiler {
             case "Linux":
                 switch (archProperty) {
                     case "amd64":
-                        arch = "x64";
+                        if (isMusl()) {
+                            arch = "musl-x64";
+                        } else {
+                            arch = "x64";
+                        }
                         break;
 
                     case "aarch64":
@@ -123,5 +127,23 @@ public class PyroscopeAsyncProfiler {
         }
 
         return libraryFileName.substring(0, libraryFileName.length() - 3) + "-" + checksum + ".so";
+    }
+
+    private static boolean isMusl() {
+        try {
+            Process pr = new ProcessBuilder("ldd")
+                .start();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.contains("musl")) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
