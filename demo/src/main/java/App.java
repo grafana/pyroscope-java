@@ -19,14 +19,14 @@ public class App {
     public static void main(String[] args) {
         PyroscopeAgent.start(
             new PyroscopeAgent.Options.Builder(
-                Config.build(DefaultConfigurationProvider.INSTANCE)
-                    .newBuilder()
-                    .setApplicationName("demo.app")
+                new Config.Builder()
+                    .setApplicationName("demo.app{qweqwe=asdasd}")
                     .setServerAddress("http://localhost:4040")
-                    .setFormat(Format.JFR)
+                    .setFormat(Format.COLLAPSED)
                     .setLogLevel(Logger.Level.DEBUG)
+                    .setLabels(mapOf("user", "tolyan"))
                     .build())
-                .setExporter(new MyStdoutExporter())
+//                .setExporter(new MyStdoutExporter())
                 .build()
         );
         Pyroscope.setStaticLabels(mapOf("region", "us-east-1"));
@@ -56,7 +56,7 @@ public class App {
     private static Map<String, String> mapOf(String... args) {
         Map<String, String> staticLabels = new HashMap<>();
         for (int i = 0; i < args.length; i += 2) {
-            staticLabels.put(args[i], args[i] + 1);
+            staticLabels.put(args[i], args[i + 1]);
         }
         return staticLabels;
     }
