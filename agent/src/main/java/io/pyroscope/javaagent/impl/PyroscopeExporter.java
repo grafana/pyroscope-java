@@ -1,7 +1,6 @@
 package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.http.Format;
-import io.pyroscope.javaagent.OverfillQueue;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
@@ -12,9 +11,7 @@ import okhttp3.*;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Random;
-import java.util.TreeMap;
 
 public class PyroscopeExporter implements Exporter {
     private static final Duration TIMEOUT = Duration.ofSeconds(10);//todo allow configuration
@@ -124,25 +121,11 @@ public class PyroscopeExporter implements Exporter {
     }
 
     private String nameWithStaticLabels() {
-        Map<String, String> labels = Pyroscope.getStaticLabels();
-        if (labels.isEmpty()) {
-            return config.timeseriesName;
-        } else {
-            StringBuilder sb = new StringBuilder(config.timeseriesName)
-                .append("{");
-            TreeMap<String, String> sortedMap = new TreeMap<>(labels);
-            int i = 0;
-            for (String key : sortedMap.keySet()) {
-                if (i++ != 0) {
-                    sb.append(",");
-                }
-                sb.append(key)
-                    .append("=")
-                    .append(labels.get(key));
-            }
-            sb.append("}");
-            return sb.toString();
-        }
+        return config.timeseries.newBuilder()
+            .addLabels(config.labels)
+            .addLabels(Pyroscope.getStaticLabels())
+            .build()
+            .toString();
     }
 
 }

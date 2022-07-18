@@ -10,9 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.Base64;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Config allows to tweak parameters of existing pyroscope components at start time
@@ -31,6 +29,7 @@ public final class Config {
     private static final String PYROSCOPE_AUTH_TOKEN_CONFIG = "PYROSCOPE_AUTH_TOKEN";
     private static final String PYROSCOPE_FORMAT_CONFIG = "PYROSCOPE_FORMAT";
     private static final String PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG = "PYROSCOPE_PUSH_QUEUE_CAPACITY";
+    private static final String PYROSCOPE_LABELS = "PYROSCOPE_LABELS";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -43,6 +42,7 @@ public final class Config {
     // The number of snapshots simultaneously stored in memory is limited by this.
     // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
     private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 32;
+    private static final String DEFAULT_LABELS = "";
 
     public final String applicationName;
     public final Duration profilingInterval;
@@ -53,9 +53,13 @@ public final class Config {
     public final Logger.Level logLevel;
     public final String serverAddress;
     public final String authToken;
+
+    @Deprecated
     public final String timeseriesName;
+    public final AppName timeseries;
     public final Format format;
     public final int pushQueueCapacity;
+    public final Map<String, String> labels;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -67,7 +71,8 @@ public final class Config {
            final String serverAddress,
            final String authToken,
            final Format format,
-           final int pushQueueCapacity
+           final int pushQueueCapacity,
+           final Map<String, String> labels
     ) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
@@ -78,9 +83,11 @@ public final class Config {
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
-        this.timeseriesName = timeseriesName(applicationName, profilingEvent, format);
+        this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
+        this.timeseriesName = timeseries.toString();
         this.format = format;
         this.pushQueueCapacity = pushQueueCapacity;
+        this.labels = Collections.unmodifiableMap(labels);
     }
 
     public long profilingIntervalInHertz() {
@@ -130,7 +137,8 @@ public final class Config {
             serverAddress(configurationProvider),
             authToken(configurationProvider),
             format(configurationProvider),
-            pushQueueCapacity(configurationProvider)
+            pushQueueCapacity(configurationProvider),
+            labels(configurationProvider)
         );
     }
 
@@ -174,10 +182,12 @@ public final class Config {
         }
     }
 
-    private String timeseriesName(String applicationName, EventType eventType, Format format) {
+    private AppName timeseriesName(AppName app, EventType eventType, Format format) {
         if (format == Format.JFR)
-            return applicationName;
-        return applicationName + "." + eventType.id;
+            return app;
+        return app.newBuilder()
+            .setName(app.name +  "." + eventType.id)
+            .build();
     }
 
     private static EventType profilingEvent(ConfigurationProvider configurationProvider) {
@@ -298,6 +308,14 @@ public final class Config {
         }
     }
 
+    public static Map<String, String> labels(ConfigurationProvider configurationProvider) {
+        String strLabels = configurationProvider.get(PYROSCOPE_LABELS);
+        if (strLabels == null) {
+            strLabels = DEFAULT_LABELS;
+        }
+        return AppName.parseLabels(strLabels);
+    }
+
     public static class Builder {
         public String applicationName = null;
         public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
@@ -310,6 +328,7 @@ public final class Config {
         public String authToken = null;
         public Format format = DEFAULT_FORMAT;
         public int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
+        public Map<String, String> labels = Collections.emptyMap();
 
         public Builder() {
         }
@@ -383,6 +402,11 @@ public final class Config {
             return this;
         }
 
+        public Builder setLabels(Map<String, String> labels) {
+            this.labels = labels;
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -397,7 +421,8 @@ public final class Config {
                 serverAddress,
                 authToken,
                 format,
-                pushQueueCapacity
+                pushQueueCapacity,
+                labels
             );
         }
     }
