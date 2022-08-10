@@ -13,6 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class PyroscopeAsyncProfiler {
     static final String libraryPath;
@@ -130,20 +133,58 @@ public class PyroscopeAsyncProfiler {
     }
 
     private static boolean isMusl() {
-        try {
-            Process pr = new ProcessBuilder("ldd")
-                .start();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.contains("musl")) {
+        // allow user to force musl/glibc it in case next checks fails
+        String env = System.getenv("PYROSCOPE_MUSL");
+        if (env == null) {
+            env = System.getProperty("pyroscope.musl");
+        }
+        if (env != null) {
+            return Boolean.parseBoolean(env);
+        }
+        // check ldd on currently running jvm
+        // $ ldd /usr/lib/jvm/java-11-openjdk/bin/java
+        //    /lib/ld-musl-x86_64.so.1 (0x7f337ca6c000)
+        //    libjli.so => /usr/lib/jvm/java-11-openjdk/bin/../lib/jli/libjli.so (0x7f337ca55000)
+        //    libc.musl-x86_64.so.1 => /lib/ld-musl-x86_64.so.1 (0x7f337ca6c000)
+        File javaExecutable = new File(System.getProperty("java.home") + "/bin/java");
+        if (javaExecutable.exists()) {
+            for (String l : runProcess("ldd", javaExecutable.getAbsolutePath())) {
+                if (l.contains("ld-musl-") || l.contains("libc.musl-")) {
                     return true;
                 }
             }
+            return false;
+        }
+        // $  ldd --version
+        // musl libc (x86_64)
+        for (String l : runProcess("ldd", "--version")) {
+            if (l.contains("musl")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<String> runProcess(String... cmd) {
+        List<String> lines = new ArrayList<>();
+        try {
+            Process pr = new ProcessBuilder(Arrays.<String>asList(cmd))
+                .redirectErrorStream(true) // ldd --version prints to stderr
+                .start();
+            BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                lines.add(line);
+            }
+            try {
+                pr.waitFor();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            pr.destroy();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+        return lines;
     }
 }
