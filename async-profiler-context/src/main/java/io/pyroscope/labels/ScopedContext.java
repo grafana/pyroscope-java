@@ -9,13 +9,14 @@ import java.util.function.BiConsumer;
 
 public class ScopedContext implements AutoCloseable {
     static final ThreadLocal<Context> context = ThreadLocal.withInitial(() ->
-            new Context(0L, Collections.emptyMap())
+            new Context(0L, Collections.emptyMap(), null)
     );
 
     final Context previous;
     final Context current;
     final Ref<Map<Ref<String>, Ref<String>>> currentRef;
     boolean closed = false;
+    final Thread owner = Thread.currentThread();
     public ScopedContext(LabelsSet labels) {
         previous = context.get();
         Map<Ref<String>, Ref<String>> nextContext = new HashMap<>(
@@ -57,7 +58,7 @@ public class ScopedContext implements AutoCloseable {
         }
 
         AsyncProfiler.getInstance().setContextId(currentRef.id);
-        current = new Context(currentRef.id, nextContext);
+        current = new Context(currentRef.id, nextContext, this);
         context.set(current);
     }
 
@@ -66,6 +67,13 @@ public class ScopedContext implements AutoCloseable {
     public void close() {
         if (closed) {
             return;
+        }
+        if (previous.scoped != null && previous.scoped.closed) {
+            throw new AssertionError("previous.scoped.closed");
+        }
+        Thread current = Thread.currentThread();
+        if (current != owner) {
+            throw new AssertionError(String.format("Thread check failure: %s %d != %s %d", owner, owner.getId(), current, current.getId()));
         }
         closed = true;
         currentRef.refCount.decrementAndGet();
@@ -82,16 +90,18 @@ public class ScopedContext implements AutoCloseable {
     static class Context {
         public final Long id;
         public final Map<Ref<String>, Ref<String>> labels;
+        final ScopedContext scoped;
 
-        public Context(Long id, Map<Ref<String>, Ref<String>> labels) {
+        public Context(Long id, Map<Ref<String>, Ref<String>> labels, ScopedContext ctx2) {
             this.id = id;
             this.labels = labels;
+            this.scoped = ctx2;
         }
     }
 
     static void assertAlive(long counter) {
         if (counter <= 0) {
-            throw new AssertionError();
+            throw new AssertionError("counter " + counter);
         }
     }
 }
