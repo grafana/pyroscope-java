@@ -16,6 +16,7 @@ public class QueuedExporter implements Exporter {
         this.impl = impl;
         this.logger = logger;
         this.thread = new Thread(this::exportLoop);
+        this.thread.setDaemon(true);
         this.queue = new OverfillQueue<>(config.pushQueueCapacity);
 
         this.thread.start();
