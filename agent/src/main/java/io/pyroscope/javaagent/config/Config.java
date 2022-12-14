@@ -31,7 +31,7 @@ public final class Config {
     private static final String PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG = "PYROSCOPE_PUSH_QUEUE_CAPACITY";
     private static final String PYROSCOPE_LABELS = "PYROSCOPE_LABELS";
 
-    private static final String PYROSCOPE_INGEST_MAX_RETRIES = "PYROSCOPE_INGEST_MAX_RETRIES";
+    private static final String PYROSCOPE_INGEST_MAX_TRIES = "PYROSCOPE_INGEST_MAX_TRIES";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -63,7 +63,7 @@ public final class Config {
     public final Format format;
     public final int pushQueueCapacity;
     public final Map<String, String> labels;
-    public final int ingestMaxRetries;
+    public final int ingestMaxTries;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -87,7 +87,7 @@ public final class Config {
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
-        this.ingestMaxRetries = ingestMaxRetries;
+        this.ingestMaxTries = ingestMaxRetries;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -322,7 +322,7 @@ public final class Config {
     }
 
     private static int ingestMaxRetries(ConfigurationProvider configurationProvider) {
-        final String strIngestMaxRetries = configurationProvider.get(PYROSCOPE_INGEST_MAX_RETRIES);
+        final String strIngestMaxRetries = configurationProvider.get(PYROSCOPE_INGEST_MAX_TRIES);
         if (strIngestMaxRetries == null || strIngestMaxRetries.isEmpty()) {
             return DEFAULT_INGEST_MAX_RETRIES;
         }
