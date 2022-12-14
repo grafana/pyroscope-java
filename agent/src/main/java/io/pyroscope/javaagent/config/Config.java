@@ -31,6 +31,8 @@ public final class Config {
     private static final String PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG = "PYROSCOPE_PUSH_QUEUE_CAPACITY";
     private static final String PYROSCOPE_LABELS = "PYROSCOPE_LABELS";
 
+    private static final String PYROSCOPE_INGEST_MAX_RETRIES = "PYROSCOPE_INGEST_MAX_RETRIES";
+
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
@@ -41,7 +43,8 @@ public final class Config {
     private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
     // The number of snapshots simultaneously stored in memory is limited by this.
     // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
-    private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 32;
+    private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 8;
+    private static final int DEFAULT_INGEST_MAX_RETRIES = 8;
     private static final String DEFAULT_LABELS = "";
 
     public final String applicationName;
@@ -60,6 +63,7 @@ public final class Config {
     public final Format format;
     public final int pushQueueCapacity;
     public final Map<String, String> labels;
+    public final int ingestMaxRetries;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -72,8 +76,8 @@ public final class Config {
            final String authToken,
            final Format format,
            final int pushQueueCapacity,
-           final Map<String, String> labels
-    ) {
+           final Map<String, String> labels,
+           int ingestMaxRetries) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -83,6 +87,7 @@ public final class Config {
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
+        this.ingestMaxRetries = ingestMaxRetries;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -138,8 +143,8 @@ public final class Config {
             authToken(configurationProvider),
             format(configurationProvider),
             pushQueueCapacity(configurationProvider),
-            labels(configurationProvider)
-        );
+            labels(configurationProvider),
+            ingestMaxRetries(configurationProvider));
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -316,6 +321,18 @@ public final class Config {
         return AppName.parseLabels(strLabels);
     }
 
+    private static int ingestMaxRetries(ConfigurationProvider configurationProvider) {
+        final String strIngestMaxRetries = configurationProvider.get(PYROSCOPE_INGEST_MAX_RETRIES);
+        if (strIngestMaxRetries == null || strIngestMaxRetries.isEmpty()) {
+            return DEFAULT_INGEST_MAX_RETRIES;
+        }
+        try {
+            return Integer.parseInt(strIngestMaxRetries);
+        } catch (NumberFormatException e) {
+            return DEFAULT_INGEST_MAX_RETRIES;
+        }
+    }
+
     public static class Builder {
         public String applicationName = null;
         public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
@@ -329,6 +346,7 @@ public final class Config {
         public Format format = DEFAULT_FORMAT;
         public int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
         public Map<String, String> labels = Collections.emptyMap();
+        public int ingestMaxRetries = DEFAULT_INGEST_MAX_RETRIES;
 
         public Builder() {
         }
@@ -407,6 +425,11 @@ public final class Config {
             return this;
         }
 
+        public Builder setIngestMaxRetries(int ingestMaxRetries) {
+            this.ingestMaxRetries = ingestMaxRetries;
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -422,8 +445,8 @@ public final class Config {
                 authToken,
                 format,
                 pushQueueCapacity,
-                labels
-            );
+                labels,
+                ingestMaxRetries);
         }
     }
 }

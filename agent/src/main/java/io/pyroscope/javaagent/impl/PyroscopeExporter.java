@@ -46,6 +46,7 @@ public class PyroscopeExporter implements Exporter {
         final HttpUrl url = urlForSnapshot(snapshot);
         final ExponentialBackoff exponentialBackoff = new ExponentialBackoff(1_000, 30_000, new Random());
         boolean success = false;
+        int tries = 0;
         while (!success) {
             final RequestBody requestBody;
             if (config.format == Format.JFR) {
@@ -93,7 +94,11 @@ public class PyroscopeExporter implements Exporter {
             } catch (final IOException e) {
                 logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s", e.getMessage());
             }
-
+            tries++;
+            if (config.ingestMaxRetries > 0 && tries > config.ingestMaxRetries) {
+                logger.log(Logger.Level.ERROR, "Gave up uploading profiling snapshot after %d tries", tries);
+                break;
+            }
             if (!success) {
                 final int backoff = exponentialBackoff.error();
                 logger.log(Logger.Level.DEBUG, "Backing off for %s ms", backoff);
