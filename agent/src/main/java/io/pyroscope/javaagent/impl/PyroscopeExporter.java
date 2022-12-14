@@ -46,11 +46,13 @@ public class PyroscopeExporter implements Exporter {
         final HttpUrl url = urlForSnapshot(snapshot);
         final ExponentialBackoff exponentialBackoff = new ExponentialBackoff(1_000, 30_000, new Random());
         boolean success = false;
+        int tries = 0;
         while (!success) {
+            tries++;
             final RequestBody requestBody;
             if (config.format == Format.JFR) {
                 byte[] labels = snapshot.labels.toByteArray();
-                logger.log(Logger.Level.DEBUG, "Upload attempt. JFR: %s, labels: %s", snapshot.data.length, labels.length);
+                logger.log(Logger.Level.DEBUG, "Upload attempt %d. JFR: %s, labels: %s", tries, snapshot.data.length, labels.length);
                 MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM);
                 bodyBuilder.addFormDataPart(
@@ -67,7 +69,7 @@ public class PyroscopeExporter implements Exporter {
                 }
                 requestBody = bodyBuilder.build();
             } else {
-                logger.log(Logger.Level.DEBUG, "Upload attempt. collapsed: %s", snapshot.data.length);
+                logger.log(Logger.Level.DEBUG, "Upload attempt %d. collapsed: %s", tries, snapshot.data.length);
                 requestBody = RequestBody.create(snapshot.data);
             }
             Request.Builder request = new Request.Builder()
@@ -93,7 +95,10 @@ public class PyroscopeExporter implements Exporter {
             } catch (final IOException e) {
                 logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s", e.getMessage());
             }
-
+            if (config.ingestMaxTries >= 0 && tries >= config.ingestMaxTries) {
+                logger.log(Logger.Level.ERROR, "Gave up uploading profiling snapshot after %d tries", tries);
+                break;
+            }
             if (!success) {
                 final int backoff = exponentialBackoff.error();
                 logger.log(Logger.Level.DEBUG, "Backing off for %s ms", backoff);
