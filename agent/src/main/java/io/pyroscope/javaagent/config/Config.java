@@ -84,8 +84,8 @@ public final class Config {
            final int pushQueueCapacity,
            final Map<String, String> labels,
            int ingestMaxRetries,
-            int compressionLevelJFR,
-             int compressionLevelLabels) {
+           int compressionLevelJFR,
+           int compressionLevelLabels) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -204,7 +204,7 @@ public final class Config {
         if (format == Format.JFR)
             return app;
         return app.newBuilder()
-            .setName(app.name +  "." + eventType.id)
+            .setName(app.name + "." + eventType.id)
             .build();
     }
 
