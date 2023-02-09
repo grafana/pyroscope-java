@@ -3,3 +3,4 @@ io.pyroscope.javaagent
 io.pyroscope.javaagent.api
 io.pyroscope.javaagent.config
 io.pyroscope.javaagent.impl
+io.pyroscope.javaagent.util.zip
