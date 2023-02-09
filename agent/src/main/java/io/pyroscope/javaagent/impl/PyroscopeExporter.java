@@ -5,18 +5,22 @@ import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.util.zip.GZIPOutputStream;
 import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
+import java.util.zip.Deflater;
 
 public class PyroscopeExporter implements Exporter {
     private static final Duration TIMEOUT = Duration.ofSeconds(10);//todo allow configuration
 
-    private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
+    private static final MediaType GZIP = MediaType.parse("application/gzip");
 
     final Config config;
     final Logger logger;
@@ -58,13 +62,13 @@ public class PyroscopeExporter implements Exporter {
                 bodyBuilder.addFormDataPart(
                     /* name */ "jfr",
                     /* filename */ "jfr",
-                    RequestBody.create(snapshot.data)
+                     compress(snapshot.data, config.compressionLevelJFR)
                 );
                 if (labels.length > 0) {
                     bodyBuilder.addFormDataPart(
                         /* name */ "labels",
                         /* filename */ "labels",
-                        RequestBody.create(labels, PROTOBUF)
+                        compress(labels, config.compressionLevelLabels)
                     );
                 }
                 requestBody = bodyBuilder.build();
@@ -107,6 +111,27 @@ public class PyroscopeExporter implements Exporter {
         }
     }
 
+    @NotNull
+    private RequestBody compress(byte[] data, int level) {
+        if (data.length == 0 || level == Deflater.NO_COMPRESSION) {
+            return RequestBody.create(data);
+        }
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        // todo consider compression in async-profiler
+        try (GZIPOutputStream gz = new GZIPOutputStream(buf, level, 512, false)) {
+            gz.write(data);
+            gz.flush();
+        } catch (IOException e) {
+            logger.log(Logger.Level.DEBUG, "gzip fail %s. should not happen", e.getMessage());
+            return RequestBody.create(data);
+        }
+        byte[] compressed = buf.toByteArray();
+//        if (compressed.length != 0) {
+//            logger.log(Logger.Level.DEBUG, "gzip compressed %d / %d = %f ", data.length, compressed.length, data.length/(float)compressed.length);
+//        }
+        return RequestBody.create(compressed, GZIP);
+    }
+
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
         Instant started = snapshot.started;
         Instant finished = started.plus(config.uploadInterval);
@@ -132,5 +157,4 @@ public class PyroscopeExporter implements Exporter {
             .build()
             .toString();
     }
-
 }
