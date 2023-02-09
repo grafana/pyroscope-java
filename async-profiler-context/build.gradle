@@ -21,7 +21,7 @@ repositories {
     mavenCentral()
 }
 
-def asyncProfilerVersion = "2.8.3.2"
+def asyncProfilerVersion = "2.9.0.2"
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$buildDir/async-profiler/async-profiler.jar")
