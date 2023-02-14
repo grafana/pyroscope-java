@@ -8,7 +8,6 @@ import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.util.zip.GzipSink;
 import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -19,7 +18,6 @@ import java.util.zip.Deflater;
 public class PyroscopeExporter implements Exporter {
     private static final Duration TIMEOUT = Duration.ofSeconds(10);//todo allow configuration
     private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
-    private static final MediaType GZIP = MediaType.parse("application/gzip");
 
     final Config config;
     final Logger logger;
