@@ -113,6 +113,9 @@ public final class Profiler {
     }
 
     private Snapshot dumpImpl(Instant profilingIntervalStartTime) {
+        if (config.gcBeforeDump) {
+            System.gc();
+        }
         final byte[] data;
         if (format == Format.JFR) {
             data = dumpJFR();

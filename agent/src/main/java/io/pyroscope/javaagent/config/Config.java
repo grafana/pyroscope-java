@@ -36,6 +36,7 @@ public final class Config {
     private static final String PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR = "PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR";
     private static final String PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS = "PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS";
     private static final String PYROSCOPE_ALLOC_LIVE = "PYROSCOPE_ALLOC_LIVE";
+    private static final String PYROSCOPE_GC_BEFORE_DUMP = "PYROSCOPE_GC_BEFORE_DUMP";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -52,6 +53,7 @@ public final class Config {
     private static final int DEFAULT_COMPRESSION_LEVEL = Deflater.BEST_SPEED;
     private static final String DEFAULT_LABELS = "";
     private static final boolean DEFAULT_ALLOC_LIVE = false;
+    private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
 
     public final String applicationName;
     public final Duration profilingInterval;
@@ -74,6 +76,7 @@ public final class Config {
     public final int compressionLevelLabels;
 
     public final boolean allocLive;
+    public final boolean gcBeforeDump;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -90,7 +93,8 @@ public final class Config {
            int ingestMaxRetries,
            int compressionLevelJFR,
            int compressionLevelLabels,
-           boolean allocLive) {
+           boolean allocLive,
+           boolean gcBeforeDump) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -104,6 +108,7 @@ public final class Config {
         this.compressionLevelJFR = validateCompressionLevel(compressionLevelJFR);
         this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
         this.allocLive = allocLive;
+        this.gcBeforeDump = gcBeforeDump;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -176,8 +181,8 @@ public final class Config {
             ingestMaxRetries(configurationProvider),
             compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
             compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
-            allocLive
-        );
+            allocLive,
+            bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP));
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -427,6 +432,7 @@ public final class Config {
         public int compressionLevelJFR = DEFAULT_COMPRESSION_LEVEL;
         public int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
         public boolean allocLive = DEFAULT_ALLOC_LIVE;
+        public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
         public Builder() {
         }
 
@@ -445,6 +451,7 @@ public final class Config {
             compressionLevelJFR = buildUpon.compressionLevelJFR;
             compressionLevelLabels = buildUpon.compressionLevelLabels;
             allocLive = buildUpon.allocLive;
+            gcBeforeDump = buildUpon.gcBeforeDump;
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -522,6 +529,16 @@ public final class Config {
             return this;
         }
 
+        public Builder setAllocLive(boolean allocLive) {
+            this.allocLive = allocLive;
+            return this;
+        }
+
+        public Builder setGcBeforeDump(boolean gcBeforeDump) {
+            this.gcBeforeDump = gcBeforeDump;
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -541,7 +558,8 @@ public final class Config {
                 ingestMaxRetries,
                 compressionLevelJFR,
                 compressionLevelLabels,
-                allocLive);
+                allocLive,
+                gcBeforeDump);
         }
     }
 }
