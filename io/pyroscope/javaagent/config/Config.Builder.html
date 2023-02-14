@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -188,51 +188,56 @@ extends java.lang.Object</pre>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#gcBeforeDump">gcBeforeDump</a></span></code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#ingestMaxRetries">ingestMaxRetries</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#labels">labels</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../api/Logger.Level.html" title="enum in io.pyroscope.javaagent.api">Logger.Level</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#logLevel">logLevel</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profilingAlloc">profilingAlloc</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../EventType.html" title="enum in io.pyroscope.javaagent">EventType</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profilingEvent">profilingEvent</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.time.Duration</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profilingInterval">profilingInterval</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profilingLock">profilingLock</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushQueueCapacity">pushQueueCapacity</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#serverAddress">serverAddress</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.time.Duration</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#uploadInterval">uploadInterval</a></span></code></th>
 <td class="colLast">&nbsp;</td>
@@ -287,75 +292,85 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setApplicationName(java.lang.String)">setApplicationName</a></span>&#8203;(java.lang.String&nbsp;applicationName)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setAllocLive(boolean)">setAllocLive</a></span>&#8203;(boolean&nbsp;allocLive)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setAuthToken(java.lang.String)">setAuthToken</a></span>&#8203;(java.lang.String&nbsp;authToken)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setApplicationName(java.lang.String)">setApplicationName</a></span>&#8203;(java.lang.String&nbsp;applicationName)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompressionLevelJFR(int)">setCompressionLevelJFR</a></span>&#8203;(int&nbsp;compressionLevelJFR)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setAuthToken(java.lang.String)">setAuthToken</a></span>&#8203;(java.lang.String&nbsp;authToken)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompressionLevelLabels(int)">setCompressionLevelLabels</a></span>&#8203;(int&nbsp;compressionLevelLabels)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompressionLevelJFR(int)">setCompressionLevelJFR</a></span>&#8203;(int&nbsp;compressionLevelJFR)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setFormat(io.pyroscope.http.Format)">setFormat</a></span>&#8203;(<a href="../../http/Format.html" title="enum in io.pyroscope.http">Format</a>&nbsp;format)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompressionLevelLabels(int)">setCompressionLevelLabels</a></span>&#8203;(int&nbsp;compressionLevelLabels)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setIngestMaxRetries(int)">setIngestMaxRetries</a></span>&#8203;(int&nbsp;ingestMaxRetries)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setFormat(io.pyroscope.http.Format)">setFormat</a></span>&#8203;(<a href="../../http/Format.html" title="enum in io.pyroscope.http">Format</a>&nbsp;format)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setLabels(java.util.Map)">setLabels</a></span>&#8203;(java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt;&nbsp;labels)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setGcBeforeDump(boolean)">setGcBeforeDump</a></span>&#8203;(boolean&nbsp;gcBeforeDump)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setLogLevel(io.pyroscope.javaagent.api.Logger.Level)">setLogLevel</a></span>&#8203;(<a href="../api/Logger.Level.html" title="enum in io.pyroscope.javaagent.api">Logger.Level</a>&nbsp;logLevel)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setIngestMaxRetries(int)">setIngestMaxRetries</a></span>&#8203;(int&nbsp;ingestMaxRetries)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilingAlloc(java.lang.String)">setProfilingAlloc</a></span>&#8203;(java.lang.String&nbsp;profilingAlloc)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setLabels(java.util.Map)">setLabels</a></span>&#8203;(java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt;&nbsp;labels)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i10" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilingEvent(io.pyroscope.javaagent.EventType)">setProfilingEvent</a></span>&#8203;(<a href="../EventType.html" title="enum in io.pyroscope.javaagent">EventType</a>&nbsp;profilingEvent)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setLogLevel(io.pyroscope.javaagent.api.Logger.Level)">setLogLevel</a></span>&#8203;(<a href="../api/Logger.Level.html" title="enum in io.pyroscope.javaagent.api">Logger.Level</a>&nbsp;logLevel)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilingInterval(java.time.Duration)">setProfilingInterval</a></span>&#8203;(java.time.Duration&nbsp;profilingInterval)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilingAlloc(java.lang.String)">setProfilingAlloc</a></span>&#8203;(java.lang.String&nbsp;profilingAlloc)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilingLock(java.lang.String)">setProfilingLock</a></span>&#8203;(java.lang.String&nbsp;profilingLock)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilingEvent(io.pyroscope.javaagent.EventType)">setProfilingEvent</a></span>&#8203;(<a href="../EventType.html" title="enum in io.pyroscope.javaagent">EventType</a>&nbsp;profilingEvent)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setPushQueueCapacity(int)">setPushQueueCapacity</a></span>&#8203;(int&nbsp;pushQueueCapacity)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilingInterval(java.time.Duration)">setProfilingInterval</a></span>&#8203;(java.time.Duration&nbsp;profilingInterval)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i14" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setServerAddress(java.lang.String)">setServerAddress</a></span>&#8203;(java.lang.String&nbsp;serverAddress)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilingLock(java.lang.String)">setProfilingLock</a></span>&#8203;(java.lang.String&nbsp;profilingLock)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i15" class="rowColor">
+<td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setPushQueueCapacity(int)">setPushQueueCapacity</a></span>&#8203;(int&nbsp;pushQueueCapacity)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i16" class="altColor">
+<td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setServerAddress(java.lang.String)">setServerAddress</a></span>&#8203;(java.lang.String&nbsp;serverAddress)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setUploadInterval(java.time.Duration)">setUploadInterval</a></span>&#8203;(java.time.Duration&nbsp;uploadInterval)</code></th>
 <td class="colLast">&nbsp;</td>
@@ -522,10 +537,19 @@ extends java.lang.Object</pre>
 <a id="allocLive">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>allocLive</h4>
 <pre>public&nbsp;boolean allocLive</pre>
+</li>
+</ul>
+<a id="gcBeforeDump">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>gcBeforeDump</h4>
+<pre>public&nbsp;boolean gcBeforeDump</pre>
 </li>
 </ul>
 </li>
@@ -699,6 +723,24 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setCompressionLevelLabels</h4>
 <pre class="methodSignature">public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;setCompressionLevelLabels&#8203;(int&nbsp;compressionLevelLabels)</pre>
+</li>
+</ul>
+<a id="setAllocLive(boolean)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setAllocLive</h4>
+<pre class="methodSignature">public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;setAllocLive&#8203;(boolean&nbsp;allocLive)</pre>
+</li>
+</ul>
+<a id="setGcBeforeDump(boolean)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setGcBeforeDump</h4>
+<pre class="methodSignature">public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;setGcBeforeDump&#8203;(boolean&nbsp;gcBeforeDump)</pre>
 </li>
 </ul>
 <a id="build()">
