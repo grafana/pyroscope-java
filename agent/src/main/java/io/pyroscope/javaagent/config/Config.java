@@ -35,6 +35,7 @@ public final class Config {
     private static final String PYROSCOPE_INGEST_MAX_TRIES = "PYROSCOPE_INGEST_MAX_TRIES";
     private static final String PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR = "PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR";
     private static final String PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS = "PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS";
+    private static final String PYROSCOPE_ALLOC_LIVE = "PYROSCOPE_ALLOC_LIVE";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -50,6 +51,7 @@ public final class Config {
     private static final int DEFAULT_INGEST_MAX_RETRIES = 8;
     private static final int DEFAULT_COMPRESSION_LEVEL = Deflater.BEST_SPEED;
     private static final String DEFAULT_LABELS = "";
+    private static final boolean DEFAULT_ALLOC_LIVE = false;
 
     public final String applicationName;
     public final Duration profilingInterval;
@@ -71,6 +73,8 @@ public final class Config {
     public final int compressionLevelJFR;
     public final int compressionLevelLabels;
 
+    public final boolean allocLive;
+
     Config(final String applicationName,
            final Duration profilingInterval,
            final EventType profilingEvent,
@@ -85,7 +89,8 @@ public final class Config {
            final Map<String, String> labels,
            int ingestMaxRetries,
            int compressionLevelJFR,
-           int compressionLevelLabels) {
+           int compressionLevelLabels,
+           boolean allocLive) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -98,6 +103,7 @@ public final class Config {
         this.ingestMaxTries = ingestMaxRetries;
         this.compressionLevelJFR = validateCompressionLevel(compressionLevelJFR);
         this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
+        this.allocLive = allocLive;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -122,8 +128,14 @@ public final class Config {
             ", serverAddress='" + serverAddress + '\'' +
             ", authToken='" + authToken + '\'' +
             ", timeseriesName='" + timeseriesName + '\'' +
+            ", timeseries=" + timeseries +
             ", format=" + format +
             ", pushQueueCapacity=" + pushQueueCapacity +
+            ", labels=" + labels +
+            ", ingestMaxTries=" + ingestMaxTries +
+            ", compressionLevelJFR=" + compressionLevelJFR +
+            ", compressionLevelLabels=" + compressionLevelLabels +
+            ", allocLive=" + allocLive +
             '}';
     }
 
@@ -141,11 +153,18 @@ public final class Config {
     }
 
     public static Config build(ConfigurationProvider configurationProvider) {
+        String alloc = profilingAlloc(configurationProvider);
+        boolean allocLive = bool(configurationProvider, PYROSCOPE_ALLOC_LIVE, DEFAULT_ALLOC_LIVE);
+        if (DEFAULT_PROFILER_ALLOC.equals(alloc) && allocLive) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "%s is ignored because %s is not configured",
+                PYROSCOPE_ALLOC_LIVE, PYROSCOPE_PROFILER_ALLOC_CONFIG);
+            allocLive = false;
+        }
         return new Config(
             applicationName(configurationProvider),
             profilingInterval(configurationProvider),
             profilingEvent(configurationProvider),
-            profilingAlloc(configurationProvider),
+            alloc,
             profilingLock(configurationProvider),
             uploadInterval(configurationProvider),
             logLevel(configurationProvider),
@@ -156,7 +175,8 @@ public final class Config {
             labels(configurationProvider),
             ingestMaxRetries(configurationProvider),
             compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
-            compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS)
+            compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
+            allocLive
         );
     }
 
@@ -346,6 +366,14 @@ public final class Config {
         }
     }
 
+    public static boolean bool(ConfigurationProvider cp, String key, boolean defaultValue) {
+        final String v = cp.get(key);
+        if (v == null || v.isEmpty()) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(v);
+    }
+
     public static int compressionLevel(ConfigurationProvider cp, String key) {
         final String sLevel = cp.get(key);
         if (sLevel == null || sLevel.isEmpty()) {
@@ -398,7 +426,7 @@ public final class Config {
         public int ingestMaxRetries = DEFAULT_INGEST_MAX_RETRIES;
         public int compressionLevelJFR = DEFAULT_COMPRESSION_LEVEL;
         public int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
-
+        public boolean allocLive = DEFAULT_ALLOC_LIVE;
         public Builder() {
         }
 
@@ -416,6 +444,7 @@ public final class Config {
             pushQueueCapacity = buildUpon.pushQueueCapacity;
             compressionLevelJFR = buildUpon.compressionLevelJFR;
             compressionLevelLabels = buildUpon.compressionLevelLabels;
+            allocLive = buildUpon.allocLive;
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -511,7 +540,8 @@ public final class Config {
                 labels,
                 ingestMaxRetries,
                 compressionLevelJFR,
-                compressionLevelLabels);
+                compressionLevelLabels,
+                allocLive);
         }
     }
 }

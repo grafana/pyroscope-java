@@ -26,8 +26,10 @@ public final class Profiler {
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
     private final File tempJFRFile;
+    private final Config config;
 
     Profiler(Config config) {
+        this.config = config;
         this.alloc = config.profilingAlloc;
         this.lock = config.profilingLock;
         this.eventType = config.profilingEvent;
@@ -98,6 +100,9 @@ public final class Profiler {
         sb.append("start,event=").append(eventType.id);
         if (alloc != null && !alloc.isEmpty()) {
             sb.append(",alloc=").append(alloc);
+            if (config.allocLive) {
+                sb.append(",live");
+            }
         }
         if (lock != null && !lock.isEmpty()) {
             sb.append(",lock=").append(lock);
