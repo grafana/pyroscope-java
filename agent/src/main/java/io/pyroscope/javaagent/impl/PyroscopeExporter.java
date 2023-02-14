@@ -110,27 +110,6 @@ public class PyroscopeExporter implements Exporter {
         }
     }
 
-    @NotNull
-    private RequestBody compress(byte[] data, int level) {
-//        if (data.length == 0 || level == Deflater.NO_COMPRESSION) {
-        return RequestBody.create(data);
-//        }
-//        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-//        // todo consider compression in async-profiler
-//        try (GZIPOutputStream gz = new GZIPOutputStream(buf, level, 512, false)) {
-//            gz.write(data);
-//            gz.flush();
-//        } catch (IOException e) {
-//            logger.log(Logger.Level.DEBUG, "gzip fail %s. should not happen", e.getMessage());
-//            return RequestBody.create(data);
-//        }
-//        byte[] compressed = buf.toByteArray();
-////        if (compressed.length != 0) {
-////            logger.log(Logger.Level.DEBUG, "gzip compressed %d / %d = %f ", data.length, compressed.length, data.length/(float)compressed.length);
-////        }
-//        return RequestBody.create(compressed, GZIP);
-    }
-
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
         Instant started = snapshot.started;
         Instant finished = started.plus(config.uploadInterval);
