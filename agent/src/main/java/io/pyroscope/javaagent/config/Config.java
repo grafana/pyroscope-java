@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.*;
+import java.util.zip.Deflater;
 
 /**
  * Config allows to tweak parameters of existing pyroscope components at start time
@@ -32,6 +33,8 @@ public final class Config {
     private static final String PYROSCOPE_LABELS = "PYROSCOPE_LABELS";
 
     private static final String PYROSCOPE_INGEST_MAX_TRIES = "PYROSCOPE_INGEST_MAX_TRIES";
+    private static final String PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR = "PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR";
+    private static final String PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS = "PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -45,6 +48,7 @@ public final class Config {
     // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
     private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 8;
     private static final int DEFAULT_INGEST_MAX_RETRIES = 8;
+    private static final int DEFAULT_COMPRESSION_LEVEL = Deflater.BEST_SPEED;
     private static final String DEFAULT_LABELS = "";
 
     public final String applicationName;
@@ -64,6 +68,8 @@ public final class Config {
     public final int pushQueueCapacity;
     public final Map<String, String> labels;
     public final int ingestMaxTries;
+    public final int compressionLevelJFR;
+    public final int compressionLevelLabels;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -77,7 +83,9 @@ public final class Config {
            final Format format,
            final int pushQueueCapacity,
            final Map<String, String> labels,
-           int ingestMaxRetries) {
+           int ingestMaxRetries,
+           int compressionLevelJFR,
+           int compressionLevelLabels) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -88,6 +96,8 @@ public final class Config {
         this.serverAddress = serverAddress;
         this.authToken = authToken;
         this.ingestMaxTries = ingestMaxRetries;
+        this.compressionLevelJFR = validateCompressionLevel(compressionLevelJFR);
+        this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -144,7 +154,10 @@ public final class Config {
             format(configurationProvider),
             pushQueueCapacity(configurationProvider),
             labels(configurationProvider),
-            ingestMaxRetries(configurationProvider));
+            ingestMaxRetries(configurationProvider),
+            compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
+            compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS)
+        );
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -191,7 +204,7 @@ public final class Config {
         if (format == Format.JFR)
             return app;
         return app.newBuilder()
-            .setName(app.name +  "." + eventType.id)
+            .setName(app.name + "." + eventType.id)
             .build();
     }
 
@@ -333,6 +346,42 @@ public final class Config {
         }
     }
 
+    public static int compressionLevel(ConfigurationProvider cp, String key) {
+        final String sLevel = cp.get(key);
+        if (sLevel == null || sLevel.isEmpty()) {
+            return DEFAULT_COMPRESSION_LEVEL;
+        }
+        if ("NO_COMPRESSION".equalsIgnoreCase(sLevel)) {
+            return Deflater.NO_COMPRESSION;
+        }
+        if ("BEST_SPEED".equalsIgnoreCase(sLevel)) {
+            return Deflater.BEST_SPEED;
+        }
+        if ("BEST_COMPRESSION".equalsIgnoreCase(sLevel)) {
+            return Deflater.BEST_COMPRESSION;
+        }
+        if ("DEFAULT_COMPRESSION".equalsIgnoreCase(sLevel)) {
+            return Deflater.DEFAULT_COMPRESSION;
+        }
+        int level;
+        try {
+            level = Integer.parseInt(sLevel);
+        } catch (NumberFormatException e) {
+            return DEFAULT_COMPRESSION_LEVEL;
+        }
+        if (level >= 0 && level <= 9 || level == -1) {
+            return level;
+        }
+        return DEFAULT_COMPRESSION_LEVEL;
+    }
+
+    private static int validateCompressionLevel(int level) {
+        if (level >= -1 && level <= 9) {
+            return level;
+        }
+        throw new IllegalArgumentException(String.format("wrong deflate compression level %d", level));
+    }
+
     public static class Builder {
         public String applicationName = null;
         public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
@@ -347,6 +396,8 @@ public final class Config {
         public int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
         public Map<String, String> labels = Collections.emptyMap();
         public int ingestMaxRetries = DEFAULT_INGEST_MAX_RETRIES;
+        public int compressionLevelJFR = DEFAULT_COMPRESSION_LEVEL;
+        public int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
 
         public Builder() {
         }
@@ -363,6 +414,8 @@ public final class Config {
             authToken = buildUpon.authToken;
             format = buildUpon.format;
             pushQueueCapacity = buildUpon.pushQueueCapacity;
+            compressionLevelJFR = buildUpon.compressionLevelJFR;
+            compressionLevelLabels = buildUpon.compressionLevelLabels;
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -430,6 +483,16 @@ public final class Config {
             return this;
         }
 
+        public Builder setCompressionLevelJFR(int compressionLevelJFR) {
+            this.compressionLevelJFR = validateCompressionLevel(compressionLevelJFR);
+            return this;
+        }
+
+        public Builder setCompressionLevelLabels(int compressionLevelLabels) {
+            this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -446,7 +509,9 @@ public final class Config {
                 format,
                 pushQueueCapacity,
                 labels,
-                ingestMaxRetries);
+                ingestMaxRetries,
+                compressionLevelJFR,
+                compressionLevelLabels);
         }
     }
 }

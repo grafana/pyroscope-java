@@ -5,18 +5,21 @@ import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.util.zip.GzipSink;
 import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
+import java.util.zip.Deflater;
 
 public class PyroscopeExporter implements Exporter {
     private static final Duration TIMEOUT = Duration.ofSeconds(10);//todo allow configuration
-
     private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
+    private static final MediaType GZIP = MediaType.parse("application/gzip");
 
     final Config config;
     final Logger logger;
@@ -55,17 +58,17 @@ public class PyroscopeExporter implements Exporter {
                 logger.log(Logger.Level.DEBUG, "Upload attempt %d. JFR: %s, labels: %s", tries, snapshot.data.length, labels.length);
                 MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM);
-                bodyBuilder.addFormDataPart(
-                    /* name */ "jfr",
-                    /* filename */ "jfr",
-                    RequestBody.create(snapshot.data)
-                );
+                RequestBody jfrBody = RequestBody.create(snapshot.data);
+                if (config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
+                    jfrBody = GzipSink.gzip(jfrBody, config.compressionLevelJFR);
+                }
+                bodyBuilder.addFormDataPart("jfr", "jfr", jfrBody);
                 if (labels.length > 0) {
-                    bodyBuilder.addFormDataPart(
-                        /* name */ "labels",
-                        /* filename */ "labels",
-                        RequestBody.create(labels, PROTOBUF)
-                    );
+                    RequestBody labelsBody = RequestBody.create(labels, PROTOBUF);
+                    if (config.compressionLevelLabels != Deflater.NO_COMPRESSION) {
+                        labelsBody = GzipSink.gzip(labelsBody, config.compressionLevelLabels);
+                    }
+                    bodyBuilder.addFormDataPart("labels", "labels", labelsBody);
                 }
                 requestBody = bodyBuilder.build();
             } else {
@@ -132,5 +135,4 @@ public class PyroscopeExporter implements Exporter {
             .build()
             .toString();
     }
-
 }
