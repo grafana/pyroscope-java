@@ -93,7 +93,8 @@ public final class Config {
            int ingestMaxRetries,
            int compressionLevelJFR,
            int compressionLevelLabels,
-           boolean allocLive, boolean gcBeforeDump) {
+           boolean allocLive,
+           boolean gcBeforeDump) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -525,6 +526,16 @@ public final class Config {
 
         public Builder setCompressionLevelLabels(int compressionLevelLabels) {
             this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
+            return this;
+        }
+
+        public Builder setAllocLive(boolean allocLive) {
+            this.allocLive = allocLive;
+            return this;
+        }
+
+        public Builder setGcBeforeDump(boolean gcBeforeDump) {
+            this.gcBeforeDump = gcBeforeDump;
             return this;
         }
 
