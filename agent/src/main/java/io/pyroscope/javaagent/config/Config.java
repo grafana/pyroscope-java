@@ -349,7 +349,7 @@ public final class Config {
     public static int compressionLevel(ConfigurationProvider cp, String key) {
         final String sLevel = cp.get(key);
         if (sLevel == null || sLevel.isEmpty()) {
-            return Deflater.BEST_SPEED;
+            return DEFAULT_COMPRESSION_LEVEL;
         }
         if ("NO_COMPRESSION".equalsIgnoreCase(sLevel)) {
             return Deflater.NO_COMPRESSION;
