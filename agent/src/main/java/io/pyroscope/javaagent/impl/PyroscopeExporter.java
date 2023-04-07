@@ -96,11 +96,11 @@ public class PyroscopeExporter implements Exporter {
             } catch (final IOException e) {
                 logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s", e.getMessage());
             }
-            if (config.ingestMaxTries >= 0 && tries >= config.ingestMaxTries) {
-                logger.log(Logger.Level.ERROR, "Gave up uploading profiling snapshot after %d tries", tries);
-                break;
-            }
             if (!success) {
+                if (config.ingestMaxTries >= 0 && tries >= config.ingestMaxTries) {
+                    logger.log(Logger.Level.ERROR, "Gave up uploading profiling snapshot after %d tries", tries);
+                    break;
+                }
                 final int backoff = exponentialBackoff.error();
                 logger.log(Logger.Level.DEBUG, "Backing off for %s ms", backoff);
                 Thread.sleep(backoff);
