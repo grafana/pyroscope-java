@@ -14,13 +14,17 @@ import java.util.*;
 import java.util.zip.Deflater;
 
 /**
- * Config allows to tweak parameters of existing pyroscope components at start time
- * through pyroscope.properties file or System.getevn - see io.pyroscope.javaagent.impl.DefaultConfigurationProvider
+ * Config allows to tweak parameters of existing pyroscope components at start
+ * time
+ * through pyroscope.properties file or System.getevn - see
+ * io.pyroscope.javaagent.impl.DefaultConfigurationProvider
  */
 public final class Config {
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
     private static final String PYROSCOPE_PROFILER_EVENT_CONFIG = "PYROSCOPE_PROFILER_EVENT";
+    private static final String PYROSCOPE_PROFILER_MULTI_EVENT_CONFIG = "PYROSCOPE_PROFILER_MULTI_EVENT_CONFIG";
+
     private static final String PYROSCOPE_PROFILER_ALLOC_CONFIG = "PYROSCOPE_PROFILER_ALLOC";
     private static final String PYROSCOPE_PROFILER_LOCK_CONFIG = "PYROSCOPE_PROFILER_LOCK";
     private static final String PYROSCOPE_UPLOAD_INTERVAL_CONFIG = "PYROSCOPE_UPLOAD_INTERVAL";
@@ -41,13 +45,15 @@ public final class Config {
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
+    private static final EventType[] DEFAULT_PROFILER_MULTI_EVENTS = { EventType.ITIMER, EventType.LOCK };
     private static final String DEFAULT_PROFILER_ALLOC = "";
     private static final String DEFAULT_PROFILER_LOCK = "";
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
     private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
     // The number of snapshots simultaneously stored in memory is limited by this.
-    // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
+    // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160
+    // KB.
     private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 8;
     private static final int DEFAULT_INGEST_MAX_RETRIES = 8;
     private static final int DEFAULT_COMPRESSION_LEVEL = Deflater.BEST_SPEED;
@@ -58,6 +64,8 @@ public final class Config {
     public final String applicationName;
     public final Duration profilingInterval;
     public final EventType profilingEvent;
+    public final EventType[] profilingEvents;
+
     public final String profilingAlloc;
     public final String profilingLock;
     public final Duration uploadInterval;
@@ -79,25 +87,27 @@ public final class Config {
     public final boolean gcBeforeDump;
 
     Config(final String applicationName,
-           final Duration profilingInterval,
-           final EventType profilingEvent,
-           final String profilingAlloc,
-           final String profilingLock,
-           final Duration uploadInterval,
-           final Logger.Level logLevel,
-           final String serverAddress,
-           final String authToken,
-           final Format format,
-           final int pushQueueCapacity,
-           final Map<String, String> labels,
-           int ingestMaxRetries,
-           int compressionLevelJFR,
-           int compressionLevelLabels,
-           boolean allocLive,
-           boolean gcBeforeDump) {
+            final Duration profilingInterval,
+            final EventType profilingEvent,
+            final EventType[] profilingEvents,
+            final String profilingAlloc,
+            final String profilingLock,
+            final Duration uploadInterval,
+            final Logger.Level logLevel,
+            final String serverAddress,
+            final String authToken,
+            final Format format,
+            final int pushQueueCapacity,
+            final Map<String, String> labels,
+            int ingestMaxRetries,
+            int compressionLevelJFR,
+            int compressionLevelLabels,
+            boolean allocLive,
+            boolean gcBeforeDump) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
+        this.profilingEvents = profilingEvents;
         this.profilingAlloc = profilingAlloc;
         this.profilingLock = profilingLock;
         this.uploadInterval = uploadInterval;
@@ -123,25 +133,26 @@ public final class Config {
     @Override
     public String toString() {
         return "Config{" +
-            "applicationName='" + applicationName + '\'' +
-            ", profilingInterval=" + profilingInterval +
-            ", profilingEvent=" + profilingEvent +
-            ", profilingAlloc='" + profilingAlloc + '\'' +
-            ", profilingLock='" + profilingLock + '\'' +
-            ", uploadInterval=" + uploadInterval +
-            ", logLevel=" + logLevel +
-            ", serverAddress='" + serverAddress + '\'' +
-            ", authToken='" + authToken + '\'' +
-            ", timeseriesName='" + timeseriesName + '\'' +
-            ", timeseries=" + timeseries +
-            ", format=" + format +
-            ", pushQueueCapacity=" + pushQueueCapacity +
-            ", labels=" + labels +
-            ", ingestMaxTries=" + ingestMaxTries +
-            ", compressionLevelJFR=" + compressionLevelJFR +
-            ", compressionLevelLabels=" + compressionLevelLabels +
-            ", allocLive=" + allocLive +
-            '}';
+                "applicationName='" + applicationName + '\'' +
+                ", profilingInterval=" + profilingInterval +
+                ", profilingEvent=" + profilingEvent +
+                ", profilingEvents=" + profilingEvents +
+                ", profilingAlloc='" + profilingAlloc + '\'' +
+                ", profilingLock='" + profilingLock + '\'' +
+                ", uploadInterval=" + uploadInterval +
+                ", logLevel=" + logLevel +
+                ", serverAddress='" + serverAddress + '\'' +
+                ", authToken='" + authToken + '\'' +
+                ", timeseriesName='" + timeseriesName + '\'' +
+                ", timeseries=" + timeseries +
+                ", format=" + format +
+                ", pushQueueCapacity=" + pushQueueCapacity +
+                ", labels=" + labels +
+                ", ingestMaxTries=" + ingestMaxTries +
+                ", compressionLevelJFR=" + compressionLevelJFR +
+                ", compressionLevelLabels=" + compressionLevelLabels +
+                ", allocLive=" + allocLive +
+                '}';
     }
 
     public Builder newBuilder() {
@@ -162,27 +173,28 @@ public final class Config {
         boolean allocLive = bool(configurationProvider, PYROSCOPE_ALLOC_LIVE, DEFAULT_ALLOC_LIVE);
         if (DEFAULT_PROFILER_ALLOC.equals(alloc) && allocLive) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "%s is ignored because %s is not configured",
-                PYROSCOPE_ALLOC_LIVE, PYROSCOPE_PROFILER_ALLOC_CONFIG);
+                    PYROSCOPE_ALLOC_LIVE, PYROSCOPE_PROFILER_ALLOC_CONFIG);
             allocLive = false;
         }
         return new Config(
-            applicationName(configurationProvider),
-            profilingInterval(configurationProvider),
-            profilingEvent(configurationProvider),
-            alloc,
-            profilingLock(configurationProvider),
-            uploadInterval(configurationProvider),
-            logLevel(configurationProvider),
-            serverAddress(configurationProvider),
-            authToken(configurationProvider),
-            format(configurationProvider),
-            pushQueueCapacity(configurationProvider),
-            labels(configurationProvider),
-            ingestMaxRetries(configurationProvider),
-            compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
-            compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
-            allocLive,
-            bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP));
+                applicationName(configurationProvider),
+                profilingInterval(configurationProvider),
+                profilingEvent(configurationProvider),
+                profilingEvents(configurationProvider),
+                alloc,
+                profilingLock(configurationProvider),
+                uploadInterval(configurationProvider),
+                logLevel(configurationProvider),
+                serverAddress(configurationProvider),
+                authToken(configurationProvider),
+                format(configurationProvider),
+                pushQueueCapacity(configurationProvider),
+                labels(configurationProvider),
+                ingestMaxRetries(configurationProvider),
+                compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
+                compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
+                allocLive,
+                bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP));
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -196,8 +208,9 @@ public final class Config {
     @NotNull
     private static String generateApplicationName() {
         String applicationName;
-        DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.INFO, "We recommend specifying application name via env variable %s",
-            PYROSCOPE_APPLICATION_NAME_CONFIG);
+        DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.INFO,
+                "We recommend specifying application name via env variable %s",
+                PYROSCOPE_APPLICATION_NAME_CONFIG);
         // TODO transfer name generation algorithm from the Go implementation.
 
         final UUID uuid = UUID.randomUUID();
@@ -207,7 +220,8 @@ public final class Config {
         final String random = Base64.getUrlEncoder().withoutPadding().encodeToString(byteBuffer.array());
         applicationName = DEFAULT_SPY_NAME + "." + random;
 
-        DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.INFO, "For now we chose the name for you and it's %s", applicationName);
+        DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.INFO, "For now we chose the name for you and it's %s",
+                applicationName);
         return applicationName;
     }
 
@@ -220,7 +234,7 @@ public final class Config {
             return IntervalParser.parse(profilingIntervalStr);
         } catch (final NumberFormatException e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %sms",
-                PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL.toMillis());
+                    PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL.toMillis());
             return DEFAULT_PROFILING_INTERVAL;
         }
     }
@@ -229,13 +243,12 @@ public final class Config {
         if (format == Format.JFR)
             return app;
         return app.newBuilder()
-            .setName(app.name + "." + eventType.id)
-            .build();
+                .setName(app.name + "." + eventType.id)
+                .build();
     }
 
     private static EventType profilingEvent(ConfigurationProvider configurationProvider) {
-        final String profilingEventStr =
-            configurationProvider.get(PYROSCOPE_PROFILER_EVENT_CONFIG);
+        final String profilingEventStr = configurationProvider.get(PYROSCOPE_PROFILER_EVENT_CONFIG);
         if (profilingEventStr == null || profilingEventStr.isEmpty()) {
             return DEFAULT_PROFILER_EVENT;
         }
@@ -246,9 +259,35 @@ public final class Config {
             return EventType.fromId(lowerCaseTrimmed);
         } catch (IllegalArgumentException e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
-                PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
+                    PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
             return DEFAULT_PROFILER_EVENT;
         }
+    }
+
+    private static EventType[] profilingEvents(ConfigurationProvider configurationProvider) {
+        final String profilingMultiEventStr = configurationProvider.get(PYROSCOPE_PROFILER_MULTI_EVENT_CONFIG);
+        if (profilingMultiEventStr == null || profilingMultiEventStr.isEmpty()) {
+            return new EventType[0]; // Return an empty array
+        }
+
+        final String[] eventIds = profilingMultiEventStr.trim().toLowerCase().split(","); // Split the string into
+                                                                                          // individual event IDs
+
+        EventType[] eventTypes = new EventType[eventIds.length]; // Create an array to store the event types
+
+        for (int i = 0; i < eventIds.length; i++) {
+            try {
+                eventTypes[i] = EventType.fromId(eventIds[i]); // Convert each event ID to EventType and store in the
+                                                               // array
+            } catch (IllegalArgumentException e) {
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
+                        PYROSCOPE_PROFILER_MULTI_EVENT_CONFIG, eventIds[i], DEFAULT_PROFILER_MULTI_EVENTS[i].id);
+                eventTypes = DEFAULT_PROFILER_MULTI_EVENTS; // If an invalid event ID is encountered, use the default
+                                                            // event type
+            }
+        }
+
+        return eventTypes;
     }
 
     private static String profilingAlloc(ConfigurationProvider configurationProvider) {
@@ -276,7 +315,7 @@ public final class Config {
             return IntervalParser.parse(uploadIntervalStr);
         } catch (final NumberFormatException e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
-                PYROSCOPE_UPLOAD_INTERVAL_CONFIG, uploadIntervalStr, DEFAULT_UPLOAD_INTERVAL);
+                    PYROSCOPE_UPLOAD_INTERVAL_CONFIG, uploadIntervalStr, DEFAULT_UPLOAD_INTERVAL);
             return DEFAULT_UPLOAD_INTERVAL;
         }
     }
@@ -308,7 +347,7 @@ public final class Config {
         }
         if (serverAddress == null || serverAddress.isEmpty()) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "%s is not defined, using %s",
-                PYROSCOPE_SERVER_ADDRESS_CONFIG, DEFAULT_SERVER_ADDRESS);
+                    PYROSCOPE_SERVER_ADDRESS_CONFIG, DEFAULT_SERVER_ADDRESS);
             serverAddress = DEFAULT_SERVER_ADDRESS;
 
         }
@@ -329,7 +368,8 @@ public final class Config {
             case "jfr":
                 return Format.JFR;
             default:
-                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Unknown format %s, using %s", format, DEFAULT_FORMAT);
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Unknown format %s, using %s", format,
+                        DEFAULT_FORMAT);
                 return DEFAULT_FORMAT;
         }
     }
@@ -419,6 +459,8 @@ public final class Config {
         public String applicationName = null;
         public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
         public EventType profilingEvent = DEFAULT_PROFILER_EVENT;
+        public EventType[] profilingEvents = DEFAULT_PROFILER_MULTI_EVENTS;
+
         public String profilingAlloc = "";
         public String profilingLock = "";
         public Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
@@ -433,6 +475,7 @@ public final class Config {
         public int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
         public boolean allocLive = DEFAULT_ALLOC_LIVE;
         public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
+
         public Builder() {
         }
 
@@ -440,6 +483,7 @@ public final class Config {
             applicationName = buildUpon.applicationName;
             profilingInterval = buildUpon.profilingInterval;
             profilingEvent = buildUpon.profilingEvent;
+            profilingEvents = buildUpon.profilingEvents;
             profilingAlloc = buildUpon.profilingAlloc;
             profilingLock = buildUpon.profilingLock;
             uploadInterval = buildUpon.uploadInterval;
@@ -466,6 +510,11 @@ public final class Config {
 
         public Builder setProfilingEvent(EventType profilingEvent) {
             this.profilingEvent = profilingEvent;
+            return this;
+        }
+
+        public Builder setProfilingEvents(EventType... profilingEvents) {
+            this.profilingEvents = profilingEvents;
             return this;
         }
 
@@ -544,22 +593,23 @@ public final class Config {
                 applicationName = generateApplicationName();
             }
             return new Config(applicationName,
-                profilingInterval,
-                profilingEvent,
-                profilingAlloc,
-                profilingLock,
-                uploadInterval,
-                logLevel,
-                serverAddress,
-                authToken,
-                format,
-                pushQueueCapacity,
-                labels,
-                ingestMaxRetries,
-                compressionLevelJFR,
-                compressionLevelLabels,
-                allocLive,
-                gcBeforeDump);
+                    profilingInterval,
+                    profilingEvent,
+                    profilingEvents,
+                    profilingAlloc,
+                    profilingLock,
+                    uploadInterval,
+                    logLevel,
+                    serverAddress,
+                    authToken,
+                    format,
+                    pushQueueCapacity,
+                    labels,
+                    ingestMaxRetries,
+                    compressionLevelJFR,
+                    compressionLevelLabels,
+                    allocLive,
+                    gcBeforeDump);
         }
     }
 }

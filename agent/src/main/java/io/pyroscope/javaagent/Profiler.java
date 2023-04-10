@@ -17,11 +17,12 @@ import java.time.Instant;
 
 public final class Profiler {
     private final EventType eventType;
+    private final EventType[] eventTypes;
+
     private final String alloc;
     private final String lock;
     private final Duration interval;
     private final Format format;
-
 
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
@@ -33,6 +34,7 @@ public final class Profiler {
         this.alloc = config.profilingAlloc;
         this.lock = config.profilingLock;
         this.eventType = config.profilingEvent;
+        this.eventTypes = config.profilingEvents;
         this.interval = config.profilingInterval;
         this.format = config.format;
 
@@ -97,7 +99,16 @@ public final class Profiler {
 
     private String createJFRCommand() {
         StringBuilder sb = new StringBuilder();
-        sb.append("start,event=").append(eventType.id);
+
+        for (int i = 0; i < eventTypes.length; i++) {
+            if (i == 0) {
+                sb.append("start,event=").append(eventTypes[0].id);
+            } else {
+                sb.append(",").append(eventTypes[i].id);
+            }
+
+        }
+
         if (alloc != null && !alloc.isEmpty()) {
             sb.append(",alloc=").append(alloc);
             if (config.allocLive) {
@@ -108,8 +119,10 @@ public final class Profiler {
             sb.append(",lock=").append(lock);
         }
         sb.append(",interval=").append(interval.toNanos())
-            .append(",file=").append(tempJFRFile.toString());
+                .append(",file=").append(tempJFRFile.toString());
+
         return sb.toString();
+
     }
 
     private Snapshot dumpImpl(Instant profilingIntervalStartTime) {
@@ -123,12 +136,11 @@ public final class Profiler {
             data = instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8);
         }
         return new Snapshot(
-            format,
-            eventType,
-            profilingIntervalStartTime,
-            data,
-            Pyroscope.LabelsWrapper.dump()
-        );
+                format,
+                eventType,
+                profilingIntervalStartTime,
+                data,
+                Pyroscope.LabelsWrapper.dump());
     }
 
     private byte[] dumpJFR() {
