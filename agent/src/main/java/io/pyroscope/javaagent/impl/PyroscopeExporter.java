@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
+import java.util.function.BiConsumer;
 import java.util.zip.Deflater;
 
 public class PyroscopeExporter implements Exporter {
@@ -76,9 +77,11 @@ public class PyroscopeExporter implements Exporter {
             Request.Builder request = new Request.Builder()
                 .post(requestBody)
                 .url(url);
-            if (config.authToken != null && !config.authToken.isEmpty()) {
-                request.header("Authorization", "Bearer " + config.authToken);
-            }
+
+            config.httpHeaders.forEach((k, v) -> request.header(k, v));
+
+            addAuthHeader(request, url, config);
+
             try (Response response = client.newCall(request.build()).execute()) {
                 int status = response.code();
                 if (status >= 400) {
@@ -105,6 +108,18 @@ public class PyroscopeExporter implements Exporter {
                 logger.log(Logger.Level.DEBUG, "Backing off for %s ms", backoff);
                 Thread.sleep(backoff);
             }
+        }
+    }
+
+    private static void addAuthHeader(Request.Builder request, HttpUrl url, Config config) {
+        if (config.authToken != null && !config.authToken.isEmpty()) {
+            request.header("Authorization", "Bearer " + config.authToken);
+            return;
+        }
+        String u = url.username();
+        String p = url.password();
+        if (!u.isEmpty() || !p.isEmpty()) {
+            request.header("Authorization", Credentials.basic(u, p));
         }
     }
 
