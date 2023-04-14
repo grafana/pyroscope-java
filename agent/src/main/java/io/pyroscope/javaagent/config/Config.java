@@ -1,5 +1,8 @@
 package io.pyroscope.javaagent.config;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.api.ConfigurationProvider;
@@ -8,6 +11,8 @@ import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.*;
@@ -37,6 +42,7 @@ public final class Config {
     private static final String PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS = "PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS";
     private static final String PYROSCOPE_ALLOC_LIVE = "PYROSCOPE_ALLOC_LIVE";
     private static final String PYROSCOPE_GC_BEFORE_DUMP = "PYROSCOPE_GC_BEFORE_DUMP";
+    private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -78,6 +84,8 @@ public final class Config {
     public final boolean allocLive;
     public final boolean gcBeforeDump;
 
+    public final Map<String, String> httpHeaders;
+
     Config(final String applicationName,
            final Duration profilingInterval,
            final EventType profilingEvent,
@@ -94,7 +102,8 @@ public final class Config {
            int compressionLevelJFR,
            int compressionLevelLabels,
            boolean allocLive,
-           boolean gcBeforeDump) {
+           boolean gcBeforeDump,
+           Map<String, String> httpHeaders) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -109,6 +118,7 @@ public final class Config {
         this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
         this.allocLive = allocLive;
         this.gcBeforeDump = gcBeforeDump;
+        this.httpHeaders = httpHeaders;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -141,6 +151,7 @@ public final class Config {
             ", compressionLevelJFR=" + compressionLevelJFR +
             ", compressionLevelLabels=" + compressionLevelLabels +
             ", allocLive=" + allocLive +
+            ", httpHeaders=" + httpHeaders +
             '}';
     }
 
@@ -182,7 +193,9 @@ public final class Config {
             compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
             compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
             allocLive,
-            bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP));
+            bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP),
+            httpHeaders(configurationProvider)
+        );
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -415,6 +428,30 @@ public final class Config {
         throw new IllegalArgumentException(String.format("wrong deflate compression level %d", level));
     }
 
+    public static Map<String, String> httpHeaders(ConfigurationProvider cp) {
+        final String sHttpHeaders = cp.get(PYROSCOPE_HTTP_HEADERS);
+        if (sHttpHeaders == null || sHttpHeaders.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Moshi moshi = new Moshi.Builder().build();
+
+        Type headersType = Types.newParameterizedType(Map.class, String.class, String.class);
+        JsonAdapter<Map<String, String>> adapter = moshi.adapter(headersType);
+
+        try {
+            Map<String, String> httpHeaders = adapter.fromJson(sHttpHeaders);
+            if (httpHeaders == null) {
+                return Collections.emptyMap();
+            }
+            return httpHeaders;
+        } catch (Exception e) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Failed to parse %s = %s configuration. " +
+                "Falling back to no extra http headers. %s: ", PYROSCOPE_HTTP_HEADERS, sHttpHeaders, e.getMessage());
+            return Collections.emptyMap();
+        }
+    }
+
+
     public static class Builder {
         public String applicationName = null;
         public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
@@ -433,6 +470,7 @@ public final class Config {
         public int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
         public boolean allocLive = DEFAULT_ALLOC_LIVE;
         public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
+        public Map<String, String> httpHeaders = new HashMap<>();
         public Builder() {
         }
 
@@ -452,6 +490,7 @@ public final class Config {
             compressionLevelLabels = buildUpon.compressionLevelLabels;
             allocLive = buildUpon.allocLive;
             gcBeforeDump = buildUpon.gcBeforeDump;
+            httpHeaders = new HashMap<>(buildUpon.httpHeaders);
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -539,6 +578,16 @@ public final class Config {
             return this;
         }
 
+        public Builder setHTTPHeaders(Map<String, String> httpHeaders) {
+            this.httpHeaders = new HashMap<>(httpHeaders);
+            return this;
+        }
+
+        public Builder addHTTPHeader(String k, String v) {
+            this.httpHeaders.put(k, v);
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -559,7 +608,8 @@ public final class Config {
                 compressionLevelJFR,
                 compressionLevelLabels,
                 allocLive,
-                gcBeforeDump);
+                gcBeforeDump,
+                httpHeaders);
         }
     }
 }
