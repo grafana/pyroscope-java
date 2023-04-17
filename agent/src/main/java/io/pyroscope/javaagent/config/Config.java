@@ -11,7 +11,6 @@ import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -43,6 +42,7 @@ public final class Config {
     private static final String PYROSCOPE_ALLOC_LIVE = "PYROSCOPE_ALLOC_LIVE";
     private static final String PYROSCOPE_GC_BEFORE_DUMP = "PYROSCOPE_GC_BEFORE_DUMP";
     private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
+    private static final String PYROSCOPE_SCOPE_ORGID = "PYROSCOPE_SCOPE_ORGID";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -60,6 +60,7 @@ public final class Config {
     private static final String DEFAULT_LABELS = "";
     private static final boolean DEFAULT_ALLOC_LIVE = false;
     private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
+    private static final String DEFAULT_SCOPE_ORG_ID = "";
 
     public final String applicationName;
     public final Duration profilingInterval;
@@ -85,6 +86,7 @@ public final class Config {
     public final boolean gcBeforeDump;
 
     public final Map<String, String> httpHeaders;
+    public final String scopeOrgID;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -103,7 +105,8 @@ public final class Config {
            int compressionLevelLabels,
            boolean allocLive,
            boolean gcBeforeDump,
-           Map<String, String> httpHeaders) {
+           Map<String, String> httpHeaders,
+           String scopeOrgID) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -119,6 +122,7 @@ public final class Config {
         this.allocLive = allocLive;
         this.gcBeforeDump = gcBeforeDump;
         this.httpHeaders = httpHeaders;
+        this.scopeOrgID = scopeOrgID;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -194,8 +198,8 @@ public final class Config {
             compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
             allocLive,
             bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP),
-            httpHeaders(configurationProvider)
-        );
+            httpHeaders(configurationProvider),
+            scopeOrgID(configurationProvider));
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -451,6 +455,10 @@ public final class Config {
         }
     }
 
+    private static String scopeOrgID(ConfigurationProvider cp) {
+        return cp.get(PYROSCOPE_SCOPE_ORGID);
+    }
+
 
     public static class Builder {
         public String applicationName = null;
@@ -471,6 +479,8 @@ public final class Config {
         public boolean allocLive = DEFAULT_ALLOC_LIVE;
         public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
         public Map<String, String> httpHeaders = new HashMap<>();
+        private String scopeOrgID = DEFAULT_SCOPE_ORG_ID;
+
         public Builder() {
         }
 
@@ -491,6 +501,7 @@ public final class Config {
             allocLive = buildUpon.allocLive;
             gcBeforeDump = buildUpon.gcBeforeDump;
             httpHeaders = new HashMap<>(buildUpon.httpHeaders);
+            scopeOrgID = buildUpon.scopeOrgID;
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -588,6 +599,11 @@ public final class Config {
             return this;
         }
 
+        public Builder setScopeOrgID(String scopeOrgID) {
+            this.scopeOrgID = scopeOrgID;
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -609,7 +625,8 @@ public final class Config {
                 compressionLevelLabels,
                 allocLive,
                 gcBeforeDump,
-                httpHeaders);
+                httpHeaders,
+                scopeOrgID);
         }
     }
 }
