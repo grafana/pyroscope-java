@@ -123,7 +123,7 @@ public final class Config {
            Duration samplingDuration,
            String scopeOrgID,
            String APLogLevel,
-           String apExtraArguments) {
+           String APExtraArguments) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -142,7 +142,7 @@ public final class Config {
         this.samplingDuration = samplingDuration;
         this.scopeOrgID = scopeOrgID;
         this.APLogLevel = APLogLevel;
-        APExtraArguments = apExtraArguments;
+        this.APExtraArguments = APExtraArguments;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
