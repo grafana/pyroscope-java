@@ -44,6 +44,15 @@ public final class Config {
     private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
     private static final String PYROSCOPE_SCOPE_ORGID = "PYROSCOPE_SCOPE_ORGID";
 
+    /**
+     * Experimental feature, may be removed in the future
+     */
+    private static final String PYROSCOPE_SAMPLING_RATE = "PYROSCOPE_SAMPLING_RATE";
+    /**
+     * Experimental feature, may be removed in the future
+     */
+    private static final String PYROSCOPE_SAMPLING_DURATION = "PYROSCOPE_SAMPLING_DURATION";
+
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
@@ -60,6 +69,7 @@ public final class Config {
     private static final String DEFAULT_LABELS = "";
     private static final boolean DEFAULT_ALLOC_LIVE = false;
     private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
+    private static final Duration DEFAULT_SAMPLING_DURATION = null;
     private static final String DEFAULT_SCOPE_ORG_ID = "";
 
     public final String applicationName;
@@ -86,6 +96,7 @@ public final class Config {
     public final boolean gcBeforeDump;
 
     public final Map<String, String> httpHeaders;
+    public final Duration samplingDuration;
     public final String scopeOrgID;
 
     Config(final String applicationName,
@@ -106,6 +117,7 @@ public final class Config {
            boolean allocLive,
            boolean gcBeforeDump,
            Map<String, String> httpHeaders,
+           Duration samplingDuration,
            String scopeOrgID) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
@@ -122,6 +134,7 @@ public final class Config {
         this.allocLive = allocLive;
         this.gcBeforeDump = gcBeforeDump;
         this.httpHeaders = httpHeaders;
+        this.samplingDuration = samplingDuration;
         this.scopeOrgID = scopeOrgID;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
@@ -156,6 +169,8 @@ public final class Config {
             ", compressionLevelLabels=" + compressionLevelLabels +
             ", allocLive=" + allocLive +
             ", httpHeaders=" + httpHeaders +
+            ", samplingDuration=" + samplingDuration +
+            ", scopeOrgId=" + scopeOrgID +
             '}';
     }
 
@@ -199,6 +214,7 @@ public final class Config {
             allocLive,
             bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP),
             httpHeaders(configurationProvider),
+            samplingDuration(configurationProvider),
             scopeOrgID(configurationProvider));
     }
 
@@ -459,6 +475,44 @@ public final class Config {
         return cp.get(PYROSCOPE_SCOPE_ORGID);
     }
 
+    private static Duration samplingDuration(ConfigurationProvider configurationProvider) {
+        Duration uploadInterval = uploadInterval(configurationProvider);
+
+        final String samplingDurationStr = configurationProvider.get(PYROSCOPE_SAMPLING_DURATION);
+        if (samplingDurationStr != null && !samplingDurationStr.isEmpty()) {
+            try {
+                Duration samplingDuration = IntervalParser.parse(samplingDurationStr);
+                if (samplingDuration.compareTo(uploadInterval) > 0) {
+                    DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, ignore it",
+                        PYROSCOPE_SAMPLING_DURATION, samplingDurationStr);
+                } else {
+                    return samplingDuration;
+                }
+            } catch (final NumberFormatException e) {
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, ignore it",
+                    PYROSCOPE_SAMPLING_DURATION, samplingDurationStr);
+            }
+            return DEFAULT_SAMPLING_DURATION;
+        }
+
+        final String samplingRateStr = configurationProvider.get(PYROSCOPE_SAMPLING_RATE);
+        if (samplingRateStr == null || samplingRateStr.isEmpty()) {
+            return DEFAULT_SAMPLING_DURATION;
+        }
+        try {
+            double samplingRate = Double.parseDouble(samplingRateStr);
+            if (samplingRate <= 0.0 || samplingRate >= 1.0) {
+                return DEFAULT_SAMPLING_DURATION;
+            }
+            long uploadIntervalMillis = uploadInterval.toMillis();
+            long samplingDurationMillis = Math.min(uploadIntervalMillis, Math.round(uploadIntervalMillis * samplingRate));
+            return Duration.ofMillis(samplingDurationMillis);
+        } catch (final NumberFormatException e) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, ignore it",
+                PYROSCOPE_SAMPLING_RATE, samplingRateStr);
+            return DEFAULT_SAMPLING_DURATION;
+        }
+    }
 
     public static class Builder {
         public String applicationName = null;
@@ -479,6 +533,8 @@ public final class Config {
         public boolean allocLive = DEFAULT_ALLOC_LIVE;
         public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
         public Map<String, String> httpHeaders = new HashMap<>();
+        public Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
+
         private String scopeOrgID = DEFAULT_SCOPE_ORG_ID;
 
         public Builder() {
@@ -501,6 +557,7 @@ public final class Config {
             allocLive = buildUpon.allocLive;
             gcBeforeDump = buildUpon.gcBeforeDump;
             httpHeaders = new HashMap<>(buildUpon.httpHeaders);
+            samplingDuration = buildUpon.samplingDuration;
             scopeOrgID = buildUpon.scopeOrgID;
         }
 
@@ -599,6 +656,11 @@ public final class Config {
             return this;
         }
 
+        public Builder setSamplingDuration(Duration samplingDuration) {
+            this.samplingDuration = samplingDuration;
+            return this;
+        }
+
         public Builder setScopeOrgID(String scopeOrgID) {
             this.scopeOrgID = scopeOrgID;
             return this;
@@ -626,7 +688,9 @@ public final class Config {
                 allocLive,
                 gcBeforeDump,
                 httpHeaders,
-                scopeOrgID);
+                samplingDuration,
+                scopeOrgID
+            );
         }
     }
 }
