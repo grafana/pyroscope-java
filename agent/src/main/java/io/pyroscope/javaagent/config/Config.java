@@ -29,6 +29,8 @@ public final class Config {
     private static final String PYROSCOPE_PROFILER_LOCK_CONFIG = "PYROSCOPE_PROFILER_LOCK";
     private static final String PYROSCOPE_UPLOAD_INTERVAL_CONFIG = "PYROSCOPE_UPLOAD_INTERVAL";
     private static final String PYROSCOPE_LOG_LEVEL_CONFIG = "PYROSCOPE_LOG_LEVEL";
+    private static final String PYROSCOPE_AP_LOG_LEVEL_CONFIG = "PYROSCOPE_AP_LOG_LEVEL";
+    private static final String PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG = "PYROSCOPE_AP_EXTRA_ARGUMENTS";
     private static final String PYROSCOPE_SERVER_ADDRESS_CONFIG = "PYROSCOPE_SERVER_ADDRESS";
     private static final String PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG = "PYROSCOPE_ADHOC_SERVER_ADDRESS";
     private static final String PYROSCOPE_AUTH_TOKEN_CONFIG = "PYROSCOPE_AUTH_TOKEN";
@@ -97,6 +99,8 @@ public final class Config {
     public final Map<String, String> httpHeaders;
     public final Duration samplingDuration;
     public final String scopeOrgID;
+    public final String APLogLevel;
+    public final String APExtraArguments;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -117,7 +121,9 @@ public final class Config {
            boolean gcBeforeDump,
            Map<String, String> httpHeaders,
            Duration samplingDuration,
-           String scopeOrgID) {
+           String scopeOrgID,
+           String APLogLevel,
+           String APExtraArguments) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -135,6 +141,8 @@ public final class Config {
         this.httpHeaders = httpHeaders;
         this.samplingDuration = samplingDuration;
         this.scopeOrgID = scopeOrgID;
+        this.APLogLevel = APLogLevel;
+        this.APExtraArguments = APExtraArguments;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -186,35 +194,37 @@ public final class Config {
         return build(DefaultConfigurationProvider.INSTANCE);
     }
 
-    public static Config build(ConfigurationProvider configurationProvider) {
-        String alloc = profilingAlloc(configurationProvider);
-        boolean allocLive = bool(configurationProvider, PYROSCOPE_ALLOC_LIVE, DEFAULT_ALLOC_LIVE);
+    public static Config build(ConfigurationProvider cp) {
+        String alloc = profilingAlloc(cp);
+        boolean allocLive = bool(cp, PYROSCOPE_ALLOC_LIVE, DEFAULT_ALLOC_LIVE);
         if (DEFAULT_PROFILER_ALLOC.equals(alloc) && allocLive) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "%s is ignored because %s is not configured",
                 PYROSCOPE_ALLOC_LIVE, PYROSCOPE_PROFILER_ALLOC_CONFIG);
             allocLive = false;
         }
         return new Config(
-            applicationName(configurationProvider),
-            profilingInterval(configurationProvider),
-            profilingEvent(configurationProvider),
+            applicationName(cp),
+            profilingInterval(cp),
+            profilingEvent(cp),
             alloc,
-            profilingLock(configurationProvider),
-            uploadInterval(configurationProvider),
-            logLevel(configurationProvider),
-            serverAddress(configurationProvider),
-            authToken(configurationProvider),
-            format(configurationProvider),
-            pushQueueCapacity(configurationProvider),
-            labels(configurationProvider),
-            ingestMaxRetries(configurationProvider),
-            compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
-            compressionLevel(configurationProvider, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
+            profilingLock(cp),
+            uploadInterval(cp),
+            logLevel(cp),
+            serverAddress(cp),
+            authToken(cp),
+            format(cp),
+            pushQueueCapacity(cp),
+            labels(cp),
+            ingestMaxRetries(cp),
+            compressionLevel(cp, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
+            compressionLevel(cp, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
             allocLive,
-            bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP),
-            httpHeaders(configurationProvider),
-            samplingDuration(configurationProvider),
-            scopeOrgID(configurationProvider));
+            bool(cp, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP),
+            httpHeaders(cp),
+            samplingDuration(cp),
+            scopeOrgID(cp),
+            cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG),
+            cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG));
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -535,6 +545,8 @@ public final class Config {
         public Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
 
         private String scopeOrgID = null;
+        private String APLogLevel = null;
+        private String APExtraArguments = null;
 
         public Builder() {
         }
@@ -558,6 +570,8 @@ public final class Config {
             httpHeaders = new HashMap<>(buildUpon.httpHeaders);
             samplingDuration = buildUpon.samplingDuration;
             scopeOrgID = buildUpon.scopeOrgID;
+            APLogLevel = buildUpon.APLogLevel;
+            APExtraArguments = buildUpon.APExtraArguments;
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -665,6 +679,15 @@ public final class Config {
             return this;
         }
 
+        public Builder setAPLogLevel(String apLogLevel) {
+            this.APLogLevel = apLogLevel;
+            return this;
+        }
+        public Builder setAPExtraArguments(String APExtraArguments) {
+            this.APExtraArguments = APExtraArguments;
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -688,8 +711,9 @@ public final class Config {
                 gcBeforeDump,
                 httpHeaders,
                 samplingDuration,
-                scopeOrgID
-            );
+                scopeOrgID,
+                APLogLevel,
+                APExtraArguments);
         }
     }
 }

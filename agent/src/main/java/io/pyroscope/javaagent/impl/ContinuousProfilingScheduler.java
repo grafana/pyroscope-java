@@ -1,9 +1,9 @@
 package io.pyroscope.javaagent.impl;
 
-import io.pyroscope.javaagent.OverfillQueue;
 import io.pyroscope.javaagent.Profiler;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
+import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 
@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static io.pyroscope.javaagent.DateUtils.truncate;
@@ -25,26 +26,52 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
         return t;
     });
     private final Exporter exporter;
+    private Logger logger;
     private Instant profilingIntervalStartTime;
+    private ScheduledFuture<?> job;
 
-    public ContinuousProfilingScheduler(Config config, Exporter exporter) {
+    public ContinuousProfilingScheduler(Config config, Exporter exporter, Logger logger) {
         this.config = config;
         this.exporter = exporter;
+        this.logger = logger;
     }
 
     @Override
     public void start(Profiler profiler) {
-        Duration firstProfilingDuration = startFirst(profiler);
+        Duration firstProfilingDuration;
+        try {
+            firstProfilingDuration = startFirst(profiler);
+        } catch (Throwable throwable) {
+            stop();
+            throw new IllegalStateException(throwable);
+        }
         final Runnable dumpProfile = () -> {
-            Snapshot snapshot = profiler.dump(
-                alignProfilingIntervalStartTime(this.profilingIntervalStartTime, config.uploadInterval)
-            );
+            Snapshot snapshot;
+            try {
+                profiler.stop();
+                snapshot = profiler.dumpProfile(
+                    alignProfilingIntervalStartTime(this.profilingIntervalStartTime, config.uploadInterval)
+                );
+                profiler.start();
+            } catch (Throwable throwable) {
+                logger.log(Logger.Level.ERROR, "Error dumping profiler %s", throwable);
+                stop();
+                return;
+            }
             profilingIntervalStartTime = Instant.now();
             exporter.export(snapshot);
         };
-        executor.scheduleAtFixedRate(dumpProfile,
+
+        job = executor.scheduleAtFixedRate(dumpProfile,
             firstProfilingDuration.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
 
+    }
+
+    private void stop() {
+        if (job != null) {
+            job.cancel(true);
+        }
+        executor.shutdown();
     }
 
     /**
