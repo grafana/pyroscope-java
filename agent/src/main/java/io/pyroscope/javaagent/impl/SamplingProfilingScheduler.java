@@ -57,7 +57,6 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
                 Thread.sleep(samplingDurationMillis);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
             }
             profiler.stop();
 
