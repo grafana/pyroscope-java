@@ -82,6 +82,7 @@ public class PyroscopeExporter implements Exporter {
 
             addAuthHeader(request, url, config);
 
+
             try (Response response = client.newCall(request.build()).execute()) {
                 int status = response.code();
                 if (status >= 400) {
@@ -112,6 +113,9 @@ public class PyroscopeExporter implements Exporter {
     }
 
     private static void addAuthHeader(Request.Builder request, HttpUrl url, Config config) {
+        if (config.scopeOrgID != null && !config.scopeOrgID.isEmpty()) {
+            request.header("X-Scope-OrgID", config.scopeOrgID);
+        }
         if (config.authToken != null && !config.authToken.isEmpty()) {
             request.header("Authorization", "Bearer " + config.authToken);
             return;

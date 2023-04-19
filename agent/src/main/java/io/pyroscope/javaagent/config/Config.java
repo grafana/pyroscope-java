@@ -11,7 +11,6 @@ import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -43,6 +42,7 @@ public final class Config {
     private static final String PYROSCOPE_ALLOC_LIVE = "PYROSCOPE_ALLOC_LIVE";
     private static final String PYROSCOPE_GC_BEFORE_DUMP = "PYROSCOPE_GC_BEFORE_DUMP";
     private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
+    private static final String PYROSCOPE_SCOPE_ORGID = "PYROSCOPE_SCOPE_ORGID";
 
     /**
      * Experimental feature, may be removed in the future
@@ -96,6 +96,7 @@ public final class Config {
 
     public final Map<String, String> httpHeaders;
     public final Duration samplingDuration;
+    public final String scopeOrgID;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -115,8 +116,8 @@ public final class Config {
            boolean allocLive,
            boolean gcBeforeDump,
            Map<String, String> httpHeaders,
-           Duration samplingDuration
-    ) {
+           Duration samplingDuration,
+           String scopeOrgID) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -133,6 +134,7 @@ public final class Config {
         this.gcBeforeDump = gcBeforeDump;
         this.httpHeaders = httpHeaders;
         this.samplingDuration = samplingDuration;
+        this.scopeOrgID = scopeOrgID;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -167,6 +169,7 @@ public final class Config {
             ", allocLive=" + allocLive +
             ", httpHeaders=" + httpHeaders +
             ", samplingDuration=" + samplingDuration +
+            ", scopeOrgId=" + scopeOrgID +
             '}';
     }
 
@@ -210,8 +213,8 @@ public final class Config {
             allocLive,
             bool(configurationProvider, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP),
             httpHeaders(configurationProvider),
-            samplingDuration(configurationProvider)
-        );
+            samplingDuration(configurationProvider),
+            scopeOrgID(configurationProvider));
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -467,6 +470,10 @@ public final class Config {
         }
     }
 
+    private static String scopeOrgID(ConfigurationProvider cp) {
+        return cp.get(PYROSCOPE_SCOPE_ORGID);
+    }
+
     private static Duration samplingDuration(ConfigurationProvider configurationProvider) {
         Duration uploadInterval = uploadInterval(configurationProvider);
 
@@ -507,7 +514,6 @@ public final class Config {
     }
 
     public static class Builder {
-
         public String applicationName = null;
         public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
         public EventType profilingEvent = DEFAULT_PROFILER_EVENT;
@@ -527,6 +533,8 @@ public final class Config {
         public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
         public Map<String, String> httpHeaders = new HashMap<>();
         public Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
+
+        private String scopeOrgID = null;
 
         public Builder() {
         }
@@ -549,6 +557,7 @@ public final class Config {
             gcBeforeDump = buildUpon.gcBeforeDump;
             httpHeaders = new HashMap<>(buildUpon.httpHeaders);
             samplingDuration = buildUpon.samplingDuration;
+            scopeOrgID = buildUpon.scopeOrgID;
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -651,6 +660,11 @@ public final class Config {
             return this;
         }
 
+        public Builder setScopeOrgID(String scopeOrgID) {
+            this.scopeOrgID = scopeOrgID;
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -673,7 +687,8 @@ public final class Config {
                 allocLive,
                 gcBeforeDump,
                 httpHeaders,
-                samplingDuration
+                samplingDuration,
+                scopeOrgID
             );
         }
     }
