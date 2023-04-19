@@ -185,6 +185,16 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#APExtraArguments">APExtraArguments</a></span></code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#APLogLevel">APLogLevel</a></span></code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#applicationName">applicationName</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -327,7 +337,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>static <a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#build(io.pyroscope.javaagent.api.ConfigurationProvider)">build</a></span>&#8203;(<a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;configurationProvider)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#build(io.pyroscope.javaagent.api.ConfigurationProvider)">build</a></span>&#8203;(<a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;cp)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
@@ -592,10 +602,28 @@ public final&nbsp;java.lang.String timeseriesName</pre>
 <a id="scopeOrgID">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>scopeOrgID</h4>
 <pre>public final&nbsp;java.lang.String scopeOrgID</pre>
+</li>
+</ul>
+<a id="APLogLevel">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>APLogLevel</h4>
+<pre>public final&nbsp;java.lang.String APLogLevel</pre>
+</li>
+</ul>
+<a id="APExtraArguments">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>APExtraArguments</h4>
+<pre>public final&nbsp;java.lang.String APExtraArguments</pre>
 </li>
 </ul>
 </li>
@@ -654,7 +682,7 @@ public final&nbsp;java.lang.String timeseriesName</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>build</h4>
-<pre class="methodSignature">public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build&#8203;(<a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;configurationProvider)</pre>
+<pre class="methodSignature">public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build&#8203;(<a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;cp)</pre>
 </li>
 </ul>
 <a id="labels(io.pyroscope.javaagent.api.ConfigurationProvider)">
