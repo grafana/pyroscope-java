@@ -70,7 +70,6 @@ public final class Config {
     private static final boolean DEFAULT_ALLOC_LIVE = false;
     private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
     private static final Duration DEFAULT_SAMPLING_DURATION = null;
-    private static final String DEFAULT_SCOPE_ORG_ID = "";
 
     public final String applicationName;
     public final Duration profilingInterval;
@@ -535,7 +534,7 @@ public final class Config {
         public Map<String, String> httpHeaders = new HashMap<>();
         public Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
 
-        private String scopeOrgID = DEFAULT_SCOPE_ORG_ID;
+        private String scopeOrgID = null;
 
         public Builder() {
         }
