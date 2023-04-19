@@ -95,6 +95,7 @@ public final class Profiler {
         return result;
     }
 
+    // todo allow specifying arbitrary ap command from configuration
     private String createJFRCommand() {
         StringBuilder sb = new StringBuilder();
         sb.append("start,event=").append(eventType.id);
@@ -109,6 +110,12 @@ public final class Profiler {
         }
         sb.append(",interval=").append(interval.toNanos())
             .append(",file=").append(tempJFRFile.toString());
+        if (config.APLogLevel != null) {
+            sb.append(",loglevel=").append(config.APLogLevel);
+        }
+        if (config.APExtraArguments != null) {
+            sb.append(",").append(config.APExtraArguments);
+        }
         return sb.toString();
     }
 

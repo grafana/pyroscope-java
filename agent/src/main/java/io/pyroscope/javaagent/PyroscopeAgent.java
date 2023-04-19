@@ -102,9 +102,9 @@ public class PyroscopeAgent {
                         exporter = new QueuedExporter(config, new PyroscopeExporter(config, logger), logger);
                     }
                     if (config.samplingDuration == null) {
-                        scheduler = new ContinuousProfilingScheduler(config, exporter);
+                        scheduler = new ContinuousProfilingScheduler(config, exporter, logger);
                     } else {
-                        scheduler = new SamplingProfilingScheduler(config, exporter);
+                        scheduler = new SamplingProfilingScheduler(config, exporter, logger);
                     }
                 }
                 return new Options(this);
