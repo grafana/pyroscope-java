@@ -120,9 +120,14 @@ public class PyroscopeExporter implements Exporter {
             request.header("Authorization", "Bearer " + config.authToken);
             return;
         }
+        if (config.basicAuthUser != null && !config.basicAuthUser.isEmpty()
+            && config.basicAuthPassword != null && !config.basicAuthPassword.isEmpty()) {
+            request.header("Authorization", Credentials.basic(config.basicAuthUser, config.basicAuthPassword));
+            return;
+        }
         String u = url.username();
         String p = url.password();
-        if (!u.isEmpty() || !p.isEmpty()) {
+        if (!u.isEmpty() && !p.isEmpty()) {
             request.header("Authorization", Credentials.basic(u, p));
         }
     }
