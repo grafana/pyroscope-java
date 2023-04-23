@@ -34,6 +34,8 @@ public final class Config {
     private static final String PYROSCOPE_SERVER_ADDRESS_CONFIG = "PYROSCOPE_SERVER_ADDRESS";
     private static final String PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG = "PYROSCOPE_ADHOC_SERVER_ADDRESS";
     private static final String PYROSCOPE_AUTH_TOKEN_CONFIG = "PYROSCOPE_AUTH_TOKEN";
+    private static final String PYROSCOPE_BASIC_AUTH_USER_CONFIG = "PYROSCOPE_BASIC_AUTH_USER";
+    private static final String PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG = "PYROSCOPE_BASIC_AUTH_PASSWORD";
     private static final String PYROSCOPE_FORMAT_CONFIG = "PYROSCOPE_FORMAT";
     private static final String PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG = "PYROSCOPE_PUSH_QUEUE_CAPACITY";
     private static final String PYROSCOPE_LABELS = "PYROSCOPE_LABELS";
@@ -101,6 +103,8 @@ public final class Config {
     public final String scopeOrgID;
     public final String APLogLevel;
     public final String APExtraArguments;
+    public final String basicAuthUser;
+    public final String basicAuthPassword;
 
     Config(final String applicationName,
            final Duration profilingInterval,
@@ -123,7 +127,9 @@ public final class Config {
            Duration samplingDuration,
            String scopeOrgID,
            String APLogLevel,
-           String APExtraArguments) {
+           String APExtraArguments,
+           String basicAuthUser,
+           String basicAuthPassword) {
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -143,6 +149,8 @@ public final class Config {
         this.scopeOrgID = scopeOrgID;
         this.APLogLevel = APLogLevel;
         this.APExtraArguments = APExtraArguments;
+        this.basicAuthUser = basicAuthUser;
+        this.basicAuthPassword = basicAuthPassword;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -224,7 +232,9 @@ public final class Config {
             samplingDuration(cp),
             scopeOrgID(cp),
             cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG),
-            cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG));
+            cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
+            cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG),
+            cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG));
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -547,6 +557,8 @@ public final class Config {
         private String scopeOrgID = null;
         private String APLogLevel = null;
         private String APExtraArguments = null;
+        private String basicAuthUser;
+        private String basicAuthPassword;
 
         public Builder() {
         }
@@ -572,6 +584,8 @@ public final class Config {
             scopeOrgID = buildUpon.scopeOrgID;
             APLogLevel = buildUpon.APLogLevel;
             APExtraArguments = buildUpon.APExtraArguments;
+            basicAuthUser = buildUpon.basicAuthUser;
+            basicAuthPassword = buildUpon.basicAuthPassword;
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -688,6 +702,16 @@ public final class Config {
             return this;
         }
 
+        public Builder setBasicAuthUser(String basicAuthUser) {
+            this.basicAuthUser = basicAuthUser;
+            return this;
+        }
+
+        public Builder setBasicAuthPassword(String basicAuthPassword) {
+            this.basicAuthPassword = basicAuthPassword;
+            return this;
+        }
+
         public Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -713,7 +737,9 @@ public final class Config {
                 samplingDuration,
                 scopeOrgID,
                 APLogLevel,
-                APExtraArguments);
+                APExtraArguments,
+                basicAuthUser,
+                basicAuthPassword);
         }
     }
 }
