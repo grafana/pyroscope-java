@@ -46,7 +46,7 @@ public final class Config {
     private static final String PYROSCOPE_ALLOC_LIVE = "PYROSCOPE_ALLOC_LIVE";
     private static final String PYROSCOPE_GC_BEFORE_DUMP = "PYROSCOPE_GC_BEFORE_DUMP";
     private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
-    private static final String PYROSCOPE_SCOPE_ORGID = "PYROSCOPE_SCOPE_ORGID";
+    private static final String PYROSCOPE_TENANT_ID = "PYROSCOPE_TENANT_ID";
 
     /**
      * Experimental feature, may be removed in the future
@@ -100,7 +100,7 @@ public final class Config {
 
     public final Map<String, String> httpHeaders;
     public final Duration samplingDuration;
-    public final String scopeOrgID;
+    public final String tenantID;
     public final String APLogLevel;
     public final String APExtraArguments;
     public final String basicAuthUser;
@@ -125,7 +125,7 @@ public final class Config {
            boolean gcBeforeDump,
            Map<String, String> httpHeaders,
            Duration samplingDuration,
-           String scopeOrgID,
+           String tenantID,
            String APLogLevel,
            String APExtraArguments,
            String basicAuthUser,
@@ -146,7 +146,7 @@ public final class Config {
         this.gcBeforeDump = gcBeforeDump;
         this.httpHeaders = httpHeaders;
         this.samplingDuration = samplingDuration;
-        this.scopeOrgID = scopeOrgID;
+        this.tenantID = tenantID;
         this.APLogLevel = APLogLevel;
         this.APExtraArguments = APExtraArguments;
         this.basicAuthUser = basicAuthUser;
@@ -185,7 +185,7 @@ public final class Config {
             ", allocLive=" + allocLive +
             ", httpHeaders=" + httpHeaders +
             ", samplingDuration=" + samplingDuration +
-            ", scopeOrgId=" + scopeOrgID +
+            ", tenantID=" + tenantID +
             '}';
     }
 
@@ -230,7 +230,7 @@ public final class Config {
             bool(cp, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP),
             httpHeaders(cp),
             samplingDuration(cp),
-            scopeOrgID(cp),
+            tenantID(cp),
             cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG),
             cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
             cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG),
@@ -490,8 +490,8 @@ public final class Config {
         }
     }
 
-    private static String scopeOrgID(ConfigurationProvider cp) {
-        return cp.get(PYROSCOPE_SCOPE_ORGID);
+    private static String tenantID(ConfigurationProvider cp) {
+        return cp.get(PYROSCOPE_TENANT_ID);
     }
 
     private static Duration samplingDuration(ConfigurationProvider configurationProvider) {
@@ -554,7 +554,7 @@ public final class Config {
         public Map<String, String> httpHeaders = new HashMap<>();
         public Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
 
-        private String scopeOrgID = null;
+        private String tenantID = null;
         private String APLogLevel = null;
         private String APExtraArguments = null;
         private String basicAuthUser;
@@ -581,7 +581,7 @@ public final class Config {
             gcBeforeDump = buildUpon.gcBeforeDump;
             httpHeaders = new HashMap<>(buildUpon.httpHeaders);
             samplingDuration = buildUpon.samplingDuration;
-            scopeOrgID = buildUpon.scopeOrgID;
+            tenantID = buildUpon.tenantID;
             APLogLevel = buildUpon.APLogLevel;
             APExtraArguments = buildUpon.APExtraArguments;
             basicAuthUser = buildUpon.basicAuthUser;
@@ -688,8 +688,8 @@ public final class Config {
             return this;
         }
 
-        public Builder setScopeOrgID(String scopeOrgID) {
-            this.scopeOrgID = scopeOrgID;
+        public Builder setTenantID(String tenantID) {
+            this.tenantID = tenantID;
             return this;
         }
 
@@ -735,7 +735,7 @@ public final class Config {
                 gcBeforeDump,
                 httpHeaders,
                 samplingDuration,
-                scopeOrgID,
+                tenantID,
                 APLogLevel,
                 APExtraArguments,
                 basicAuthUser,

@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
-import java.util.function.BiConsumer;
 import java.util.zip.Deflater;
 
 public class PyroscopeExporter implements Exporter {
@@ -113,8 +112,8 @@ public class PyroscopeExporter implements Exporter {
     }
 
     private static void addAuthHeader(Request.Builder request, HttpUrl url, Config config) {
-        if (config.scopeOrgID != null && !config.scopeOrgID.isEmpty()) {
-            request.header("X-Scope-OrgID", config.scopeOrgID);
+        if (config.tenantID != null && !config.tenantID.isEmpty()) {
+            request.header("X-Scope-OrgID", config.tenantID);
         }
         if (config.authToken != null && !config.authToken.isEmpty()) {
             request.header("Authorization", "Bearer " + config.authToken);
