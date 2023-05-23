@@ -9,6 +9,7 @@ import io.pyroscope.javaagent.api.ConfigurationProvider;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
+import okhttp3.HttpUrl;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
@@ -156,6 +157,10 @@ public final class Config {
         this.format = format;
         this.pushQueueCapacity = pushQueueCapacity;
         this.labels = Collections.unmodifiableMap(labels);
+        HttpUrl serverAddressUrl = HttpUrl.parse(serverAddress);
+        if (serverAddressUrl == null) {
+            throw new IllegalArgumentException("invalid url " + serverAddress);
+        }
     }
 
     public long profilingIntervalInHertz() {
@@ -697,6 +702,7 @@ public final class Config {
             this.APLogLevel = apLogLevel;
             return this;
         }
+
         public Builder setAPExtraArguments(String APExtraArguments) {
             this.APExtraArguments = APExtraArguments;
             return this;
