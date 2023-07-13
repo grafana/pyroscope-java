@@ -115,10 +115,6 @@ public class PyroscopeExporter implements Exporter {
         if (config.tenantID != null && !config.tenantID.isEmpty()) {
             request.header("X-Scope-OrgID", config.tenantID);
         }
-        if (config.authToken != null && !config.authToken.isEmpty()) {
-            request.header("Authorization", "Bearer " + config.authToken);
-            return;
-        }
         if (config.basicAuthUser != null && !config.basicAuthUser.isEmpty()
             && config.basicAuthPassword != null && !config.basicAuthPassword.isEmpty()) {
             request.header("Authorization", Credentials.basic(config.basicAuthUser, config.basicAuthPassword));
@@ -128,6 +124,11 @@ public class PyroscopeExporter implements Exporter {
         String p = url.password();
         if (!u.isEmpty() && !p.isEmpty()) {
             request.header("Authorization", Credentials.basic(u, p));
+            return;
+        }
+        if (config.authToken != null && !config.authToken.isEmpty()) {
+            request.header("Authorization", "Bearer " + config.authToken);
+            return;
         }
     }
 

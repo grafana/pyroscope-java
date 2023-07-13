@@ -161,6 +161,10 @@ public final class Config {
         if (serverAddressUrl == null) {
             throw new IllegalArgumentException("invalid url " + serverAddress);
         }
+        if (authToken != null && basicAuthUser != null) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
+                "auth token is ignored (both auth token and basic auth specified)");
+        }
     }
 
     public long profilingIntervalInHertz() {
