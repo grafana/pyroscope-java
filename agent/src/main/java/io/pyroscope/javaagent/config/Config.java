@@ -29,6 +29,7 @@ public final class Config {
     private static final String PYROSCOPE_PROFILER_ALLOC_CONFIG = "PYROSCOPE_PROFILER_ALLOC";
     private static final String PYROSCOPE_PROFILER_LOCK_CONFIG = "PYROSCOPE_PROFILER_LOCK";
     private static final String PYROSCOPE_UPLOAD_INTERVAL_CONFIG = "PYROSCOPE_UPLOAD_INTERVAL";
+    private static final String PYROSCOPE_JAVA_STACK_DEPTH_MAX = "PYROSCOPE_STACK_DEPTH_MAX";
     private static final String PYROSCOPE_LOG_LEVEL_CONFIG = "PYROSCOPE_LOG_LEVEL";
     private static final String PYROSCOPE_AP_LOG_LEVEL_CONFIG = "PYROSCOPE_AP_LOG_LEVEL";
     private static final String PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG = "PYROSCOPE_AP_EXTRA_ARGUMENTS";
@@ -64,6 +65,7 @@ public final class Config {
     private static final String DEFAULT_PROFILER_ALLOC = "";
     private static final String DEFAULT_PROFILER_LOCK = "";
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
+    private static final int DEFAULT_JAVA_STACK_DEPTH_MAX = 2048;
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
     private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
     // The number of snapshots simultaneously stored in memory is limited by this.
@@ -82,6 +84,7 @@ public final class Config {
     public final String profilingAlloc;
     public final String profilingLock;
     public final Duration uploadInterval;
+    public final int javaStackDepthMax;
     public final Logger.Level logLevel;
     public final String serverAddress;
     public final String authToken;
@@ -113,6 +116,7 @@ public final class Config {
            final String profilingAlloc,
            final String profilingLock,
            final Duration uploadInterval,
+           final int javaStackDepthMax,
            final Logger.Level logLevel,
            final String serverAddress,
            final String authToken,
@@ -137,6 +141,7 @@ public final class Config {
         this.profilingAlloc = profilingAlloc;
         this.profilingLock = profilingLock;
         this.uploadInterval = uploadInterval;
+        this.javaStackDepthMax = javaStackDepthMax;
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
@@ -180,6 +185,7 @@ public final class Config {
             ", profilingAlloc='" + profilingAlloc + '\'' +
             ", profilingLock='" + profilingLock + '\'' +
             ", uploadInterval=" + uploadInterval +
+            ", javaStackDepthMax=" + javaStackDepthMax +
             ", logLevel=" + logLevel +
             ", serverAddress='" + serverAddress + '\'' +
             ", authToken='" + authToken + '\'' +
@@ -226,6 +232,7 @@ public final class Config {
             alloc,
             profilingLock(cp),
             uploadInterval(cp),
+            javaStackDepthMax(cp),
             logLevel(cp),
             serverAddress(cp),
             authToken(cp),
@@ -339,6 +346,18 @@ public final class Config {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
                 PYROSCOPE_UPLOAD_INTERVAL_CONFIG, uploadIntervalStr, DEFAULT_UPLOAD_INTERVAL);
             return DEFAULT_UPLOAD_INTERVAL;
+        }
+    }
+
+    private static int javaStackDepthMax(ConfigurationProvider configurationProvider) {
+        final String javaStackDepthMaxStr = configurationProvider.get(PYROSCOPE_JAVA_STACK_DEPTH_MAX);
+        if (null == javaStackDepthMaxStr || javaStackDepthMaxStr.isEmpty()) {
+            return DEFAULT_JAVA_STACK_DEPTH_MAX;
+        }
+        try {
+            return Integer.parseInt(javaStackDepthMaxStr);
+        } catch (final NumberFormatException e) {
+            return DEFAULT_JAVA_STACK_DEPTH_MAX;
         }
     }
 
@@ -549,6 +568,7 @@ public final class Config {
         public String profilingAlloc = "";
         public String profilingLock = "";
         public Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
+        public int javaStackDepthMax = DEFAULT_JAVA_STACK_DEPTH_MAX;
         public Logger.Level logLevel = Logger.Level.INFO;
         public String serverAddress = DEFAULT_SERVER_ADDRESS;
         public String authToken = null;
@@ -579,6 +599,7 @@ public final class Config {
             profilingAlloc = buildUpon.profilingAlloc;
             profilingLock = buildUpon.profilingLock;
             uploadInterval = buildUpon.uploadInterval;
+            javaStackDepthMax = buildUpon.javaStackDepthMax;
             logLevel = buildUpon.logLevel;
             serverAddress = buildUpon.serverAddress;
             authToken = buildUpon.authToken;
@@ -624,6 +645,11 @@ public final class Config {
 
         public Builder setUploadInterval(Duration uploadInterval) {
             this.uploadInterval = uploadInterval;
+            return this;
+        }
+
+        public Builder setJavaStackDepthMax(final int javaStackDepthMax) {
+            this.javaStackDepthMax = javaStackDepthMax;
             return this;
         }
 
@@ -732,6 +758,7 @@ public final class Config {
                 profilingAlloc,
                 profilingLock,
                 uploadInterval,
+                javaStackDepthMax,
                 logLevel,
                 serverAddress,
                 authToken,
