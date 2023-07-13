@@ -7,7 +7,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 public class DefaultLogger implements Logger {
-    public static final DefaultLogger PRECONFIG_LOGGER = new DefaultLogger(Level.DEBUG, System.err);
+    public static Logger PRECONFIG_LOGGER = new DefaultLogger(Level.DEBUG, System.err);
     static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     final Level l;
     final PrintStream out;
