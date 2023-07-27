@@ -17,6 +17,7 @@ public class PyroscopeAgent {
         final Config config;
         try {
             config = Config.build(DefaultConfigurationProvider.INSTANCE);
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.DEBUG, "Config: %s", config);
         } catch (final Throwable e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Error starting profiler %s", e);
             return;
@@ -38,7 +39,7 @@ public class PyroscopeAgent {
             logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
             return;
         }
-        logger.log(Logger.Level.DEBUG, "Config %s", options.config);
+        logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
         try {
             options.scheduler.start(options.profiler);
             logger.log(Logger.Level.INFO, "Profiling started");
