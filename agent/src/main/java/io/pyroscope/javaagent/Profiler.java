@@ -113,7 +113,7 @@ public final class Profiler {
         if (config.APLogLevel != null) {
             sb.append(",loglevel=").append(config.APLogLevel);
         }
-        sb.append("jstackdepth=").append(config.javaStackDepthMax);
+        sb.append(",jstackdepth=").append(config.javaStackDepthMax);
         if (config.APExtraArguments != null) {
             sb.append(",").append(config.APExtraArguments);
         }
