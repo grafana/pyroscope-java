@@ -49,9 +49,12 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
         final Duration uploadInterval = config.uploadInterval;
         
         final Runnable task = (null != config.eventPrio) ? 
-        () -> { 
-            for (final EventType t : config.eventPrio) {
-                profiler.set(isolate(t, config));
+        () -> {
+            for (int i = 0; i < config.eventPrio.size(); i++) {
+                final EventType t = config.eventPrio.get(i);
+                final Config tmp = isolate(t, config);
+                logger.log(Logger.Level.DEBUG, "Config for %s priority %d: %s", t.id, i, tmp);
+                profiler.set(tmp);
                 dumpProfile(profiler, samplingDurationMillis, uploadInterval);
             }
         } : 

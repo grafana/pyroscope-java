@@ -362,7 +362,7 @@ public final class Config {
                 }
             })
             .filter(t -> null != t)
-            .collect(Collectors.toCollection(() -> new LinkedList<>()));
+            .collect(Collectors.toCollection(() -> new ArrayList<>()));
     }
 
     // extra args events not supported
@@ -385,7 +385,7 @@ public final class Config {
             set.add(EventType.ALLOC);
         if (_lock)
             set.add(EventType.LOCK);
-        return new LinkedList<>(set);
+        return new ArrayList<>(set);
     }
 
     private static Duration uploadInterval(ConfigurationProvider configurationProvider) {
