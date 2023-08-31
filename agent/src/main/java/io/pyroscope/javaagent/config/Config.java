@@ -59,12 +59,12 @@ public final class Config {
     /**
      * Experimental feature, may be removed in the future
      */
-    private static final String PYROSCOPE_SAMPLING_DURATION = "PYROSCOPE_SAMPLING_DURATION";
+    public static final String PYROSCOPE_SAMPLING_DURATION = "PYROSCOPE_SAMPLING_DURATION";
     /**
      * Experimental feature, may be removed in the future
      */
     // keep upload interval >= sampling duration * resolved ordered event list size to avoid unexpected behaviour 
-    private static final String PYROSCOPE_EVENT_ORDER_CONFIG = "PYROSCOPE_EVENT_ORDER";
+    public static final String PYROSCOPE_EVENT_ORDER_CONFIG = "PYROSCOPE_EVENT_ORDER";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
