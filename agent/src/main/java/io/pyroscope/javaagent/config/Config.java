@@ -63,7 +63,6 @@ public final class Config {
     /**
      * Experimental feature, may be removed in the future
      */
-    // keep upload interval >= sampling duration * resolved ordered event list size to avoid unexpected behaviour 
     public static final String PYROSCOPE_EVENT_ORDER_CONFIG = "PYROSCOPE_EVENT_ORDER";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
@@ -353,6 +352,7 @@ public final class Config {
         if (null == eventOrder || eventOrder.isEmpty()) {
             return DEFAULT_EVENT_ORDER;
         }
+        DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "keep upload interval >= sampling duration * distinct event count to avoid unexpected behaviour");
         return Stream.of(eventOrder.split("\\s*,\\s*"))
             .map(s -> {
                 try {
@@ -401,6 +401,7 @@ public final class Config {
             return DEFAULT_UPLOAD_INTERVAL;
         }
     }
+
 
     private static int javaStackDepthMax(ConfigurationProvider configurationProvider) {
         final String javaStackDepthMaxStr = configurationProvider.get(PYROSCOPE_JAVA_STACK_DEPTH_MAX);
