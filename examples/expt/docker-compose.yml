@@ -17,7 +17,7 @@ services:
       - PYROSCOPE_UPLOAD_INTERVAL=8s
       - PYROSCOPE_SAMPLING_DURATION=2s
       - PYROSCOPE_FORMAT=jfr
-      - PYROSCOPE_EVENT_PRIO=itimer,alloc
+      - PYROSCOPE_EVENT_ORDER=itimer,alloc
       - PYROSCOPE_LOG_LEVEL=debug
       - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
       - PYROSCOPE_AUTH_TOKEN=abc123
