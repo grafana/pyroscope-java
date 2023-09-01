@@ -59,11 +59,11 @@ public final class Config {
     /**
      * Experimental feature, may be removed in the future
      */
-    public static final String PYROSCOPE_SAMPLING_DURATION = "PYROSCOPE_SAMPLING_DURATION";
+    private static final String PYROSCOPE_SAMPLING_DURATION = "PYROSCOPE_SAMPLING_DURATION";
     /**
      * Experimental feature, may be removed in the future
      */
-    public static final String PYROSCOPE_SAMPLING_EVENT_ORDER_CONFIG = "PYROSCOPE_SAMPLING_EVENT_ORDER";
+    private static final String PYROSCOPE_SAMPLING_EVENT_ORDER_CONFIG = "PYROSCOPE_SAMPLING_EVENT_ORDER";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -179,7 +179,7 @@ public final class Config {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
                 "auth token is ignored (both auth token and basic auth specified)");
         }
-        this.samplingEventOrder = resolve(samplingEventOrder, profilingEvent, profilingAlloc, profilingLock);
+        this.samplingEventOrder = resolve(samplingEventOrder, profilingEvent, profilingAlloc, profilingLock, this.samplingDuration);
     }
 
     public long profilingIntervalInHertz() {
@@ -366,10 +366,13 @@ public final class Config {
     }
 
     // extra args events not supported
-    private static List<EventType> resolve(final List<EventType> samplingEventOrder, final EventType type, final String alloc, final String lock) {
+    private static List<EventType> resolve(final List<EventType> samplingEventOrder, final EventType type, final String alloc, final String lock, final Duration samplingDuration) {
         if (null == samplingEventOrder)
             return null;
-
+        if (null == samplingDuration) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "not implemented: sampling event order is only implemented in sampling mode");
+            return null;
+        }
         // effectively set size is upper bounded by 3
         final LinkedHashSet<EventType> set = new LinkedHashSet<>();
         final boolean _alloc = null != alloc && !alloc.isEmpty();

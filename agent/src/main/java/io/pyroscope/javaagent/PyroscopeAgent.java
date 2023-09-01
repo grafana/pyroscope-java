@@ -105,7 +105,6 @@ public class PyroscopeAgent {
                     if (config.samplingDuration == null) {
                         scheduler = new ContinuousProfilingScheduler(config, exporter, logger);
                     } else {
-                        logger.log(Logger.Level.WARN, "%s not implemented without %s", Config.PYROSCOPE_SAMPLING_EVENT_ORDER_CONFIG, Config.PYROSCOPE_SAMPLING_DURATION);
                         scheduler = new SamplingProfilingScheduler(config, exporter, logger);
                     }
                 }
