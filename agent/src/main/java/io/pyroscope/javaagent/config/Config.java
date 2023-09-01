@@ -67,7 +67,7 @@ public final class Config {
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
     private static final int DEFAULT_JAVA_STACK_DEPTH_MAX = 2048;
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
-    private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
+    private static final Format DEFAULT_FORMAT = Format.JFR;
     // The number of snapshots simultaneously stored in memory is limited by this.
     // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
     private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 8;
@@ -169,6 +169,9 @@ public final class Config {
         if (authToken != null && basicAuthUser != null) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
                 "auth token is ignored (both auth token and basic auth specified)");
+        }
+        if (format == Format.COLLAPSED) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "COLLAPSED format is deprecated");
         }
     }
 

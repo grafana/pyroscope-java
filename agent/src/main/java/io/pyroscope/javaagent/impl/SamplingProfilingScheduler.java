@@ -1,6 +1,5 @@
 package io.pyroscope.javaagent.impl;
 
-import static io.pyroscope.javaagent.DateUtils.truncate;
 
 import io.pyroscope.javaagent.Profiler;
 import io.pyroscope.javaagent.Snapshot;
@@ -8,6 +7,8 @@ import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
+import kotlin.random.Random;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Executors;
@@ -59,8 +60,9 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
                 Thread.currentThread().interrupt();
             }
             profiler.stop();
+            Instant profilingEndTime = Instant.now();
 
-            Snapshot snapshot = profiler.dumpProfile(truncate(profilingStartTime, uploadInterval));
+            Snapshot snapshot = profiler.dumpProfile(profilingStartTime, profilingEndTime);
             exporter.export(snapshot);
         };
 
@@ -81,10 +83,13 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
     }
 
     private Duration getInitialDelay() {
-        Instant now = Instant.now();
-        Instant prevUploadInterval = truncate(now, config.uploadInterval);
-        Instant nextUploadInterval = prevUploadInterval.plus(config.uploadInterval);
-        Duration initialDelay = Duration.between(now, nextUploadInterval);
-        return initialDelay;
+        long uploadIntervalMillis = config.uploadInterval.toMillis();
+        float randomOffset = Random.Default.nextFloat();
+        uploadIntervalMillis = (long)((float)uploadIntervalMillis * randomOffset);
+        if (uploadIntervalMillis < 2000) {
+            uploadIntervalMillis = 2000;
+        }
+        Duration firstProfilingDuration = Duration.ofMillis(uploadIntervalMillis);
+        return firstProfilingDuration;
     }
 }

@@ -6,6 +6,7 @@ import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
+import kotlin.random.Random;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -14,7 +15,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static io.pyroscope.javaagent.DateUtils.truncate;
 
 public class ContinuousProfilingScheduler implements ProfilingScheduler {
     final Config config;
@@ -47,18 +47,18 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
         }
         final Runnable dumpProfile = () -> {
             Snapshot snapshot;
+            Instant now;
             try {
                 profiler.stop();
-                snapshot = profiler.dumpProfile(
-                    alignProfilingIntervalStartTime(this.profilingIntervalStartTime, config.uploadInterval)
-                );
+                now = Instant.now();
+                snapshot = profiler.dumpProfile(this.profilingIntervalStartTime, now);
                 profiler.start();
             } catch (Throwable throwable) {
                 logger.log(Logger.Level.ERROR, "Error dumping profiler %s", throwable);
                 stop();
                 return;
             }
-            profilingIntervalStartTime = Instant.now();
+            profilingIntervalStartTime = now;
             exporter.export(snapshot);
         };
 
@@ -76,41 +76,26 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
 
     /**
      * Starts the first profiling interval.
-     * profilingIntervalStartTime is set to a current time aligned to upload interval
-     * Duration of the first profiling interval will be smaller than uploadInterval for alignment.
-     * <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">...</a>
+     * profilingIntervalStartTime is set to now
+     * Duration of the first profiling interval is a random fraction of uploadInterval not smaller than 2000ms.
      *
      * @return Duration of the first profiling interval
      */
     private Duration startFirst(Profiler profiler) {
         Instant now = Instant.now();
-        Instant prevUploadInterval = truncate(now, config.uploadInterval);
-        Instant nextUploadInterval = prevUploadInterval.plus(config.uploadInterval);
-        Duration firstProfilingDuration = Duration.between(now, nextUploadInterval);
+
+        long uploadIntervalMillis = config.uploadInterval.toMillis();
+        float randomOffset = Random.Default.nextFloat();
+        uploadIntervalMillis = (long)((float)uploadIntervalMillis * randomOffset);
+        if (uploadIntervalMillis < 2000) {
+            uploadIntervalMillis = 2000;
+        }
+        Duration firstProfilingDuration = Duration.ofMillis(uploadIntervalMillis);
+
         profiler.start();
-        profilingIntervalStartTime = prevUploadInterval;
+        profilingIntervalStartTime = now;
         return firstProfilingDuration;
     }
 
-    /**
-     * Aligns profilingIntervalStartTime to the closest aligned upload time either forward or backward
-     * For example if upload interval is 10s and profilingIntervalStartTime is 00:00.01 it will return 00:00
-     * and if profilingIntervalStartTime is 00:09.239 it will return 00:10
-     * <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">...</a>
-     *
-     * @param profilingIntervalStartTime the time to align
-     * @param uploadInterval
-     * @return the aligned
-     */
-    public static Instant alignProfilingIntervalStartTime(Instant profilingIntervalStartTime, Duration uploadInterval) {
-        Instant prev = truncate(profilingIntervalStartTime, uploadInterval);
-        Instant next = prev.plus(uploadInterval);
-        Duration d1 = Duration.between(prev, profilingIntervalStartTime);
-        Duration d2 = Duration.between(profilingIntervalStartTime, next);
-        if (d1.compareTo(d2) < 0) {
-            return prev;
-        } else {
-            return next;
-        }
-    }
+
 }
