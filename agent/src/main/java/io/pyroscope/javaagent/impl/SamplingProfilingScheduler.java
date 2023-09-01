@@ -48,10 +48,10 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
         final long samplingDurationMillis = config.samplingDuration.toMillis();
         final Duration uploadInterval = config.uploadInterval;
         
-        final Runnable task = (null != config.eventOrder) ? 
+        final Runnable task = (null != config.samplingEventOrder) ? 
         () -> {
-            for (int i = 0; i < config.eventOrder.size(); i++) {
-                final EventType t = config.eventOrder.get(i);
+            for (int i = 0; i < config.samplingEventOrder.size(); i++) {
+                final EventType t = config.samplingEventOrder.get(i);
                 final Config tmp = isolate(t, config);
                 logger.log(Logger.Level.DEBUG, "Config for %s ordinal %d: %s", t.id, i, tmp);
                 profiler.set(tmp);
