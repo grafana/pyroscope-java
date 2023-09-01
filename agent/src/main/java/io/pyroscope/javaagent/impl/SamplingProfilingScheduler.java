@@ -54,7 +54,7 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
                 final EventType t = config.samplingEventOrder.get(i);
                 final Config tmp = isolate(t, config);
                 logger.log(Logger.Level.DEBUG, "Config for %s ordinal %d: %s", t.id, i, tmp);
-                profiler.set(tmp);
+                profiler.setConfig(tmp);
                 dumpProfile(profiler, samplingDurationMillis, uploadInterval);
             }
         } : 

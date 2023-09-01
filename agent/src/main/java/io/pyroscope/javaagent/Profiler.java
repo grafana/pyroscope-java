@@ -27,10 +27,10 @@ public final class Profiler {
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
     Profiler(Config config) {
-        set(config);
+        setConfig(config);
     }
 
-    public void set(final Config config) {
+    public void setConfig(final Config config) {
         this.config = config;
         this.alloc = config.profilingAlloc;
         this.lock = config.profilingLock;
