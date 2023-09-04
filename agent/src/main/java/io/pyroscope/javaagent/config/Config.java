@@ -702,7 +702,7 @@ public final class Config {
             return this;
         }
 
-        public Builder setsamplingEventOrder(final List<EventType> samplingEventOrder) {
+        public Builder setSamplingEventOrder(final List<EventType> samplingEventOrder) {
             this.samplingEventOrder = samplingEventOrder;
             return this;
         }
