@@ -135,7 +135,7 @@ public class PyroscopeExporter implements Exporter {
 
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
         Instant started = snapshot.started;
-        Instant finished = started.plus(config.uploadInterval);
+        Instant finished = snapshot.ended;
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
             .newBuilder()
             .addPathSegment("ingest")
