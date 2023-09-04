@@ -16,6 +16,8 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.Deflater;
 
 /**
@@ -58,6 +60,10 @@ public final class Config {
      * Experimental feature, may be removed in the future
      */
     private static final String PYROSCOPE_SAMPLING_DURATION = "PYROSCOPE_SAMPLING_DURATION";
+    /**
+     * Experimental feature, may be removed in the future
+     */
+    private static final String PYROSCOPE_SAMPLING_EVENT_ORDER_CONFIG = "PYROSCOPE_SAMPLING_EVENT_ORDER";
 
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
@@ -65,6 +71,7 @@ public final class Config {
     private static final String DEFAULT_PROFILER_ALLOC = "";
     private static final String DEFAULT_PROFILER_LOCK = "";
     private static final Duration DEFAULT_UPLOAD_INTERVAL = Duration.ofSeconds(10);
+    private static final List<EventType> DEFAULT_SAMPLING_EVENT_ORDER = null;
     private static final int DEFAULT_JAVA_STACK_DEPTH_MAX = 2048;
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
     private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
@@ -83,6 +90,7 @@ public final class Config {
     public final EventType profilingEvent;
     public final String profilingAlloc;
     public final String profilingLock;
+    public final List<EventType> samplingEventOrder;
     public final Duration uploadInterval;
     public final int javaStackDepthMax;
     public final Logger.Level logLevel;
@@ -115,6 +123,7 @@ public final class Config {
            final EventType profilingEvent,
            final String profilingAlloc,
            final String profilingLock,
+           final List<EventType> samplingEventOrder,
            final Duration uploadInterval,
            final int javaStackDepthMax,
            final Logger.Level logLevel,
@@ -170,6 +179,7 @@ public final class Config {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
                 "auth token is ignored (both auth token and basic auth specified)");
         }
+        this.samplingEventOrder = resolve(samplingEventOrder, profilingEvent, profilingAlloc, profilingLock, this.samplingDuration);
     }
 
     public long profilingIntervalInHertz() {
@@ -184,6 +194,7 @@ public final class Config {
             ", profilingEvent=" + profilingEvent +
             ", profilingAlloc='" + profilingAlloc + '\'' +
             ", profilingLock='" + profilingLock + '\'' +
+            ", samplingEventOrder='" + samplingEventOrder + '\'' +
             ", uploadInterval=" + uploadInterval +
             ", javaStackDepthMax=" + javaStackDepthMax +
             ", logLevel=" + logLevel +
@@ -231,6 +242,7 @@ public final class Config {
             profilingEvent(cp),
             alloc,
             profilingLock(cp),
+            samplingEventOrder(cp),
             uploadInterval(cp),
             javaStackDepthMax(cp),
             logLevel(cp),
@@ -335,6 +347,50 @@ public final class Config {
         return profilingLock.trim().toLowerCase();
     }
 
+    private static List<EventType> samplingEventOrder(final ConfigurationProvider cp) {
+        final String samplingEventOrder = cp.get(PYROSCOPE_SAMPLING_EVENT_ORDER_CONFIG);
+        if (null == samplingEventOrder || samplingEventOrder.isEmpty()) {
+            return DEFAULT_SAMPLING_EVENT_ORDER;
+        }
+        DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "keep upload interval >= sampling duration * distinct event count to avoid unexpected behaviour");
+        return Stream.of(samplingEventOrder.split("\\s*,\\s*"))
+            .map(s -> {
+                try {
+                    return EventType.fromId(s);   
+                } catch (final IllegalArgumentException e) {
+                    return null;
+                }
+            })
+            .filter(t -> null != t)
+            .collect(Collectors.toCollection(() -> new ArrayList<>()));
+    }
+
+    // extra args events not supported
+    private static List<EventType> resolve(final List<EventType> samplingEventOrder, final EventType type, final String alloc, final String lock, final Duration samplingDuration) {
+        if (null == samplingEventOrder)
+            return null;
+        if (null == samplingDuration) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "not implemented: sampling event order is only implemented in sampling mode");
+            return null;
+        }
+        // effectively set size is upper bounded by 3
+        final LinkedHashSet<EventType> set = new LinkedHashSet<>();
+        final boolean _alloc = null != alloc && !alloc.isEmpty();
+        final boolean _lock = null != lock && !lock.isEmpty();
+
+        // filter unmacthed and dedupe
+        for (final EventType t : samplingEventOrder)
+            if (t.equals(type) || (EventType.ALLOC.equals(t) && _alloc) || (EventType.LOCK.equals(t) && _lock))
+                set.add(t);
+        // append missing
+        set.add(type);
+        if (_alloc)
+            set.add(EventType.ALLOC);
+        if (_lock)
+            set.add(EventType.LOCK);
+        return new ArrayList<>(set);
+    }
+
     private static Duration uploadInterval(ConfigurationProvider configurationProvider) {
         final String uploadIntervalStr = configurationProvider.get(PYROSCOPE_UPLOAD_INTERVAL_CONFIG);
         if (uploadIntervalStr == null || uploadIntervalStr.isEmpty()) {
@@ -348,6 +404,7 @@ public final class Config {
             return DEFAULT_UPLOAD_INTERVAL;
         }
     }
+
 
     private static int javaStackDepthMax(ConfigurationProvider configurationProvider) {
         final String javaStackDepthMaxStr = configurationProvider.get(PYROSCOPE_JAVA_STACK_DEPTH_MAX);
@@ -567,6 +624,7 @@ public final class Config {
         public EventType profilingEvent = DEFAULT_PROFILER_EVENT;
         public String profilingAlloc = "";
         public String profilingLock = "";
+        public List<EventType> samplingEventOrder = null;
         public Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
         public int javaStackDepthMax = DEFAULT_JAVA_STACK_DEPTH_MAX;
         public Logger.Level logLevel = Logger.Level.INFO;
@@ -598,6 +656,7 @@ public final class Config {
             profilingEvent = buildUpon.profilingEvent;
             profilingAlloc = buildUpon.profilingAlloc;
             profilingLock = buildUpon.profilingLock;
+            samplingEventOrder = buildUpon.samplingEventOrder;
             uploadInterval = buildUpon.uploadInterval;
             javaStackDepthMax = buildUpon.javaStackDepthMax;
             logLevel = buildUpon.logLevel;
@@ -640,6 +699,11 @@ public final class Config {
 
         public Builder setProfilingLock(String profilingLock) {
             this.profilingLock = profilingLock;
+            return this;
+        }
+
+        public Builder setSamplingEventOrder(final List<EventType> samplingEventOrder) {
+            this.samplingEventOrder = samplingEventOrder;
             return this;
         }
 
@@ -757,6 +821,7 @@ public final class Config {
                 profilingEvent,
                 profilingAlloc,
                 profilingLock,
+                samplingEventOrder,
                 uploadInterval,
                 javaStackDepthMax,
                 logLevel,

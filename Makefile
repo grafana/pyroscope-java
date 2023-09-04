@@ -24,6 +24,12 @@ test:
 
 .PHONY: docker-example
 docker-example: build
-	cp agent/build/libs/pyroscope.jar example/
-	docker-compose -f example/docker-compose.yml build
-	docker-compose -f example/docker-compose.yml up
+	cp agent/build/libs/pyroscope.jar examples/base
+	docker-compose -f examples/base/docker-compose.yml build
+	docker-compose -f examples/base/docker-compose.yml up
+
+.PHONY: docker-example
+docker-example-expt: build
+	cp agent/build/libs/pyroscope.jar examples/expt
+	docker-compose -f examples/expt/docker-compose.yml build
+	docker-compose -f examples/expt/docker-compose.yml up

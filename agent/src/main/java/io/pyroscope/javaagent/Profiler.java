@@ -16,19 +16,21 @@ import java.time.Duration;
 import java.time.Instant;
 
 public final class Profiler {
-    private final EventType eventType;
-    private final String alloc;
-    private final String lock;
-    private final Duration interval;
-    private final Format format;
-
+    private Config config;
+    private EventType eventType;
+    private String alloc;
+    private String lock;
+    private Duration interval;
+    private Format format;
+    private File tempJFRFile;
 
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
-    private final File tempJFRFile;
-    private final Config config;
-
     Profiler(Config config) {
+        setConfig(config);
+    }
+
+    public void setConfig(final Config config) {
         this.config = config;
         this.alloc = config.profilingAlloc;
         this.lock = config.profilingLock;
@@ -95,7 +97,6 @@ public final class Profiler {
         return result;
     }
 
-    // todo allow specifying arbitrary ap command from configuration
     private String createJFRCommand() {
         StringBuilder sb = new StringBuilder();
         sb.append("start,event=").append(eventType.id);
