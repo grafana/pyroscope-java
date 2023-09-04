@@ -180,6 +180,14 @@ public final class Config {
                 "auth token is ignored (both auth token and basic auth specified)");
         }
         this.samplingEventOrder = resolve(samplingEventOrder, profilingEvent, profilingAlloc, profilingLock, this.samplingDuration);
+        if ("0".equals(this.profilingAlloc)) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
+                "Setting PYROSCOPE_PROFILER_ALLOC to 0 registers every allocation event, causing significant overhead and results in large profiles, making it not ideal for production. We recommend a starting value of 512k, adjusting as needed.");
+        }
+        if ("0".equals(this.profilingLock)) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
+                "Setting PYROSCOPE_PROFILER_LOCK to 0 registers every lock event, causing significant overhead and results in large profiles, making it not ideal for production. We recommend a starting value of 10ms, adjusting as needed.");
+        }
     }
 
     public long profilingIntervalInHertz() {
@@ -356,7 +364,7 @@ public final class Config {
         return Stream.of(samplingEventOrder.split("\\s*,\\s*"))
             .map(s -> {
                 try {
-                    return EventType.fromId(s);   
+                    return EventType.fromId(s);
                 } catch (final IllegalArgumentException e) {
                     return null;
                 }
