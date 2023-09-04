@@ -75,27 +75,15 @@ public final class Profiler {
 
     /**
      *
-     * @param profilingIntervalStartTime - time when profiling has been started
+     * @param started - time when profiling has been started
+     * @param ended - time when profiling has ended
      * @return Profiling data and dynamic labels as {@link Snapshot}
      */
-    public synchronized Snapshot dumpProfile(Instant profilingIntervalStartTime) {
-        return dumpImpl(profilingIntervalStartTime);
+    public synchronized Snapshot dumpProfile(Instant started, Instant ended) {
+        return dumpImpl(started, ended);
     }
 
-    /**
-     * Stop profiling, dump profiling data, start again
-     * Deprecated, use start, stop, dumpProfile methods instead
-     */
-    @Deprecated
-    public synchronized Snapshot dump(Instant profilingIntervalStartTime) {
-        instance.stop();
 
-        Snapshot result = dumpImpl(profilingIntervalStartTime);
-
-        start();
-
-        return result;
-    }
 
     private String createJFRCommand() {
         StringBuilder sb = new StringBuilder();
@@ -121,7 +109,7 @@ public final class Profiler {
         return sb.toString();
     }
 
-    private Snapshot dumpImpl(Instant profilingIntervalStartTime) {
+    private Snapshot dumpImpl(Instant started, Instant ended) {
         if (config.gcBeforeDump) {
             System.gc();
         }
@@ -134,7 +122,8 @@ public final class Profiler {
         return new Snapshot(
             format,
             eventType,
-            profilingIntervalStartTime,
+            started,
+            ended,
             data,
             Pyroscope.LabelsWrapper.dump()
         );

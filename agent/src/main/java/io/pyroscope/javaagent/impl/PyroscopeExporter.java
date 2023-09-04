@@ -53,7 +53,8 @@ public class PyroscopeExporter implements Exporter {
             final RequestBody requestBody;
             if (config.format == Format.JFR) {
                 byte[] labels = snapshot.labels.toByteArray();
-                logger.log(Logger.Level.DEBUG, "Upload attempt %d. JFR: %s, labels: %s", tries, snapshot.data.length, labels.length);
+                logger.log(Logger.Level.DEBUG, "Upload attempt %d. %s %s JFR: %s, labels: %s", tries,
+                    snapshot.started.toString(), snapshot.ended.toString(), snapshot.data.length, labels.length);
                 MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM);
                 RequestBody jfrBody = RequestBody.create(snapshot.data);
@@ -134,7 +135,7 @@ public class PyroscopeExporter implements Exporter {
 
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
         Instant started = snapshot.started;
-        Instant finished = started.plus(config.uploadInterval);
+        Instant finished = snapshot.ended;
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
             .newBuilder()
             .addPathSegment("ingest")

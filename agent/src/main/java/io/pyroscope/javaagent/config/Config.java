@@ -74,7 +74,7 @@ public final class Config {
     private static final List<EventType> DEFAULT_SAMPLING_EVENT_ORDER = null;
     private static final int DEFAULT_JAVA_STACK_DEPTH_MAX = 2048;
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
-    private static final Format DEFAULT_FORMAT = Format.COLLAPSED;
+    private static final Format DEFAULT_FORMAT = Format.JFR;
     // The number of snapshots simultaneously stored in memory is limited by this.
     // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
     private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 8;
@@ -187,6 +187,9 @@ public final class Config {
         if ("0".equals(this.profilingLock)) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
                 "Setting PYROSCOPE_PROFILER_LOCK to 0 registers every lock event, causing significant overhead and results in large profiles, making it not ideal for production. We recommend a starting value of 10ms, adjusting as needed.");
+        }
+        if (format == Format.COLLAPSED) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "COLLAPSED format is deprecated");
         }
     }
 
