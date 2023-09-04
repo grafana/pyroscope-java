@@ -27,8 +27,8 @@
     catch(err) {
     }
 //-->
-var data = {"i0":42,"i1":10,"i2":10,"i3":10,"i4":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -147,7 +147,7 @@ extends java.lang.Object</pre>
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
@@ -155,29 +155,23 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code><a href="Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#dump(java.time.Instant)">dump</a></span>&#8203;(java.time.Instant&nbsp;profilingIntervalStartTime)</code></th>
-<td class="colLast">
-<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
-</td>
-</tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#dumpProfile(java.time.Instant)">dumpProfile</a></span>&#8203;(java.time.Instant&nbsp;profilingIntervalStartTime)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#dumpProfile(java.time.Instant,java.time.Instant)">dumpProfile</a></span>&#8203;(java.time.Instant&nbsp;started,
+           java.time.Instant&nbsp;ended)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setConfig(io.pyroscope.javaagent.config.Config)">setConfig</a></span>&#8203;(<a href="config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;config)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#start()">start</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Start async-profiler</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#stop()">stop</a></span>()</code></th>
 <td class="colLast">
@@ -237,32 +231,21 @@ extends java.lang.Object</pre>
 <div class="block">Stop async-profiler</div>
 </li>
 </ul>
-<a id="dumpProfile(java.time.Instant)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>dumpProfile</h4>
-<pre class="methodSignature">public&nbsp;<a href="Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;dumpProfile&#8203;(java.time.Instant&nbsp;profilingIntervalStartTime)</pre>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>profilingIntervalStartTime</code> - - time when profiling has been started</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Profiling data and dynamic labels as <a href="Snapshot.html" title="class in io.pyroscope.javaagent"><code>Snapshot</code></a></dd>
-</dl>
-</li>
-</ul>
-<a id="dump(java.time.Instant)">
+<a id="dumpProfile(java.time.Instant,java.time.Instant)">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>dump</h4>
-<pre class="methodSignature">@Deprecated
-public&nbsp;<a href="Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;dump&#8203;(java.time.Instant&nbsp;profilingIntervalStartTime)</pre>
-<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
-<div class="block">Stop profiling, dump profiling data, start again
- Deprecated, use start, stop, dumpProfile methods instead</div>
+<h4>dumpProfile</h4>
+<pre class="methodSignature">public&nbsp;<a href="Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;dumpProfile&#8203;(java.time.Instant&nbsp;started,
+                            java.time.Instant&nbsp;ended)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>started</code> - - time when profiling has been started</dd>
+<dd><code>ended</code> - - time when profiling has ended</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Profiling data and dynamic labels as <a href="Snapshot.html" title="class in io.pyroscope.javaagent"><code>Snapshot</code></a></dd>
+</dl>
 </li>
 </ul>
 </li>

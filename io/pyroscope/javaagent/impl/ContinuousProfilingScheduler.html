@@ -27,8 +27,8 @@
     catch(err) {
     }
 //-->
-var data = {"i0":9,"i1":10};
-var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var data = {"i0":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -175,31 +175,20 @@ implements <a href="../api/ProfilingScheduler.html" title="interface in io.pyros
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t1" class="tableTab"><span><a href="javascript:show(1);">Static Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>static java.time.Instant</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#alignProfilingIntervalStartTime(java.time.Instant,java.time.Duration)">alignProfilingIntervalStartTime</a></span>&#8203;(java.time.Instant&nbsp;profilingIntervalStartTime,
-                               java.time.Duration&nbsp;uploadInterval)</code></th>
-<td class="colLast">
-<div class="block">Aligns profilingIntervalStartTime to the closest aligned upload time either forward or backward
- For example if upload interval is 10s and profilingIntervalStartTime is 00:00.01 it will return 00:00
- and if profilingIntervalStartTime is 00:09.239 it will return 00:10
- <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">...</a></div>
-</td>
-</tr>
-<tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#start(io.pyroscope.javaagent.Profiler)">start</a></span>&#8203;(<a href="../Profiler.html" title="class in io.pyroscope.javaagent">Profiler</a>&nbsp;profiler)</code></th>
 <td class="colLast">
 <div class="block">Use Profiler's to start, stop, dumpProfile
  <a href="../Profiler.html#start()"><code>Profiler.start()</code></a>
  <a href="../Profiler.html#stop()"><code>Profiler.stop()</code></a>
- <a href="../Profiler.html#dumpProfile(java.time.Instant)"><code>Profiler.dumpProfile(Instant)</code></a>
+ <a href="../Profiler.html#dumpProfile(java.time.Instant,java.time.Instant)"><code>Profiler.dumpProfile(Instant, Instant)</code></a>
  Here is an example of naive implementation</div>
 </td>
 </tr>
@@ -251,7 +240,7 @@ implements <a href="../api/ProfilingScheduler.html" title="interface in io.pyros
 <a id="start(io.pyroscope.javaagent.Profiler)">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>start</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;start&#8203;(<a href="../Profiler.html" title="class in io.pyroscope.javaagent">Profiler</a>&nbsp;profiler)</pre>
@@ -259,7 +248,7 @@ implements <a href="../api/ProfilingScheduler.html" title="interface in io.pyros
 <div class="block">Use Profiler's to start, stop, dumpProfile
  <a href="../Profiler.html#start()"><code>Profiler.start()</code></a>
  <a href="../Profiler.html#stop()"><code>Profiler.stop()</code></a>
- <a href="../Profiler.html#dumpProfile(java.time.Instant)"><code>Profiler.dumpProfile(Instant)</code></a>
+ <a href="../Profiler.html#dumpProfile(java.time.Instant,java.time.Instant)"><code>Profiler.dumpProfile(Instant, Instant)</code></a>
  Here is an example of naive implementation
  <pre>
  public void start(Profiler profiler) {
@@ -283,27 +272,6 @@ implements <a href="../api/ProfilingScheduler.html" title="interface in io.pyros
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../api/ProfilingScheduler.html#start(io.pyroscope.javaagent.Profiler)">start</a></code>&nbsp;in interface&nbsp;<code><a href="../api/ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a></code></dd>
-</dl>
-</li>
-</ul>
-<a id="alignProfilingIntervalStartTime(java.time.Instant,java.time.Duration)">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>alignProfilingIntervalStartTime</h4>
-<pre class="methodSignature">public static&nbsp;java.time.Instant&nbsp;alignProfilingIntervalStartTime&#8203;(java.time.Instant&nbsp;profilingIntervalStartTime,
-                                                                java.time.Duration&nbsp;uploadInterval)</pre>
-<div class="block">Aligns profilingIntervalStartTime to the closest aligned upload time either forward or backward
- For example if upload interval is 10s and profilingIntervalStartTime is 00:00.01 it will return 00:00
- and if profilingIntervalStartTime is 00:09.239 it will return 00:10
- <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">...</a></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>profilingIntervalStartTime</code> - the time to align</dd>
-<dd><code>uploadInterval</code> - </dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>the aligned</dd>
 </dl>
 </li>
 </ul>
