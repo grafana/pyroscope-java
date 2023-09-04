@@ -12,7 +12,7 @@ public interface ProfilingScheduler {
      * Use Profiler's to start, stop, dumpProfile
      * {@link Profiler#start()}
      * {@link Profiler#stop()}
-     * {@link Profiler#dumpProfile(Instant)}
+     * {@link Profiler#dumpProfile(Instant, Instant)}
      * Here is an example of naive implementation
      * <pre>
      * public void start(Profiler profiler) {

@@ -22,7 +22,7 @@ public class App {
                 new Config.Builder()
                     .setApplicationName("demo.app{qweqwe=asdasd}")
                     .setServerAddress("http://localhost:4040")
-                    .setFormat(Format.COLLAPSED)
+                    .setFormat(Format.JFR)
                     .setLogLevel(Logger.Level.DEBUG)
                     .setLabels(mapOf("user", "tolyan"))
                     .build())
