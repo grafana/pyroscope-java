@@ -46,9 +46,9 @@ public class PyroscopeExporter implements Exporter {
     private void uploadSnapshot(final Snapshot snapshot) throws InterruptedException {
         final HttpUrl url = urlForSnapshot(snapshot);
         final ExponentialBackoff exponentialBackoff = new ExponentialBackoff(1_000, 30_000, new Random());
-        boolean success = false;
+        boolean retry = true;
         int tries = 0;
-        while (!success) {
+        while (retry) {
             tries++;
             final RequestBody requestBody;
             if (config.format == Format.JFR) {
@@ -94,13 +94,14 @@ public class PyroscopeExporter implements Exporter {
                         responseBody = body.string();
                     }
                     logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s %s", status, responseBody);
+                    retry = shouldRetry(status);
                 } else {
-                    success = true;
+                    retry = false;
                 }
             } catch (final IOException e) {
                 logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s", e.getMessage());
             }
-            if (!success) {
+            if (retry) {
                 if (config.ingestMaxTries >= 0 && tries >= config.ingestMaxTries) {
                     logger.log(Logger.Level.ERROR, "Gave up uploading profiling snapshot after %d tries", tries);
                     break;
@@ -110,6 +111,10 @@ public class PyroscopeExporter implements Exporter {
                 Thread.sleep(backoff);
             }
         }
+    }
+
+    private static boolean shouldRetry(int status) {
+        return status == 429 || status / 100 == 5;
     }
 
     private static void addAuthHeader(Request.Builder request, HttpUrl url, Config config) {
