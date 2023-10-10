@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 public class App {
     public static final int N_THREADS = 8;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         PyroscopeAgent.start(
             new PyroscopeAgent.Options.Builder(
                 new Config.Builder()
@@ -30,6 +30,22 @@ public class App {
                 .build()
         );
         Pyroscope.setStaticLabels(mapOf("region", "us-east-1"));
+
+        Thread.sleep(5 * 60 * 1000);
+
+        // Just adding a  example of a stop method.
+        PyroscopeAgent.stop(
+            new PyroscopeAgent.Options.Builder(
+                new Config.Builder()
+                    .setApplicationName("demo.app{qweqwe=asdasd}")
+                    .setServerAddress("http://localhost:4040")
+                    .setFormat(Format.JFR)
+                    .setLogLevel(Logger.Level.DEBUG)
+                    .setLabels(mapOf("user", "tolyan"))
+                    .build())
+//                .setExporter(new MyStdoutExporter())
+                .build()
+        );
 
         appLogic();
     }

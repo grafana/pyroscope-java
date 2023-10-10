@@ -36,4 +36,14 @@ public interface ProfilingScheduler {
      *
      **/
     void start(Profiler profiler);
+
+
+    /**
+     * This method exposes the stop method
+     * Use Profiler's to start, stop, dumpProfile
+     * {@link Profiler#start()}
+     * {@link Profiler#stop()}
+     * {@link Profiler#dumpProfile(Instant, Instant)}
+     **/
+    void stop(Profiler profiler);
 }
