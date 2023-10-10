@@ -70,6 +70,15 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
         );
     }
 
+    /**
+     * Stops the profiling scheduler which stops the AsyncProfiler.
+     * @param profiler
+     */
+    @Override
+    public void stop(Profiler profiler) {
+        profiler.stop();
+    }
+
     private void dumpProfile(final Profiler profiler, final long samplingDurationMillis, final Duration uploadInterval) {
         Instant profilingStartTime = Instant.now();
         try {

@@ -49,6 +49,21 @@ public class PyroscopeAgent {
     }
 
     /**
+     * stop is used to stop profiling
+     * @param options
+     */
+    public static void stop(Options options) {
+        Logger logger = options.logger;
+        logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
+        try {
+            options.scheduler.stop(options.profiler);
+            logger.log(Logger.Level.INFO, "Profiling started");
+        } catch (final Throwable e) {
+            logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
+        }
+    }
+
+    /**
      * Options allow to swap pyroscope components:
      * - io.pyroscope.javaagent.api.ProfilingScheduler
      * - org.apache.logging.log4j.Logger

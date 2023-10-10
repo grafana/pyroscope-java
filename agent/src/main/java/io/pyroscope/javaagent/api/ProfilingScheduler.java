@@ -36,4 +36,11 @@ public interface ProfilingScheduler {
      *
      **/
     void start(Profiler profiler);
+
+/**
+ * stop is ised tp stp[ the profiler
+ * {@link Profiler#stop()}
+ * {@link Profiler#dumpProfile(Instant, Instant)}
+ * **/
+    void stop(Profiler profiler);
 }

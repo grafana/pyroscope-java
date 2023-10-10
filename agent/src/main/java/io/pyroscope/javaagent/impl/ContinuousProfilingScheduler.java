@@ -67,6 +67,15 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
 
     }
 
+    /**
+     * Stops the profiling scheduler which stops the AsyncProfiler.
+     * @param profiler
+     */
+    @Override
+    public void stop(Profiler profiler) {
+        profiler.stop();
+    }
+
     private void stop() {
         if (job != null) {
             job.cancel(true);
