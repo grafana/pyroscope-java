@@ -35,6 +35,12 @@ public class PyroscopeAgent {
 
     public static void start(Options options) {
         Logger logger = options.logger;
+
+        if (!options.config.agentEnabled) {
+            logger.log(Logger.Level.INFO, "Pyroscope agent start disabled by configuration");
+            return;
+        }
+
         if (!started.compareAndSet(false, true)) {
             logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
             return;
