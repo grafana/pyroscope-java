@@ -3,10 +3,13 @@ package io.pyroscope.javaagent;
 import java.util.EnumSet;
 import java.util.Optional;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import one.profiler.Events;
 import io.pyroscope.http.Units;
 import io.pyroscope.http.AggregationType;
 
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public enum EventType {
     CPU (Events.CPU, Units.SAMPLES, AggregationType.SUM),
     ALLOC (Events.ALLOC, Units.OBJECTS, AggregationType.SUM),
@@ -28,12 +31,6 @@ public enum EventType {
     * Aggregation type option, as expected by Pyroscope's HTTP API.
     */
     public final AggregationType aggregationType;
-
-    EventType(String id, Units units, AggregationType aggregationType) {
-        this.id = id;
-        this.units = units;
-        this.aggregationType = aggregationType;
-    }
 
     public static EventType fromId(String id) throws IllegalArgumentException {
         Optional<EventType> maybeEventType =

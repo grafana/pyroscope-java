@@ -11,6 +11,7 @@ import io.pyroscope.javaagent.config.Config;
 import kotlin.random.Random;
 
 import io.pyroscope.javaagent.config.Config.Builder;
+import lombok.AllArgsConstructor;
 
 import java.time.Duration;
 import java.time.Instant;

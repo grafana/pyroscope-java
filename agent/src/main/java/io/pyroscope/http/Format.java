@@ -1,5 +1,9 @@
 package io.pyroscope.http;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public enum Format {
     @Deprecated // use jfr
     COLLAPSED ("collapsed"),
@@ -9,8 +13,4 @@ public enum Format {
      * Profile data format, as expected by Pyroscope's HTTP API.
      */
     public final String id;
-
-    Format(String id) {
-        this.id = id;
-    }
 }

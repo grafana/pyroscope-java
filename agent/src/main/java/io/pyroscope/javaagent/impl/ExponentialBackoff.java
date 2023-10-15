@@ -1,24 +1,22 @@
 package io.pyroscope.javaagent.impl;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Random;
 
 /**
  * Exponential backoff counter implementing the Full Jitter algorithm from
  * <a href="https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/">here</a>.
  */
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 final class ExponentialBackoff {
-    private final Random random;
-
     private final int base;
     private final int cap;
 
-    private int attempt = -1;
+    private final Random random;
 
-    ExponentialBackoff(final int base, final int cap, final Random random) {
-        this.base = base;
-        this.cap = cap;
-        this.random = random;
-    }
+    private int attempt = -1;
 
     final int error() {
         attempt += 1;

@@ -7,6 +7,7 @@ import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 import kotlin.random.Random;
+import lombok.AllArgsConstructor;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -15,7 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-
+@AllArgsConstructor
 public class ContinuousProfilingScheduler implements ProfilingScheduler {
     final Config config;
 

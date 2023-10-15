@@ -1,21 +1,18 @@
 package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.javaagent.api.Logger;
+import lombok.RequiredArgsConstructor;
 
 import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+@RequiredArgsConstructor
 public class DefaultLogger implements Logger {
     public static Logger PRECONFIG_LOGGER = new DefaultLogger(Level.DEBUG, System.err);
     static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     final Level l;
     final PrintStream out;
-
-    public DefaultLogger(Level l, PrintStream out) {
-        this.l = l;
-        this.out = out;
-    }
 
     @Override
     public void log(Level l, String msg, Object... args) {
