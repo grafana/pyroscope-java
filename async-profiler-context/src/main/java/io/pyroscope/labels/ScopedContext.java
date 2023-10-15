@@ -1,5 +1,6 @@
 package io.pyroscope.labels;
 
+import lombok.RequiredArgsConstructor;
 import one.profiler.AsyncProfiler;
 
 import java.util.Collections;
@@ -79,14 +80,10 @@ public class ScopedContext implements AutoCloseable {
         }
     }
 
+    @RequiredArgsConstructor
     static class Context {
         public final Long id;
         public final Map<Ref<String>, Ref<String>> labels;
-
-        public Context(Long id, Map<Ref<String>, Ref<String>> labels) {
-            this.id = id;
-            this.labels = labels;
-        }
     }
 
     static void assertAlive(long counter) {
