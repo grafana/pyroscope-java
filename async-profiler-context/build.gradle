@@ -26,10 +26,17 @@ def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$buildDir/async-profiler/async-profiler.jar")
     implementation 'com.google.protobuf:protobuf-java:3.21.1'
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.10.0'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.10.0'
+
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }
 
 jar {
@@ -144,7 +151,7 @@ publishing {
             groupId = 'io.pyroscope'
             artifactId = 'async-profiler-context'
             version = pyroscopeVersion
-            artifacts = [ shadowJar, javadocJar, sourcesJar ]
+            artifacts = [shadowJar, javadocJar, sourcesJar]
             pom {
                 name = 'Pyroscope Java agent'
                 description = 'async-profiler fork with contextID functionality and bundled shared libs'
