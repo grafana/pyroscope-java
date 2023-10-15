@@ -9,6 +9,7 @@ import io.pyroscope.javaagent.api.ConfigurationProvider;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
+import lombok.ToString;
 import okhttp3.HttpUrl;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +25,7 @@ import java.util.zip.Deflater;
  * Config allows to tweak parameters of existing pyroscope components at start time
  * through pyroscope.properties file or System.getevn - see io.pyroscope.javaagent.impl.DefaultConfigurationProvider
  */
+@ToString
 public final class Config {
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
@@ -195,35 +197,6 @@ public final class Config {
 
     public long profilingIntervalInHertz() {
         return durationToHertz(this.profilingInterval);
-    }
-
-    @Override
-    public String toString() {
-        return "Config{" +
-            "applicationName='" + applicationName + '\'' +
-            ", profilingInterval=" + profilingInterval +
-            ", profilingEvent=" + profilingEvent +
-            ", profilingAlloc='" + profilingAlloc + '\'' +
-            ", profilingLock='" + profilingLock + '\'' +
-            ", samplingEventOrder='" + samplingEventOrder + '\'' +
-            ", uploadInterval=" + uploadInterval +
-            ", javaStackDepthMax=" + javaStackDepthMax +
-            ", logLevel=" + logLevel +
-            ", serverAddress='" + serverAddress + '\'' +
-            ", authToken='" + authToken + '\'' +
-            ", timeseriesName='" + timeseriesName + '\'' +
-            ", timeseries=" + timeseries +
-            ", format=" + format +
-            ", pushQueueCapacity=" + pushQueueCapacity +
-            ", labels=" + labels +
-            ", ingestMaxTries=" + ingestMaxTries +
-            ", compressionLevelJFR=" + compressionLevelJFR +
-            ", compressionLevelLabels=" + compressionLevelLabels +
-            ", allocLive=" + allocLive +
-            ", httpHeaders=" + httpHeaders +
-            ", samplingDuration=" + samplingDuration +
-            ", tenantID=" + tenantID +
-            '}';
     }
 
     public Builder newBuilder() {
