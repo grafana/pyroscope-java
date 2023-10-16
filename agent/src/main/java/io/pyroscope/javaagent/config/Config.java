@@ -9,6 +9,9 @@ import io.pyroscope.javaagent.api.ConfigurationProvider;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import okhttp3.HttpUrl;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +28,10 @@ import java.util.zip.Deflater;
  * Config allows to tweak parameters of existing pyroscope components at start time
  * through pyroscope.properties file or System.getevn - see io.pyroscope.javaagent.impl.DefaultConfigurationProvider
  */
+@Getter
+@Setter
 @ToString
+@Builder(toBuilder = true, buildMethodName = "buildInternal")
 public final class Config {
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
@@ -87,120 +93,107 @@ public final class Config {
     private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
     private static final Duration DEFAULT_SAMPLING_DURATION = null;
 
-    public final String applicationName;
-    public final Duration profilingInterval;
-    public final EventType profilingEvent;
-    public final String profilingAlloc;
-    public final String profilingLock;
-    public final List<EventType> samplingEventOrder;
-    public final Duration uploadInterval;
-    public final int javaStackDepthMax;
-    public final Logger.Level logLevel;
-    public final String serverAddress;
-    public final String authToken;
+    @Builder.Default
+    public final String applicationName = generateApplicationName();
+    @Builder.Default
+    public final Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
+    @Builder.Default
+    public final EventType profilingEvent = DEFAULT_PROFILER_EVENT;
+    @Builder.Default
+    public final String profilingAlloc = "";
+    @Builder.Default
+    public final String profilingLock = "";
+    @Builder.Default
+    public List<EventType> samplingEventOrder = null;
+    @Builder.Default
+    public final Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
+    @Builder.Default
+    public final int javaStackDepthMax = DEFAULT_JAVA_STACK_DEPTH_MAX;
+    @Builder.Default
+    public final Logger.Level logLevel = Logger.Level.INFO;
+    @Builder.Default
+    public final String serverAddress = DEFAULT_SERVER_ADDRESS;
+    @Builder.Default
+    public final String authToken = null;
 
     @Deprecated
-    public final String timeseriesName;
-    public final AppName timeseries;
-    public final Format format;
-    public final int pushQueueCapacity;
-    public final Map<String, String> labels;
-    public final int ingestMaxTries;
-    public final int compressionLevelJFR;
-    public final int compressionLevelLabels;
+    private String timeseriesName;
+    private AppName timeseries;
+    @Builder.Default
+    public final Format format = DEFAULT_FORMAT;
+    @Builder.Default
+    public final int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
+    @Builder.Default
+    public final Map<String, String> labels = Collections.emptyMap();
+    @Builder.Default
+    public final int ingestMaxTries = DEFAULT_INGEST_MAX_RETRIES;
+    @Builder.Default
+    public final int compressionLevelJFR = validateCompressionLevel(DEFAULT_COMPRESSION_LEVEL);
+    @Builder.Default
+    public final int compressionLevelLabels = validateCompressionLevel(DEFAULT_COMPRESSION_LEVEL);
 
-    public final boolean allocLive;
-    public final boolean gcBeforeDump;
+    @Builder.Default
+    public final boolean allocLive = DEFAULT_ALLOC_LIVE;
+    @Builder.Default
+    public final boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
 
-    public final Map<String, String> httpHeaders;
-    public final Duration samplingDuration;
-    public final String tenantID;
-    public final String APLogLevel;
-    public final String APExtraArguments;
+    @Builder.Default
+    public final Map<String, String> httpHeaders = new HashMap<>();
+    @Builder.Default
+    public final Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
+    @Builder.Default
+    public final String tenantID = null;
+    @Builder.Default
+    public final String APLogLevel = null;
+    @Builder.Default
+    public final String APExtraArguments = null;
     public final String basicAuthUser;
     public final String basicAuthPassword;
 
-    Config(final String applicationName,
-           final Duration profilingInterval,
-           final EventType profilingEvent,
-           final String profilingAlloc,
-           final String profilingLock,
-           final List<EventType> samplingEventOrder,
-           final Duration uploadInterval,
-           final int javaStackDepthMax,
-           final Logger.Level logLevel,
-           final String serverAddress,
-           final String authToken,
-           final Format format,
-           final int pushQueueCapacity,
-           final Map<String, String> labels,
-           int ingestMaxRetries,
-           int compressionLevelJFR,
-           int compressionLevelLabels,
-           boolean allocLive,
-           boolean gcBeforeDump,
-           Map<String, String> httpHeaders,
-           Duration samplingDuration,
-           String tenantID,
-           String APLogLevel,
-           String APExtraArguments,
-           String basicAuthUser,
-           String basicAuthPassword) {
-        this.applicationName = applicationName;
-        this.profilingInterval = profilingInterval;
-        this.profilingEvent = profilingEvent;
-        this.profilingAlloc = profilingAlloc;
-        this.profilingLock = profilingLock;
-        this.uploadInterval = uploadInterval;
-        this.javaStackDepthMax = javaStackDepthMax;
-        this.logLevel = logLevel;
-        this.serverAddress = serverAddress;
-        this.authToken = authToken;
-        this.ingestMaxTries = ingestMaxRetries;
-        this.compressionLevelJFR = validateCompressionLevel(compressionLevelJFR);
-        this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
-        this.allocLive = allocLive;
-        this.gcBeforeDump = gcBeforeDump;
-        this.httpHeaders = httpHeaders;
-        this.samplingDuration = samplingDuration;
-        this.tenantID = tenantID;
-        this.APLogLevel = APLogLevel;
-        this.APExtraArguments = APExtraArguments;
-        this.basicAuthUser = basicAuthUser;
-        this.basicAuthPassword = basicAuthPassword;
-        this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
-        this.timeseriesName = timeseries.toString();
-        this.format = format;
-        this.pushQueueCapacity = pushQueueCapacity;
-        this.labels = Collections.unmodifiableMap(labels);
-        HttpUrl serverAddressUrl = HttpUrl.parse(serverAddress);
-        if (serverAddressUrl == null) {
-            throw new IllegalArgumentException("invalid url " + serverAddress);
+    public static class ConfigBuilder {
+        public ConfigBuilder() {
+            super();
         }
-        if (authToken != null && basicAuthUser != null) {
-            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
-                "auth token is ignored (both auth token and basic auth specified)");
+
+        public Config build() {
+            Config config = buildInternal();
+            config.setTimeseries(createTimeseriesName(AppName.parse(config.getApplicationName()), config.getProfilingEvent(), config.getFormat()));
+            config.setTimeseriesName(config.getTimeseries().toString());
+
+            HttpUrl serverAddressUrl = HttpUrl.parse(config.getServerAddress());
+            if (serverAddressUrl == null) {
+                throw new IllegalArgumentException("invalid url " + config.getServerAddress());
+            }
+            if (config.getAuthToken() != null && config.getBasicAuthUser() != null) {
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
+                    "auth token is ignored (both auth token and basic auth specified)");
+            }
+            config.setSamplingEventOrder(resolve(config.getSamplingEventOrder(), config.getProfilingEvent(), config.getProfilingAlloc(), config.getProfilingLock(), config.getSamplingDuration()));
+            if ("0".equals(config.getProfilingAlloc())) {
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
+                    "Setting PYROSCOPE_PROFILER_ALLOC to 0 registers every allocation event, causing significant overhead and results in large profiles, making it not ideal for production. We recommend a starting value of 512k, adjusting as needed.");
+            }
+            if ("0".equals(config.getProfilingLock())) {
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
+                    "Setting PYROSCOPE_PROFILER_LOCK to 0 registers every lock event, causing significant overhead and results in large profiles, making it not ideal for production. We recommend a starting value of 10ms, adjusting as needed.");
+            }
+            if (config.getFormat() == Format.COLLAPSED) {
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "COLLAPSED format is deprecated");
+            }
+            return config;
         }
-        this.samplingEventOrder = resolve(samplingEventOrder, profilingEvent, profilingAlloc, profilingLock, this.samplingDuration);
-        if ("0".equals(this.profilingAlloc)) {
-            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
-                "Setting PYROSCOPE_PROFILER_ALLOC to 0 registers every allocation event, causing significant overhead and results in large profiles, making it not ideal for production. We recommend a starting value of 512k, adjusting as needed.");
-        }
-        if ("0".equals(this.profilingLock)) {
-            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
-                "Setting PYROSCOPE_PROFILER_LOCK to 0 registers every lock event, causing significant overhead and results in large profiles, making it not ideal for production. We recommend a starting value of 10ms, adjusting as needed.");
-        }
-        if (format == Format.COLLAPSED) {
-            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "COLLAPSED format is deprecated");
+
+        private AppName createTimeseriesName(AppName app, EventType eventType, Format format) {
+            if (format == Format.JFR)
+                return app;
+            return AppName.builder()
+                .name(app.name + "." + eventType.id)
+                .build();
         }
     }
 
     public long profilingIntervalInHertz() {
         return durationToHertz(this.profilingInterval);
-    }
-
-    public Builder newBuilder() {
-        return new Builder(this);
     }
 
     private static long durationToHertz(Duration duration) {
@@ -220,33 +213,34 @@ public final class Config {
                 PYROSCOPE_ALLOC_LIVE, PYROSCOPE_PROFILER_ALLOC_CONFIG);
             allocLive = false;
         }
-        return new Config(
-            applicationName(cp),
-            profilingInterval(cp),
-            profilingEvent(cp),
-            alloc,
-            profilingLock(cp),
-            samplingEventOrder(cp),
-            uploadInterval(cp),
-            javaStackDepthMax(cp),
-            logLevel(cp),
-            serverAddress(cp),
-            authToken(cp),
-            format(cp),
-            pushQueueCapacity(cp),
-            labels(cp),
-            ingestMaxRetries(cp),
-            compressionLevel(cp, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
-            compressionLevel(cp, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
-            allocLive,
-            bool(cp, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP),
-            httpHeaders(cp),
-            samplingDuration(cp),
-            tenantID(cp),
-            cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG),
-            cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
-            cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG),
-            cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG));
+        return Config.builder()
+            .applicationName(applicationName(cp))
+            .profilingInterval(profilingInterval(cp))
+            .profilingEvent(profilingEvent(cp))
+            .profilingAlloc(alloc)
+            .profilingLock(profilingLock(cp))
+            .samplingEventOrder(samplingEventOrder(cp))
+            .uploadInterval(uploadInterval(cp))
+            .javaStackDepthMax(javaStackDepthMax(cp))
+            .logLevel(logLevel(cp))
+            .serverAddress(serverAddress(cp))
+            .authToken(authToken(cp))
+            .format(format(cp))
+            .pushQueueCapacity(pushQueueCapacity(cp))
+            .labels(labels(cp))
+            .ingestMaxTries(ingestMaxRetries(cp))
+            .compressionLevelJFR(compressionLevel(cp, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR))
+            .compressionLevelLabels(compressionLevel(cp, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS))
+            .allocLive(allocLive)
+            .gcBeforeDump(bool(cp, PYROSCOPE_GC_BEFORE_DUMP, DEFAULT_GC_BEFORE_DUMP))
+            .httpHeaders(httpHeaders(cp))
+            .samplingDuration(samplingDuration(cp))
+            .tenantID(tenantID(cp))
+            .APLogLevel(cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG))
+            .APExtraArguments(cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG))
+            .basicAuthUser(cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG))
+            .basicAuthPassword(cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG))
+            .build();
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -287,14 +281,6 @@ public final class Config {
                 PYROSCOPE_PROFILING_INTERVAL_CONFIG, profilingIntervalStr, DEFAULT_PROFILING_INTERVAL.toMillis());
             return DEFAULT_PROFILING_INTERVAL;
         }
-    }
-
-    private AppName timeseriesName(AppName app, EventType eventType, Format format) {
-        if (format == Format.JFR)
-            return app;
-        return AppName.builder()
-            .name(app.name + "." + eventType.id)
-            .build();
     }
 
     private static EventType profilingEvent(ConfigurationProvider configurationProvider) {
@@ -599,233 +585,6 @@ public final class Config {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, ignore it",
                 PYROSCOPE_SAMPLING_RATE, samplingRateStr);
             return DEFAULT_SAMPLING_DURATION;
-        }
-    }
-
-    public static class Builder {
-        public String applicationName = null;
-        public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
-        public EventType profilingEvent = DEFAULT_PROFILER_EVENT;
-        public String profilingAlloc = "";
-        public String profilingLock = "";
-        public List<EventType> samplingEventOrder = null;
-        public Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
-        public int javaStackDepthMax = DEFAULT_JAVA_STACK_DEPTH_MAX;
-        public Logger.Level logLevel = Logger.Level.INFO;
-        public String serverAddress = DEFAULT_SERVER_ADDRESS;
-        public String authToken = null;
-        public Format format = DEFAULT_FORMAT;
-        public int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
-        public Map<String, String> labels = Collections.emptyMap();
-        public int ingestMaxRetries = DEFAULT_INGEST_MAX_RETRIES;
-        public int compressionLevelJFR = DEFAULT_COMPRESSION_LEVEL;
-        public int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
-        public boolean allocLive = DEFAULT_ALLOC_LIVE;
-        public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
-        public Map<String, String> httpHeaders = new HashMap<>();
-        public Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
-
-        private String tenantID = null;
-        private String APLogLevel = null;
-        private String APExtraArguments = null;
-        private String basicAuthUser;
-        private String basicAuthPassword;
-
-        public Builder() {
-        }
-
-        public Builder(Config buildUpon) {
-            applicationName = buildUpon.applicationName;
-            profilingInterval = buildUpon.profilingInterval;
-            profilingEvent = buildUpon.profilingEvent;
-            profilingAlloc = buildUpon.profilingAlloc;
-            profilingLock = buildUpon.profilingLock;
-            samplingEventOrder = buildUpon.samplingEventOrder;
-            uploadInterval = buildUpon.uploadInterval;
-            javaStackDepthMax = buildUpon.javaStackDepthMax;
-            logLevel = buildUpon.logLevel;
-            serverAddress = buildUpon.serverAddress;
-            authToken = buildUpon.authToken;
-            format = buildUpon.format;
-            pushQueueCapacity = buildUpon.pushQueueCapacity;
-            compressionLevelJFR = buildUpon.compressionLevelJFR;
-            compressionLevelLabels = buildUpon.compressionLevelLabels;
-            allocLive = buildUpon.allocLive;
-            gcBeforeDump = buildUpon.gcBeforeDump;
-            httpHeaders = new HashMap<>(buildUpon.httpHeaders);
-            samplingDuration = buildUpon.samplingDuration;
-            tenantID = buildUpon.tenantID;
-            APLogLevel = buildUpon.APLogLevel;
-            APExtraArguments = buildUpon.APExtraArguments;
-            basicAuthUser = buildUpon.basicAuthUser;
-            basicAuthPassword = buildUpon.basicAuthPassword;
-        }
-
-        public Builder setApplicationName(String applicationName) {
-            this.applicationName = applicationName;
-            return this;
-        }
-
-        public Builder setProfilingInterval(Duration profilingInterval) {
-            this.profilingInterval = profilingInterval;
-            return this;
-        }
-
-        public Builder setProfilingEvent(EventType profilingEvent) {
-            this.profilingEvent = profilingEvent;
-            return this;
-        }
-
-        public Builder setProfilingAlloc(String profilingAlloc) {
-            this.profilingAlloc = profilingAlloc;
-            return this;
-        }
-
-        public Builder setProfilingLock(String profilingLock) {
-            this.profilingLock = profilingLock;
-            return this;
-        }
-
-        public Builder setSamplingEventOrder(final List<EventType> samplingEventOrder) {
-            this.samplingEventOrder = samplingEventOrder;
-            return this;
-        }
-
-        public Builder setUploadInterval(Duration uploadInterval) {
-            this.uploadInterval = uploadInterval;
-            return this;
-        }
-
-        public Builder setJavaStackDepthMax(final int javaStackDepthMax) {
-            this.javaStackDepthMax = javaStackDepthMax;
-            return this;
-        }
-
-        public Builder setLogLevel(Logger.Level logLevel) {
-            this.logLevel = logLevel;
-            return this;
-        }
-
-        public Builder setServerAddress(String serverAddress) {
-            this.serverAddress = serverAddress;
-            return this;
-        }
-
-        public Builder setAuthToken(String authToken) {
-            this.authToken = authToken;
-            return this;
-        }
-
-        public Builder setFormat(Format format) {
-            this.format = format;
-            return this;
-        }
-
-        public Builder setPushQueueCapacity(int pushQueueCapacity) {
-            this.pushQueueCapacity = pushQueueCapacity;
-            return this;
-        }
-
-        public Builder setLabels(Map<String, String> labels) {
-            this.labels = labels;
-            return this;
-        }
-
-        public Builder setIngestMaxRetries(int ingestMaxRetries) {
-            this.ingestMaxRetries = ingestMaxRetries;
-            return this;
-        }
-
-        public Builder setCompressionLevelJFR(int compressionLevelJFR) {
-            this.compressionLevelJFR = validateCompressionLevel(compressionLevelJFR);
-            return this;
-        }
-
-        public Builder setCompressionLevelLabels(int compressionLevelLabels) {
-            this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
-            return this;
-        }
-
-        public Builder setAllocLive(boolean allocLive) {
-            this.allocLive = allocLive;
-            return this;
-        }
-
-        public Builder setGcBeforeDump(boolean gcBeforeDump) {
-            this.gcBeforeDump = gcBeforeDump;
-            return this;
-        }
-
-        public Builder setHTTPHeaders(Map<String, String> httpHeaders) {
-            this.httpHeaders = new HashMap<>(httpHeaders);
-            return this;
-        }
-
-        public Builder addHTTPHeader(String k, String v) {
-            this.httpHeaders.put(k, v);
-            return this;
-        }
-
-        public Builder setSamplingDuration(Duration samplingDuration) {
-            this.samplingDuration = samplingDuration;
-            return this;
-        }
-
-        public Builder setTenantID(String tenantID) {
-            this.tenantID = tenantID;
-            return this;
-        }
-
-        public Builder setAPLogLevel(String apLogLevel) {
-            this.APLogLevel = apLogLevel;
-            return this;
-        }
-
-        public Builder setAPExtraArguments(String APExtraArguments) {
-            this.APExtraArguments = APExtraArguments;
-            return this;
-        }
-
-        public Builder setBasicAuthUser(String basicAuthUser) {
-            this.basicAuthUser = basicAuthUser;
-            return this;
-        }
-
-        public Builder setBasicAuthPassword(String basicAuthPassword) {
-            this.basicAuthPassword = basicAuthPassword;
-            return this;
-        }
-
-        public Config build() {
-            if (applicationName == null || applicationName.isEmpty()) {
-                applicationName = generateApplicationName();
-            }
-            return new Config(applicationName,
-                profilingInterval,
-                profilingEvent,
-                profilingAlloc,
-                profilingLock,
-                samplingEventOrder,
-                uploadInterval,
-                javaStackDepthMax,
-                logLevel,
-                serverAddress,
-                authToken,
-                format,
-                pushQueueCapacity,
-                labels,
-                ingestMaxRetries,
-                compressionLevelJFR,
-                compressionLevelLabels,
-                allocLive,
-                gcBeforeDump,
-                httpHeaders,
-                samplingDuration,
-                tenantID,
-                APLogLevel,
-                APExtraArguments,
-                basicAuthUser,
-                basicAuthPassword);
         }
     }
 }

@@ -12,6 +12,8 @@ import okhttp3.*;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.zip.Deflater;
 
@@ -157,9 +159,12 @@ public class PyroscopeExporter implements Exporter {
     }
 
     private String nameWithStaticLabels() {
-        return config.timeseries.newBuilder()
-            .addLabels(config.labels)
-            .addLabels(Pyroscope.getStaticLabels())
+        Map<String, String> labels = new HashMap<>();
+        labels.putAll(config.labels);
+        labels.putAll(Pyroscope.getStaticLabels());
+
+        return config.getTimeseries().toBuilder()
+            .labels(labels)
             .build()
             .toString();
     }

@@ -26,7 +26,7 @@ public class PyroscopeAgent {
     }
 
     public static void start() {
-        start(new Config.Builder().build());
+        start(Config.builder().build());
     }
 
     public static void start(Config config) {

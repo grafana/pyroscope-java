@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-@Builder
+@Builder(toBuilder = true)
 public class AppName {
     final String name;
     final Map<String, String> labels;

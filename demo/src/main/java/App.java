@@ -19,12 +19,12 @@ public class App {
     public static void main(String[] args) {
         PyroscopeAgent.start(
             new PyroscopeAgent.Options.Builder(
-                new Config.Builder()
-                    .setApplicationName("demo.app{qweqwe=asdasd}")
-                    .setServerAddress("http://localhost:4040")
-                    .setFormat(Format.JFR)
-                    .setLogLevel(Logger.Level.DEBUG)
-                    .setLabels(mapOf("user", "tolyan"))
+                Config.builder()
+                    .applicationName("demo.app{qweqwe=asdasd}")
+                    .serverAddress("http://localhost:4040")
+                    .format(Format.JFR)
+                    .logLevel(Logger.Level.DEBUG)
+                    .labels(mapOf("user", "tolyan"))
                     .build())
 //                .setExporter(new MyStdoutExporter())
                 .build()

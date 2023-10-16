@@ -10,9 +10,6 @@ import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 import kotlin.random.Random;
 
-import io.pyroscope.javaagent.config.Config.Builder;
-import lombok.AllArgsConstructor;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Executors;
@@ -110,12 +107,12 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
     }
 
     private Config isolate(final EventType type, final Config config) {
-        final Builder b = new Builder(config);
-        b.setProfilingEvent(type);
+        Config.ConfigBuilder configBuilder = config.toBuilder();
+        configBuilder.profilingEvent(type);
         if (!EventType.ALLOC.equals(type))
-            b.setProfilingAlloc("");
+            configBuilder.profilingAlloc("");
         if (!EventType.LOCK.equals(type))
-            b.setProfilingLock("");
-        return b.build();
+            configBuilder.profilingLock("");
+        return configBuilder.build();
     }
 }
