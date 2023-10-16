@@ -1,9 +1,11 @@
 package io.pyroscope.javaagent.config;
 
+import lombok.Builder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+@Builder
 public class AppName {
     final String name;
     final Map<String, String> labels;
@@ -23,48 +25,6 @@ public class AppName {
             joinedLabels.add((e.getKey().trim()) + "=" + (e.getValue().trim()));
         }
         return String.format("%s{%s}", name, joinedLabels);
-    }
-
-    public Builder newBuilder() {
-        return new Builder(name, labels);
-    }
-
-    public static class Builder {
-        private String name;
-        private Map<String, String> labels;
-
-        public Builder(String name) {
-            this.name = name;
-            this.labels = new TreeMap<>();
-        }
-
-        public Builder(String name, Map<String, String> labels) {
-            this.name = name;
-            this.labels = new TreeMap<>(labels);
-        }
-
-        public Builder setName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Builder addLabel(String k, String v) {
-            if (isValidLabel(k) || isValidLabel(v)) {
-                this.labels.put(k, v);
-            }
-            return this;
-        }
-
-        public Builder addLabels(Map<String, String> labels) {
-            for (Map.Entry<String, String> it : labels.entrySet()) {
-                addLabel(it.getKey(), it.getValue());
-            }
-            return this;
-        }
-
-        public AppName build() {
-            return new AppName(name, labels);
-        }
     }
 
     public static AppName parse(String appName) {
