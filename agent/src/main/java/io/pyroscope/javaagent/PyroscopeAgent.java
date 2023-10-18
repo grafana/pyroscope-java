@@ -57,7 +57,7 @@ public class PyroscopeAgent {
         logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
         try {
             options.scheduler.stop(options.profiler);
-            logger.log(Logger.Level.INFO, "Profiling started");
+            logger.log(Logger.Level.INFO, "Profiling stopped");
         } catch (final Throwable e) {
             logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
         }
