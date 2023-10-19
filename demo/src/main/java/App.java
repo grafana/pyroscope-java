@@ -31,22 +31,12 @@ public class App {
         );
         Pyroscope.setStaticLabels(mapOf("region", "us-east-1"));
 
-        Thread.sleep(5 * 60 * 1000);
+        appLogic();
+
+        Thread.sleep(2 * 60 * 1000);
 
         // This is a naive implementation for the stop method
-        PyroscopeAgent.stop(
-            new PyroscopeAgent.Options.Builder(
-                new Config.Builder()
-                    .setApplicationName("demo.app{qweqwe=asdasd}")
-                    .setServerAddress("http://localhost:4040")
-                    .setFormat(Format.JFR)
-                    .setLogLevel(Logger.Level.DEBUG)
-                    .setLabels(mapOf("user", "tolyan"))
-                    .build())
-                .build()
-        );
-
-        appLogic();
+        PyroscopeAgent.stop();
     }
 
     private static void appLogic() {
