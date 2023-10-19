@@ -25,6 +25,7 @@ import java.util.zip.Deflater;
  * through pyroscope.properties file or System.getevn - see io.pyroscope.javaagent.impl.DefaultConfigurationProvider
  */
 public final class Config {
+    private static final String PYROSCOPE_AGENT_ENABLED_CONFIG = "PYROSCOPE_AGENT_ENABLED";
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
     private static final String PYROSCOPE_PROFILER_EVENT_CONFIG = "PYROSCOPE_PROFILER_EVENT";
@@ -65,6 +66,7 @@ public final class Config {
      */
     private static final String PYROSCOPE_SAMPLING_EVENT_ORDER_CONFIG = "PYROSCOPE_SAMPLING_EVENT_ORDER";
 
+    private static final boolean DEFAULT_AGENT_ENABLED = true;
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
@@ -85,6 +87,7 @@ public final class Config {
     private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
     private static final Duration DEFAULT_SAMPLING_DURATION = null;
 
+    public final boolean agentEnabled;
     public final String applicationName;
     public final Duration profilingInterval;
     public final EventType profilingEvent;
@@ -118,7 +121,8 @@ public final class Config {
     public final String basicAuthUser;
     public final String basicAuthPassword;
 
-    Config(final String applicationName,
+    Config(final boolean agentEnabled,
+           final String applicationName,
            final Duration profilingInterval,
            final EventType profilingEvent,
            final String profilingAlloc,
@@ -144,6 +148,7 @@ public final class Config {
            String APExtraArguments,
            String basicAuthUser,
            String basicAuthPassword) {
+        this.agentEnabled = agentEnabled;
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
@@ -200,7 +205,8 @@ public final class Config {
     @Override
     public String toString() {
         return "Config{" +
-            "applicationName='" + applicationName + '\'' +
+            "agentEnabled=" + agentEnabled +
+            ", applicationName='" + applicationName + '\'' +
             ", profilingInterval=" + profilingInterval +
             ", profilingEvent=" + profilingEvent +
             ", profilingAlloc='" + profilingAlloc + '\'' +
@@ -241,6 +247,7 @@ public final class Config {
 
     public static Config build(ConfigurationProvider cp) {
         String alloc = profilingAlloc(cp);
+        boolean agentEnabled = bool(cp, PYROSCOPE_AGENT_ENABLED_CONFIG, DEFAULT_AGENT_ENABLED);
         boolean allocLive = bool(cp, PYROSCOPE_ALLOC_LIVE, DEFAULT_ALLOC_LIVE);
         if (DEFAULT_PROFILER_ALLOC.equals(alloc) && allocLive) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "%s is ignored because %s is not configured",
@@ -248,6 +255,7 @@ public final class Config {
             allocLive = false;
         }
         return new Config(
+            agentEnabled,
             applicationName(cp),
             profilingInterval(cp),
             profilingEvent(cp),
@@ -630,6 +638,7 @@ public final class Config {
     }
 
     public static class Builder {
+        public boolean agentEnabled = DEFAULT_AGENT_ENABLED;
         public String applicationName = null;
         public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
         public EventType profilingEvent = DEFAULT_PROFILER_EVENT;
@@ -662,6 +671,7 @@ public final class Config {
         }
 
         public Builder(Config buildUpon) {
+            agentEnabled = buildUpon.agentEnabled;
             applicationName = buildUpon.applicationName;
             profilingInterval = buildUpon.profilingInterval;
             profilingEvent = buildUpon.profilingEvent;
@@ -686,6 +696,11 @@ public final class Config {
             APExtraArguments = buildUpon.APExtraArguments;
             basicAuthUser = buildUpon.basicAuthUser;
             basicAuthPassword = buildUpon.basicAuthPassword;
+        }
+
+        public Builder setAgentEnabled(boolean agentEnabled) {
+            this.agentEnabled = agentEnabled;
+            return this;
         }
 
         public Builder setApplicationName(String applicationName) {
@@ -827,7 +842,8 @@ public final class Config {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
             }
-            return new Config(applicationName,
+            return new Config(agentEnabled,
+                applicationName,
                 profilingInterval,
                 profilingEvent,
                 profilingAlloc,
