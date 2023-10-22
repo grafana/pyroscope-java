@@ -61,6 +61,10 @@ public class PyroscopeAgent {
     public static void stop() {
         Logger logger = startOptions.get().logger;
         logger.log(Logger.Level.DEBUG, "Config: %s", startOptions.get().config);
+        if( startOptions.get() == null) {
+            logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
+            return;
+        }
         try {
             startOptions.get().scheduler.stop(startOptions.get().profiler);
             startOptions.set(null);
