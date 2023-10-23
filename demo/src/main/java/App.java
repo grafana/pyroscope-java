@@ -33,10 +33,38 @@ public class App {
 
         appLogic();
 
-        Thread.sleep(2 * 60 * 1000);
-
-        // This is a naive implementation for the stop method
-        PyroscopeAgent.stop();
+        // Test this by creating a new thread, stop the agent,  sleeping for a second, and then restarting the agent.
+        Thread newThread = new Thread(new Runnable() {
+            public void run()
+            {
+                // Sleep for a second to make sure the agent has started
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                // Stop the agent after a second
+                PyroscopeAgent.stop();
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                // Start the agent back up again after a second
+                PyroscopeAgent.start(
+                    new PyroscopeAgent.Options.Builder(
+                        new Config.Builder()
+                            .setApplicationName("demo.app{qweqwe=asdasd}")
+                            .setServerAddress("http://localhost:4040")
+                            .setFormat(Format.JFR)
+                            .setLogLevel(Logger.Level.DEBUG)
+                            .setLabels(mapOf("user", "tolyan"))
+                            .build())
+//                .setExporter(new MyStdoutExporter())
+                        .build()
+                );
+            }});
+        newThread.start();
     }
 
     private static void appLogic() {

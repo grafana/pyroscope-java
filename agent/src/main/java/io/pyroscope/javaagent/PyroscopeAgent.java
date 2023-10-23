@@ -37,9 +37,9 @@ public class PyroscopeAgent {
 
     public static void start(Options options) {
         Logger logger = options.logger;
-       if( !startOptions.compareAndSet(null, options)) {
-        logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
-        return;
+        if( !startOptions.compareAndSet(null, options)) {
+            logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
+            return;
         }
         if (!options.config.agentEnabled) {
             logger.log(Logger.Level.INFO, "Pyroscope agent start disabled by configuration");
@@ -47,9 +47,8 @@ public class PyroscopeAgent {
         }
         logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
         try {
-            startOptions.compareAndSet(null, options);
-            startOptions.get().scheduler.start(startOptions.get().profiler);
-            logger.log(Logger.Level.INFO, "Profiling started");
+           options.scheduler.start(options.profiler);
+           logger.log(Logger.Level.INFO, "Profiling started");
         } catch (final Throwable e) {
             logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
         }
@@ -59,19 +58,17 @@ public class PyroscopeAgent {
      * stop is used to stop profiling
      */
     public static void stop() {
-        Logger logger = startOptions.get().logger;
-        logger.log(Logger.Level.DEBUG, "Config: %s", startOptions.get().config);
-        if( startOptions.get() == null) {
-            logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
+
+        if(startOptions.get() == null) {
             return;
         }
-        try {
-            startOptions.get().scheduler.stop(startOptions.get().profiler);
-            startOptions.set(null);
-            logger.log(Logger.Level.INFO, "Profiling stopped");
-        } catch (final Throwable e) {
-            logger.log(Logger.Level.ERROR, "Error stopping profiler %s", e);
-        }
+
+        Logger logger = startOptions.get().logger;
+        logger.log(Logger.Level.DEBUG, "Config: %s", startOptions.get().config);
+        startOptions.get().scheduler.stop(startOptions.get().profiler);
+        startOptions.set(null);
+
+        logger.log(Logger.Level.INFO, "Profiling stopped");
     }
 
     /**
