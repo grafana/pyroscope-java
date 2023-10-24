@@ -7,7 +7,6 @@ import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.*;
 
 import java.lang.instrument.Instrumentation;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PyroscopeAgent {
@@ -37,7 +36,7 @@ public class PyroscopeAgent {
 
     public static void start(Options options) {
         Logger logger = options.logger;
-        if( !startOptions.compareAndSet(null, options)) {
+        if (!startOptions.compareAndSet(null, options)) {
             logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
             return;
         }
@@ -47,8 +46,8 @@ public class PyroscopeAgent {
         }
         logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
         try {
-           options.scheduler.start(options.profiler);
-           logger.log(Logger.Level.INFO, "Profiling started");
+            options.scheduler.start(options.profiler);
+            logger.log(Logger.Level.INFO, "Profiling started");
         } catch (final Throwable e) {
             logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
         }
@@ -58,16 +57,24 @@ public class PyroscopeAgent {
      * stop is used to stop profiling
      */
     public static void stop() {
+        if (startOptions.get() == null) {
+            return;
+        }
+        ProfilingScheduler scheduler = startOptions.get().scheduler;
+        Logger logger = startOptions.get().logger;
+        Profiler profiler = startOptions.get().profiler;
 
-        if(startOptions.get() == null) {
+        if (logger == null) {
+            return;
+        }
+        if (scheduler == null || profiler == null) {
+            logger.log(Logger.Level.ERROR, "Failed to stop profiling - already stopped");
             return;
         }
 
-        Logger logger = startOptions.get().logger;
         logger.log(Logger.Level.DEBUG, "Config: %s", startOptions.get().config);
-        startOptions.get().scheduler.stop(startOptions.get().profiler);
+        scheduler.stop(profiler);
         startOptions.set(null);
-
         logger.log(Logger.Level.INFO, "Profiling stopped");
     }
 
