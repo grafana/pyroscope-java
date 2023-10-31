@@ -13,6 +13,8 @@ public class PyroscopeAgent {
     // this is used to store the options passed to the agent
     private static final AtomicReference<Options> startOptions = new AtomicReference<>(null);
 
+    private static final String stopLock = "";
+
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
         final Config config;
@@ -57,25 +59,27 @@ public class PyroscopeAgent {
      * stop is used to stop profiling
      */
     public static void stop() {
-        if (startOptions.get() == null) {
-            return;
-        }
-        ProfilingScheduler scheduler = startOptions.get().scheduler;
-        Logger logger = startOptions.get().logger;
-        Profiler profiler = startOptions.get().profiler;
+        synchronized (stopLock) {
+            if (startOptions.get() == null) {
+                return;
+            }
+            ProfilingScheduler scheduler = startOptions.get().scheduler;
+            Logger logger = startOptions.get().logger;
+            Profiler profiler = startOptions.get().profiler;
 
-        if (logger == null) {
-            return;
-        }
-        if (scheduler == null || profiler == null) {
-            logger.log(Logger.Level.ERROR, "Failed to stop profiling - already stopped");
-            return;
-        }
+            if (logger == null) {
+                return;
+            }
+            if (scheduler == null || profiler == null) {
+                logger.log(Logger.Level.ERROR, "Failed to stop profiling - already stopped");
+                return;
+            }
 
-        logger.log(Logger.Level.DEBUG, "Config: %s", startOptions.get().config);
-        scheduler.stop(profiler);
-        startOptions.set(null);
-        logger.log(Logger.Level.INFO, "Profiling stopped");
+            logger.log(Logger.Level.DEBUG, "Config: %s", startOptions.get().config);
+            scheduler.stop(profiler);
+            startOptions.set(null);
+            logger.log(Logger.Level.INFO, "Profiling stopped");
+        }
     }
 
     /**
