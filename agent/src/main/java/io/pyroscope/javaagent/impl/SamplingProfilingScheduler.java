@@ -77,6 +77,8 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
     @Override
     public void stop(Profiler profiler) {
         profiler.stop();
+        // explicitly stop this.job
+        stop();
     }
 
     private void dumpProfile(final Profiler profiler, final long samplingDurationMillis, final Duration uploadInterval) {

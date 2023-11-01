@@ -15,6 +15,8 @@ public class PyroscopeAgent {
 
     private static final String stopLock = "";
 
+    private static final String startLock = "";
+
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
         final Config config;
@@ -37,21 +39,23 @@ public class PyroscopeAgent {
     }
 
     public static void start(Options options) {
-        Logger logger = options.logger;
-        if (!startOptions.compareAndSet(null, options)) {
-            logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
-            return;
-        }
-        if (!options.config.agentEnabled) {
-            logger.log(Logger.Level.INFO, "Pyroscope agent start disabled by configuration");
-            return;
-        }
-        logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
-        try {
-            options.scheduler.start(options.profiler);
-            logger.log(Logger.Level.INFO, "Profiling started");
-        } catch (final Throwable e) {
-            logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
+        synchronized (startLock) {
+            Logger logger = options.logger;
+            if (!startOptions.compareAndSet(null, options)) {
+                logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
+                return;
+            }
+            if (!options.config.agentEnabled) {
+                logger.log(Logger.Level.INFO, "Pyroscope agent start disabled by configuration");
+                return;
+            }
+            logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
+            try {
+                options.scheduler.start(options.profiler);
+                logger.log(Logger.Level.INFO, "Profiling started");
+            } catch (final Throwable e) {
+                logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
+            }
         }
     }
 

@@ -74,6 +74,8 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
     @Override
     public void stop(Profiler profiler) {
         profiler.stop();
+        // explicitly stop this.job
+        stop();
     }
 
     private void stop() {
