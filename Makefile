@@ -22,14 +22,14 @@ publish:
 test:
 	./gradlew test
 
-.PHONY: docker-example
-docker-example: build
-	cp agent/build/libs/pyroscope.jar examples/base
-	docker-compose -f examples/base/docker-compose.yml build
-	docker-compose -f examples/base/docker-compose.yml up
+.PHONY: docker-example-base
+docker-example-base: build
+	cp agent/build/libs/pyroscope.jar examples
+	docker-compose -f examples/docker-compose-base.yml build
+	docker-compose -f examples/docker-compose-base.yml up
 
-.PHONY: docker-example
+.PHONY: docker-example-expt
 docker-example-expt: build
-	cp agent/build/libs/pyroscope.jar examples/expt
-	docker-compose -f examples/expt/docker-compose.yml build
-	docker-compose -f examples/expt/docker-compose.yml up
+	cp agent/build/libs/pyroscope.jar examples
+	docker-compose -f examples/docker-compose-expt.yml build
+	docker-compose -f examples/docker-compose-expt.yml up
