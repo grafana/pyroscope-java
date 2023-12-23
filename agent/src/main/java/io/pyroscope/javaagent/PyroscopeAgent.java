@@ -33,7 +33,8 @@ public class PyroscopeAgent {
     }
 
     public static void start(@NotNull Config config) {
-        start(new Options.Builder(config).build());
+        start(new Options.Builder(config)
+            .build());
     }
 
     public static void start(@NotNull Options options) {

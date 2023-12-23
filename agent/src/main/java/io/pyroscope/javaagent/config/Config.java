@@ -30,6 +30,7 @@ public final class Config {
     private static final String PYROSCOPE_AGENT_ENABLED_CONFIG = "PYROSCOPE_AGENT_ENABLED";
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
+    private static final String PYROSCOPE_PROFILER_TYPE_CONFIG = "PYROSCOPE_PROFILER_TYPE";
     private static final String PYROSCOPE_PROFILER_EVENT_CONFIG = "PYROSCOPE_PROFILER_EVENT";
     private static final String PYROSCOPE_PROFILER_ALLOC_CONFIG = "PYROSCOPE_PROFILER_ALLOC";
     private static final String PYROSCOPE_PROFILER_LOCK_CONFIG = "PYROSCOPE_PROFILER_LOCK";
@@ -93,6 +94,7 @@ public final class Config {
     
     public final boolean agentEnabled;
     public final String applicationName;
+    private final ProfilerType profilerType;
     public final Duration profilingInterval;
     public final EventType profilingEvent;
     public final String profilingAlloc;
@@ -129,6 +131,7 @@ public final class Config {
 
     Config(final boolean agentEnabled,
            final String applicationName,
+           final ProfilerType profilerType,
            final Duration profilingInterval,
            final EventType profilingEvent,
            final String profilingAlloc,
@@ -157,6 +160,7 @@ public final class Config {
            Duration profileExportTimeout) {
         this.agentEnabled = agentEnabled;
         this.applicationName = applicationName;
+        this.profilerType = profilerType;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
         this.profilingAlloc = profilingAlloc;
@@ -212,6 +216,7 @@ public final class Config {
         return "Config{" +
             "agentEnabled=" + agentEnabled +
             ", applicationName='" + applicationName + '\'' +
+            ", profilerType=" + profilerType +
             ", profilingInterval=" + profilingInterval +
             ", profilingEvent=" + profilingEvent +
             ", profilingAlloc='" + profilingAlloc + '\'' +
@@ -263,6 +268,7 @@ public final class Config {
         return new Config(
             agentEnabled,
             applicationName(cp),
+            profilerType(cp),
             profilingInterval(cp),
             profilingEvent(cp),
             alloc,
@@ -289,6 +295,14 @@ public final class Config {
             cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG),
             cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG),
             profileExportTimeout(cp));
+    }
+
+    private static ProfilerType profilerType(ConfigurationProvider configurationProvider) {
+        String profilerTypeName = configurationProvider.get(PYROSCOPE_PROFILER_TYPE_CONFIG);
+        if (profilerTypeName == null || profilerTypeName.isEmpty()) {
+            return ProfilerType.ASYNC;
+        }
+        return ProfilerType.valueOf(profilerTypeName);
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -660,6 +674,7 @@ public final class Config {
     public static class Builder {
         private boolean agentEnabled = DEFAULT_AGENT_ENABLED;
         private String applicationName = null;
+        private ProfilerType profilerType = ProfilerType.ASYNC;
         private Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
         private EventType profilingEvent = DEFAULT_PROFILER_EVENT;
         private String profilingAlloc = "";
@@ -695,6 +710,7 @@ public final class Config {
             checkNotNull(buildUpon, "config");
             agentEnabled = buildUpon.agentEnabled;
             applicationName = buildUpon.applicationName;
+            profilerType = buildUpon.profilerType;
             profilingInterval = buildUpon.profilingInterval;
             profilingEvent = buildUpon.profilingEvent;
             profilingAlloc = buildUpon.profilingAlloc;
@@ -875,6 +891,7 @@ public final class Config {
             }
             return new Config(agentEnabled,
                 applicationName,
+                profilerType,
                 profilingInterval,
                 profilingEvent,
                 profilingAlloc,
