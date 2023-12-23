@@ -64,7 +64,7 @@ public class PyroscopeAgent {
         final Config config;
         final ProfilingScheduler scheduler;
         final Logger logger;
-        final Profiler profiler;
+        final ProfilerDelegate profiler;
 
         private Options(Builder b) {
             this.config = b.config;
@@ -75,14 +75,14 @@ public class PyroscopeAgent {
 
         public static class Builder {
             final Config config;
-            final Profiler profiler;
+            final ProfilerDelegate profiler;
             Exporter exporter;
             ProfilingScheduler scheduler;
             Logger logger;
 
             public Builder(Config config) {
                 this.config = config;
-                this.profiler = new Profiler(config);
+                this.profiler = new AsyncProfilerDelegate(config);
             }
 
             public Builder setExporter(Exporter exporter) {

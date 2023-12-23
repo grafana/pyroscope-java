@@ -1,6 +1,7 @@
 package io.pyroscope.javaagent.impl;
 
-import io.pyroscope.javaagent.Profiler;
+import io.pyroscope.javaagent.AsyncProfilerDelegate;
+import io.pyroscope.javaagent.ProfilerDelegate;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
@@ -37,7 +38,7 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
     }
 
     @Override
-    public void start(Profiler profiler) {
+    public void start(ProfilerDelegate profiler) {
         Duration firstProfilingDuration;
         try {
             firstProfilingDuration = startFirst(profiler);
@@ -81,7 +82,7 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
      *
      * @return Duration of the first profiling interval
      */
-    private Duration startFirst(Profiler profiler) {
+    private Duration startFirst(ProfilerDelegate profiler) {
         Instant now = Instant.now();
 
         long uploadIntervalMillis = config.uploadInterval.toMillis();
