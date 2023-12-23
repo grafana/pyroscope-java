@@ -95,7 +95,7 @@ public class PyroscopeAgent {
         final Config config;
         final ProfilingScheduler scheduler;
         final Logger logger;
-        final Profiler profiler;
+        final ProfilerDelegate profiler;
         final Exporter exporter;
 
         private Options(@NotNull Builder b) {
@@ -108,7 +108,7 @@ public class PyroscopeAgent {
 
         public static class Builder {
             private final Config config;
-            private final Profiler profiler;
+            private final ProfilerDelegate profiler;
             private Exporter exporter;
             private ProfilingScheduler scheduler;
             private Logger logger;
@@ -116,7 +116,7 @@ public class PyroscopeAgent {
             public Builder(@NotNull Config config) {
                 checkNotNull(config, "config");
                 this.config = config;
-                this.profiler = new Profiler(config);
+                this.profiler = new AsyncProfilerDelegate(config);
             }
 
             public Builder setExporter(@NotNull Exporter exporter) {

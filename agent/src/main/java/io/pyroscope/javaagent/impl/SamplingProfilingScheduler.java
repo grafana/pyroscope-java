@@ -1,8 +1,9 @@
 package io.pyroscope.javaagent.impl;
 
 
+import io.pyroscope.javaagent.AsyncProfilerDelegate;
 import io.pyroscope.javaagent.EventType;
-import io.pyroscope.javaagent.Profiler;
+import io.pyroscope.javaagent.ProfilerDelegate;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
@@ -45,7 +46,7 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
     }
 
     @Override
-    public void start(Profiler profiler) {
+    public void start(ProfilerDelegate profiler) {
         final long samplingDurationMillis = config.samplingDuration.toMillis();
         final Duration uploadInterval = config.uploadInterval;
 
@@ -75,7 +76,7 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
         throw new RuntimeException("not implemented");
     }
 
-    private void dumpProfile(final Profiler profiler, final long samplingDurationMillis, final Duration uploadInterval) {
+    private void dumpProfile(final ProfilerDelegate profiler, final long samplingDurationMillis, final Duration uploadInterval) {
         Instant profilingStartTime = Instant.now();
         try {
             profiler.start();

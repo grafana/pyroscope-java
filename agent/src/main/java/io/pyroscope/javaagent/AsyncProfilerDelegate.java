@@ -15,7 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 
-public final class Profiler {
+
+public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private Config config;
     private EventType eventType;
     private String alloc;
@@ -26,7 +27,7 @@ public final class Profiler {
 
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
-    Profiler(Config config) {
+    AsyncProfilerDelegate(Config config) {
         reset(config);
     }
 
