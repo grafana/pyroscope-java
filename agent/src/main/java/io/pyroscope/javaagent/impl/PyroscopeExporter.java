@@ -1,6 +1,7 @@
 package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
@@ -147,10 +148,11 @@ public class PyroscopeExporter implements Exporter {
             .addQueryParameter("name", nameWithStaticLabels())
             .addQueryParameter("units", snapshot.eventType.units.id)
             .addQueryParameter("aggregationType", snapshot.eventType.aggregationType.id)
-            .addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()))
             .addQueryParameter("from", Long.toString(started.getEpochSecond()))
             .addQueryParameter("until", Long.toString(finished.getEpochSecond()))
             .addQueryParameter("spyName", Config.DEFAULT_SPY_NAME);
+        if (EventType.CPU == snapshot.eventType || EventType.ITIMER == snapshot.eventType || EventType.WALL == snapshot.eventType)
+            builder.addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()));
         if (config.format == Format.JFR)
             builder.addQueryParameter("format", "jfr");
         return builder.build();
