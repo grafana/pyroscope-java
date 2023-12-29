@@ -27,7 +27,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
 
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
-    AsyncProfilerDelegate(Config config) {
+    public AsyncProfilerDelegate(Config config) {
         reset(config);
     }
 
