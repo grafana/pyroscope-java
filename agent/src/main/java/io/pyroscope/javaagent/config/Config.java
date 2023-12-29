@@ -94,7 +94,7 @@ public final class Config {
     
     public final boolean agentEnabled;
     public final String applicationName;
-    private final ProfilerType profilerType;
+    public final ProfilerType profilerType;
     public final Duration profilingInterval;
     public final EventType profilingEvent;
     public final String profilingAlloc;
@@ -882,6 +882,11 @@ public final class Config {
 
         public Builder setBasicAuthPassword(String basicAuthPassword) {
             this.basicAuthPassword = basicAuthPassword;
+            return this;
+        }
+
+        public Builder setProfilerType(ProfilerType profilerType) {
+            this.profilerType = profilerType;
             return this;
         }
 

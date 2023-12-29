@@ -117,7 +117,6 @@ public class PyroscopeAgent {
             public Builder(@NotNull Config config) {
                 checkNotNull(config, "config");
                 this.config = config;
-                this.profiler = new AsyncProfilerDelegate(config);
             }
 
             public Builder setExporter(@NotNull Exporter exporter) {
@@ -151,6 +150,9 @@ public class PyroscopeAgent {
                     } else {
                         scheduler = new SamplingProfilingScheduler(config, exporter, logger);
                     }
+                }
+                if (profiler == null) {
+                    profiler = ProfilerDelegate.create(config);
                 }
                 return new Options(this);
             }
