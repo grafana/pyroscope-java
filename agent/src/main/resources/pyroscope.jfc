@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration version="2.0" label="Pyroscope"
+               description="Low overhead configuration safe for continuous use in production environments, typically less than 1 % overhead."
+               provider="Pyroscope">
+
+    <event name="jdk.ExecutionSample">
+        <setting name="enabled">true</setting>
+        <setting name="period">1 ms</setting>
+    </event>
+
+    <event name="jdk.ThreadPark">
+        <setting name="enabled">true</setting>
+        <setting name="stackTrace">true</setting>
+        <setting name="threshold">10 ms</setting>
+    </event>
+
+    <event name="jdk.ObjectAllocationInNewTLAB">
+        <setting name="enabled">true</setting>
+        <setting name="stackTrace">true</setting>
+    </event>
+
+    <event name="jdk.ObjectAllocationOutsideTLAB">
+        <setting name="enabled">true</setting>
+        <setting name="stackTrace">true</setting>
+    </event>
+
+    <event name="jdk.JavaMonitorEnter">
+        <setting name="enabled">true</setting>
+        <setting name="stackTrace">true</setting>
+        <setting name="threshold">10 ms</setting>
+    </event>
+
+    <event name="jdk.ThreadPark">
+        <setting name="enabled">true</setting>
+        <setting name="stackTrace">true</setting>
+        <setting name="threshold">10 ms</setting>
+    </event>
+
+    <event name="jdk.ActiveSetting">
+        <setting name="enabled">true</setting>
+    </event>
+
+</configuration>
