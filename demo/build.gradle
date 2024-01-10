@@ -10,4 +10,5 @@ repositories {
 }
 dependencies {
     implementation(project(":agent"))
+    implementation("commons-lang:commons-lang:2.6")
 }
