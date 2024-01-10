@@ -31,6 +31,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         reset(config);
     }
 
+    @Override
     public void reset(final Config config) {
         this.config = config;
         this.alloc = config.profilingAlloc;
@@ -53,6 +54,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     /**
      * Start async-profiler
      */
+    @Override
     public synchronized void start() {
         if (format == Format.JFR) {
             try {
@@ -68,20 +70,20 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     /**
      * Stop async-profiler
      */
+    @Override
     public synchronized void stop() {
         instance.stop();
     }
 
     /**
-     *
      * @param started - time when profiling has been started
-     * @param ended - time when profiling has ended
+     * @param ended   - time when profiling has ended
      * @return Profiling data and dynamic labels as {@link Snapshot}
      */
+    @Override
     public synchronized Snapshot dumpProfile(Instant started, Instant ended) {
         return dumpImpl(started, ended);
     }
-
 
 
     private String createJFRCommand() {
