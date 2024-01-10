@@ -6,26 +6,33 @@ import io.pyroscope.labels.Pyroscope;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.String.format;
+
 public final class JFRProfilerDelegate implements ProfilerDelegate {
     private static final String RECORDING_NAME = "pyroscope";
+    private static final String JFR_SETTINGS_RESOURCE = "/jfr/pyroscope.jfc";
     private Config config;
     private File tempJFRFile;
     private Path jcmdBin;
+    private Path jfrSettingsPath;
 
     public JFRProfilerDelegate(Config config) {
         setConfig(config);
     }
 
+    @Override
     public void setConfig(final Config config) {
         this.config = config;
         jcmdBin = findJcmdBin();
+        jfrSettingsPath = findJfrSettingsPath();
+
         try {
             // flight recorder is built on top of a file descriptor, so we need a file.
             tempJFRFile = File.createTempFile("pyroscope", ".jfr");
@@ -38,6 +45,7 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
     /**
      * Start JFR profiler
      */
+    @Override
     public synchronized void start() {
         try {
             List<String> commands = new ArrayList<>();
@@ -46,9 +54,9 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
             commands.add("JFR.start");
             commands.add("name=" + RECORDING_NAME);
             commands.add("filename=" + tempJFRFile.getAbsolutePath());
-            commands.add("settings=pyroscope");
+            commands.add("settings=" + jfrSettingsPath);
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
-            Process process = processBuilder.start();
+            Process process = processBuilder.inheritIO().start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 throw new RuntimeException("Invalid exit code: " + exitCode);
@@ -63,6 +71,7 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
     /**
      * Stop JFR profiler
      */
+    @Override
     public synchronized void stop() {
         try {
             List<String> commands = new ArrayList<>();
@@ -88,6 +97,7 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
      * @param ended   - time when profiling has ended
      * @return Profiling data and dynamic labels as {@link Snapshot}
      */
+    @Override
     public synchronized Snapshot dumpProfile(Instant started, Instant ended) {
         return dumpImpl(started, ended);
     }
@@ -123,4 +133,16 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
         }
         return jcmdBin;
     }
+
+    private static Path findJfrSettingsPath() {
+        try (InputStream inputStream = JFRProfilerDelegate.class.getResourceAsStream(JFR_SETTINGS_RESOURCE)) {
+            Path jfrSettingsPath = Files.createTempFile("pyroscope", ".jfc");
+            Files.copy(inputStream, jfrSettingsPath, StandardCopyOption.REPLACE_EXISTING);
+            return jfrSettingsPath;
+        } catch (IOException e) {
+            throw new UncheckedIOException(format("unable to load %s from classpath", JFR_SETTINGS_RESOURCE), e);
+        }
+    }
+
+
 }
