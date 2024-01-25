@@ -23,13 +23,29 @@ func main() {
 		err    error
 	}
 	targets := []string{
-		"alpine-3.16",
-		"alpine-3.17",
-		"alpine-3.18",
-		"alpine-3.19",
-		"ubuntu-18.04",
-		"ubuntu-20.04",
-		"ubuntu-22.04",
+		"alpine-3.16-8",
+		"alpine-3.16-11",
+		"alpine-3.16-17",
+		"alpine-3.17-8",
+		"alpine-3.17-11",
+		"alpine-3.17-17",
+		"alpine-3.18-8",
+		"alpine-3.18-11",
+		"alpine-3.18-18",
+		"alpine-3.19-8",
+		"alpine-3.19-11",
+		"alpine-3.19-17",
+		"ubuntu-18.04-8",
+		"ubuntu-18.04-11",
+		"ubuntu-18.04-17",
+		"ubuntu-20.04-8",
+		"ubuntu-20.04-11",
+		"ubuntu-20.04-17",
+		"ubuntu-20.04-21",
+		"ubuntu-22.04-8",
+		"ubuntu-22.04-11",
+		"ubuntu-22.04-17",
+		"ubuntu-22.04-21",
 	}
 	url := "http://localhost:4040"
 	qc := querierv1connect.NewQuerierServiceClient(

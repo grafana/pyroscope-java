@@ -33,3 +33,9 @@ docker-example-expt: build
 	cp agent/build/libs/pyroscope.jar examples
 	docker-compose -f examples/docker-compose-expt.yml build
 	docker-compose -f examples/docker-compose-expt.yml up
+
+.PHONY: itest
+itest:
+	docker compose -f docker-compose-itest.yaml up --build --force-recreate
+	cd itest/query && go run .
+	docker compose -f docker-compose-itest.yaml down
