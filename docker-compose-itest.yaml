@@ -1,0 +1,51 @@
+version: '3.9'
+services:
+  alpine-3.16:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.16
+  alpine-3.17:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.17
+  alpine-3.18:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.18
+  alpine-3.19:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.19
+  ubuntu-18.04:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 18.04
+  ubuntu-20.04:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 20.04
+  ubuntu-22.04:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 22.04
+
+  pyroscope:
+    image: 'grafana/pyroscope:latest'
+    ports:
+      - 4040:4040
+
+

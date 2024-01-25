@@ -1,12 +1,9 @@
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.PyroscopeAgent;
-import io.pyroscope.javaagent.Snapshot;
-import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
-import io.pyroscope.labels.Pyroscope;
 import io.pyroscope.labels.LabelsSet;
+import io.pyroscope.labels.Pyroscope;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +23,6 @@ public class App {
                     .setLogLevel(Logger.Level.DEBUG)
                     .setLabels(mapOf("user", "tolyan"))
                     .build())
-//                .setExporter(new MyStdoutExporter())
                 .build()
         );
         Pyroscope.setStaticLabels(mapOf("region", "us-east-1"));
@@ -68,14 +64,6 @@ public class App {
         if (n == 1L) {
             return 1L;
         }
-        Thread.sleep(100);
         return fib(n - 1) + fib(n - 2);
-    }
-
-    private static class MyStdoutExporter implements Exporter {
-        @Override
-        public void export(Snapshot snapshot) {
-            System.out.printf("Export %d %d%n", snapshot.data.length, snapshot.labels.toByteArray().length);
-        }
     }
 }
