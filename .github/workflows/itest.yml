@@ -1,4 +1,4 @@
-name: Test
+name: Integration smoke test
 
 on:
   push:
@@ -7,13 +7,13 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  integration-smoke-test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         svc:
-          - 'alpine-3.16-8\'
+          - 'alpine-3.16-8'
           - 'alpine-3.16-11'
           - 'alpine-3.16-17'
           - 'alpine-3.17-8'
