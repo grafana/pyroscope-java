@@ -88,8 +88,8 @@ task asyncProfilerLib {
     doLast {
         suffixes.forEach { suffix, ext ->
 //            def repo = "https://github.com/jvm-profiling-tools/async-profiler"
-            def repo = "https://github.com/korniltsev/async-profiler"
-//            def repo = "https://github.com/grafana/async-profiler"
+//            def repo = "https://github.com/korniltsev/async-profiler"
+            def repo = "https://github.com/grafana/async-profiler"
             download {
                 src "$repo/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
                 dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
