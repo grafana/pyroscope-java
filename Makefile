@@ -34,8 +34,10 @@ docker-example-expt: build
 	docker-compose -f examples/docker-compose-expt.yml build
 	docker-compose -f examples/docker-compose-expt.yml up
 
+ITEST_SERVICE ?=
+
 .PHONY: itest
 itest:
-	docker compose -f docker-compose-itest.yaml up --build --force-recreate
-	cd itest/query && go run .
-	docker compose -f docker-compose-itest.yaml down
+	docker compose -f docker-compose-itest.yaml up --build --force-recreate -d pyroscope $(ITEST_SERVICE)
+	cd itest/query && go run . $(ITEST_SERVICE)
+	docker compose -f docker-compose-itest.yaml down pyroscope $(ITEST_SERVICE)
