@@ -84,7 +84,8 @@ func main() {
 }
 
 func testTarget(ctx context.Context, qc querierv1connect.QuerierServiceClient, target string) error {
-	needle := "Fib$$Lambda$_.run;Fib.lambda$appLogic$0;Fib.fib;Fib.fib;Fib.fib;Fib.fib;"
+	//needle := "Fib$$Lambda_.run;Fib.lambda$appLogic$0;Fib.fib;Fib.fib;Fib.fib;Fib.fib;" // us this one when https://github.com/grafana/jfr-parser/pull/28/files lands pyroscope docker tag
+	needle := "run;Fib.lambda$appLogic$0;Fib.fib;Fib.fib;Fib.fib;Fib.fib;"
 	ticker := time.NewTicker(time.Second * 5)
 	n := 0
 	for {
