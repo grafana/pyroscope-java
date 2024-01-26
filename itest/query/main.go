@@ -33,7 +33,7 @@ func main() {
             "alpine-3.17-17",
             "alpine-3.18-8",
             "alpine-3.18-11",
-            "alpine-3.18-18",
+            "alpine-3.18-17",
             "alpine-3.19-8",
             "alpine-3.19-11",
             "alpine-3.19-17",
