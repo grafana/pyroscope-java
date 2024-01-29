@@ -9,7 +9,7 @@ ADD gradle gradle
 RUN ./gradlew --no-daemon --version
 ADD agent agent
 ADD async-profiler-context async-profiler-context
-add demo/build.gradle demo/
+ADD demo/build.gradle demo/
 
 RUN ./gradlew --no-daemon shadowJar
 

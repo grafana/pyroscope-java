@@ -37,14 +37,6 @@ public class Fib {
         }
     }
 
-    private static Map<String, String> mapOf(String... args) {
-        Map<String, String> staticLabels = new HashMap<>();
-        for (int i = 0; i < args.length; i += 2) {
-            staticLabels.put(args[i], args[i + 1]);
-        }
-        return staticLabels;
-    }
-
     private static long fib(Long n) throws InterruptedException {
         if (n == 0L) {
             return 0L;
