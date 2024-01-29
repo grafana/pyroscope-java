@@ -1,0 +1,48 @@
+name: Integration smoke test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  integration-smoke-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        svc:
+          - 'alpine-3.16-8'
+          - 'alpine-3.16-11'
+          - 'alpine-3.16-17'
+          - 'alpine-3.17-8'
+          - 'alpine-3.17-11'
+          - 'alpine-3.17-17'
+          - 'alpine-3.18-8'
+          - 'alpine-3.18-11'
+          - 'alpine-3.18-17'
+          - 'alpine-3.19-8'
+          - 'alpine-3.19-11'
+          - 'alpine-3.19-17'
+          - 'ubuntu-18.04-8'
+          - 'ubuntu-18.04-11'
+          - 'ubuntu-18.04-17'
+          - 'ubuntu-20.04-8'
+          - 'ubuntu-20.04-11'
+          - 'ubuntu-20.04-17'
+          - 'ubuntu-20.04-21'
+          - 'ubuntu-22.04-8'
+          - 'ubuntu-22.04-11'
+          - 'ubuntu-22.04-17'
+          - 'ubuntu-22.04-21'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.6
+      - run: make itest
+        shell: bash
+        env:
+          ITEST_SERVICE: ${{ matrix.svc }}

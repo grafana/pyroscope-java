@@ -1,0 +1,170 @@
+version: '3.9'
+services:
+  alpine-3.16-8:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.16
+        JAVA_VERSION: 8
+  alpine-3.16-11:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.16
+        JAVA_VERSION: 11
+  alpine-3.16-17:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.16
+        JAVA_VERSION: 17
+  alpine-3.17-8:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.17
+        JAVA_VERSION: 8
+  alpine-3.17-11:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.17
+        JAVA_VERSION: 11
+  alpine-3.17-17:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.17
+        JAVA_VERSION: 17
+  alpine-3.18-8:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.18
+        JAVA_VERSION: 8
+  alpine-3.18-11:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.18
+        JAVA_VERSION: 11
+  alpine-3.18-17:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.18
+        JAVA_VERSION: 17
+  alpine-3.19-8:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.19
+        JAVA_VERSION: 8
+  alpine-3.19-11:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.19
+        JAVA_VERSION: 11
+  alpine-3.19-17:
+    build:
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.19
+        JAVA_VERSION: 17
+
+  ubuntu-18.04-8:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 18.04
+        JAVA_VERSION: 8
+  ubuntu-18.04-11:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 18.04
+        JAVA_VERSION: 11
+  ubuntu-18.04-17:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 18.04
+        JAVA_VERSION: 17
+  ubuntu-20.04-8:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 20.04
+        JAVA_VERSION: 8
+  ubuntu-20.04-11:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 20.04
+        JAVA_VERSION: 11
+  ubuntu-20.04-17:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 20.04
+        JAVA_VERSION: 17
+  ubuntu-20.04-21:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 20.04
+        JAVA_VERSION: 21
+  ubuntu-22.04-8:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 22.04
+        JAVA_VERSION: 8
+  ubuntu-22.04-11:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 22.04
+        JAVA_VERSION: 11
+  ubuntu-22.04-17:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 22.04
+        JAVA_VERSION: 17
+  ubuntu-22.04-21:
+    build:
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 22.04
+        JAVA_VERSION: 21
+  pyroscope:
+    image: 'grafana/pyroscope:latest'
+    ports:
+      - 4040:4040
+
+

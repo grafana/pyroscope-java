@@ -86,7 +86,11 @@ public class PyroscopeAsyncProfiler {
                         break;
 
                     case "aarch64":
-                        arch = "arm64";
+                        if (isMusl()) {
+                            arch = "musl-arm64";
+                        } else {
+                            arch = "arm64";
+                        }
                         break;
 
                     default:

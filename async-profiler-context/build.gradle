@@ -21,7 +21,7 @@ repositories {
     mavenCentral()
 }
 
-def asyncProfilerVersion = "2.9.0.2"
+def asyncProfilerVersion = "3.0.0.0"
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$buildDir/async-profiler/async-profiler.jar")
@@ -75,6 +75,7 @@ task asyncProfilerLib {
         ['linux-arm64', 'tar.gz'],
         ['linux-x64', 'tar.gz'],
         ['linux-musl-x64', 'tar.gz'],
+        ['linux-musl-arm64', 'tar.gz'],
         ['macos', 'zip']
     ]
 
@@ -86,8 +87,7 @@ task asyncProfilerLib {
 
     doLast {
         suffixes.forEach { suffix, ext ->
-//            def repo = "https://github.com/jvm-profiling-tools/async-profiler"
-            def repo = "https://github.com/pyroscope-io/async-profiler"
+            def repo = "https://github.com/grafana/async-profiler"
             download {
                 src "$repo/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
                 dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
@@ -101,7 +101,7 @@ task asyncProfilerLib {
                 } else {
                     from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"))
                 }
-                include '**/libasyncProfiler.so'
+                include '**/libasyncProfiler.*'
                 eachFile {
                     it.relativePath = new RelativePath(true, "native/", "libasyncProfiler-${suffix}.so")
                 }
