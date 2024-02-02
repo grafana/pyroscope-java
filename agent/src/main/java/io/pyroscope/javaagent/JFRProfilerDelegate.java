@@ -8,7 +8,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +21,8 @@ import static java.lang.String.format;
 public final class JFRProfilerDelegate implements ProfilerDelegate {
     private static final String RECORDING_NAME = "pyroscope";
     private static final String JFR_SETTINGS_RESOURCE = "/jfr/pyroscope.jfc";
+
+    private static final String OS_NAME = "os.name";
     private Config config;
     private File tempJFRFile;
     private Path jcmdBin;
@@ -85,10 +90,8 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
             if (exitCode != 0) {
                 throw new RuntimeException("Invalid exit code: " + exitCode);
             }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("cannot stop JFR recording", e);
         }
     }
 
@@ -123,15 +126,24 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
 
     private static Path findJcmdBin() {
         Path javaHome = Paths.get(System.getProperty("java.home"));
+        String jcmd = jcmdExecutable();
+        Path jcmdBin = javaHome.resolve("bin").resolve(jcmd);
         //find jcmd binary
-        Path jcmdBin = javaHome.resolve("bin/jcmd");
         if (!Files.isExecutable(jcmdBin)) {
-            jcmdBin = javaHome.getParent().resolve("bin/jcmd");
+            jcmdBin = javaHome.getParent().resolve("bin").resolve(jcmd);
             if (!Files.isExecutable(jcmdBin)) {
                 throw new RuntimeException("cannot find executable jcmd in Java home");
             }
         }
         return jcmdBin;
+    }
+
+    private static String jcmdExecutable() {
+        String jcmd = "jcmd";
+        if (isWindowsOS()) {
+            jcmd = "jcmd.exe";
+        }
+        return jcmd;
     }
 
     private static Path findJfrSettingsPath() {
@@ -144,5 +156,12 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
         }
     }
 
+    private static boolean isWindowsOS() {
+        String osName = System.getProperty(OS_NAME);
+        if (osName.contains("Windows")) {
+            return true;
+        }
+        return false;
+    }
 
 }
