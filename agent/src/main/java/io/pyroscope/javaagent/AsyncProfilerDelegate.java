@@ -15,7 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 
-public final class Profiler {
+
+public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private Config config;
     private EventType eventType;
     private String alloc;
@@ -26,10 +27,11 @@ public final class Profiler {
 
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
-    Profiler(Config config) {
+    public AsyncProfilerDelegate(Config config) {
         setConfig(config);
     }
 
+    @Override
     public void setConfig(final Config config) {
         this.config = config;
         this.alloc = config.profilingAlloc;
@@ -54,6 +56,7 @@ public final class Profiler {
     /**
      * Start async-profiler
      */
+    @Override
     public synchronized void start() {
         if (format == Format.JFR) {
             try {
@@ -69,20 +72,20 @@ public final class Profiler {
     /**
      * Stop async-profiler
      */
+    @Override
     public synchronized void stop() {
         instance.stop();
     }
 
     /**
-     *
      * @param started - time when profiling has been started
-     * @param ended - time when profiling has ended
+     * @param ended   - time when profiling has ended
      * @return Profiling data and dynamic labels as {@link Snapshot}
      */
+    @Override
     public synchronized Snapshot dumpProfile(Instant started, Instant ended) {
         return dumpImpl(started, ended);
     }
-
 
 
     private String createJFRCommand() {
