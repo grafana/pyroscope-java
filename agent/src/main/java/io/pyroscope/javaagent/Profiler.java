@@ -27,10 +27,10 @@ public final class Profiler {
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
     Profiler(Config config) {
-        setConfig(config);
+        reset(config);
     }
 
-    public void setConfig(final Config config) {
+    public void reset(final Config config) {
         this.config = config;
         this.alloc = config.profilingAlloc;
         this.lock = config.profilingLock;
@@ -38,7 +38,7 @@ public final class Profiler {
         this.interval = config.profilingInterval;
         this.format = config.format;
 
-        if (format == Format.JFR) {
+        if (format == Format.JFR && null == tempJFRFile) {
             try {
                 // flight recorder is built on top of a file descriptor, so we need a file.
                 tempJFRFile = File.createTempFile("pyroscope", ".jfr");
@@ -46,8 +46,6 @@ public final class Profiler {
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
-        } else {
-            tempJFRFile = null;
         }
     }
 
