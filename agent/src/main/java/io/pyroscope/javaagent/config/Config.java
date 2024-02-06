@@ -193,9 +193,6 @@ public final class Config {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
                 "Setting PYROSCOPE_PROFILER_LOCK to 0 registers every lock event, causing significant overhead and results in large profiles, making it not ideal for production. We recommend a starting value of 10ms, adjusting as needed.");
         }
-        if (format == Format.COLLAPSED) {
-            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "COLLAPSED format is deprecated");
-        }
     }
 
     public long profilingIntervalInHertz() {
@@ -480,8 +477,6 @@ public final class Config {
         if (format == null || format.isEmpty())
             return DEFAULT_FORMAT;
         switch (format.trim().toLowerCase()) {
-            case "collapsed":
-                return Format.COLLAPSED;
             case "jfr":
                 return Format.JFR;
             default:
