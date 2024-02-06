@@ -184,3 +184,13 @@ publishing {
 signing {
     sign publishing.publications.shadow
 }
+
+afterEvaluate {
+    if (project.tasks.findByName('signShadowPublication')) {
+        project.tasks.named('signShadowPublication').configure {
+            dependsOn 'jar'
+            dependsOn 'sourcesJar'
+            dependsOn 'simpleJavadocJar'
+        }
+    }
+}
