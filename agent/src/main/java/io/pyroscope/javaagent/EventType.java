@@ -12,6 +12,7 @@ public enum EventType {
     ALLOC (Events.ALLOC, Units.OBJECTS, AggregationType.SUM),
     LOCK (Events.LOCK, Units.SAMPLES, AggregationType.SUM),
     WALL (Events.WALL, Units.SAMPLES, AggregationType.SUM),
+    CTIMER (Events.CTIMER, Units.SAMPLES, AggregationType.SUM),
     ITIMER (Events.ITIMER, Units.SAMPLES, AggregationType.SUM);
 
     /**
