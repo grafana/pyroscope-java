@@ -1,4 +1,5 @@
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.PyroscopeAgent;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
@@ -20,6 +21,7 @@ public class App {
                     .setApplicationName("demo.app{qweqwe=asdasd}")
                     .setServerAddress("http://localhost:4040")
                     .setFormat(Format.JFR)
+                    .setProfilingEvent(EventType.CTIMER)
                     .setLogLevel(Logger.Level.DEBUG)
                     .setLabels(mapOf("user", "tolyan"))
                     .build())
