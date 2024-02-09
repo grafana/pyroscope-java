@@ -1,8 +1,6 @@
 package io.pyroscope.http;
 
 public enum Format {
-    @Deprecated // use jfr
-    COLLAPSED ("collapsed"),
     JFR ("jfr");
 
     /**

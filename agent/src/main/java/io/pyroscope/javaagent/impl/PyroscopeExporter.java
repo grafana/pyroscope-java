@@ -52,29 +52,24 @@ public class PyroscopeExporter implements Exporter {
         while (retry) {
             tries++;
             final RequestBody requestBody;
-            if (config.format == Format.JFR) {
-                byte[] labels = snapshot.labels.toByteArray();
-                logger.log(Logger.Level.DEBUG, "Upload attempt %d to %s. %s %s JFR: %s, labels: %s", tries, url.toString(),
-                    snapshot.started.toString(), snapshot.ended.toString(), snapshot.data.length, labels.length);
-                MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM);
-                RequestBody jfrBody = RequestBody.create(snapshot.data);
-                if (config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
-                    jfrBody = GzipSink.gzip(jfrBody, config.compressionLevelJFR);
-                }
-                bodyBuilder.addFormDataPart("jfr", "jfr", jfrBody);
-                if (labels.length > 0) {
-                    RequestBody labelsBody = RequestBody.create(labels, PROTOBUF);
-                    if (config.compressionLevelLabels != Deflater.NO_COMPRESSION) {
-                        labelsBody = GzipSink.gzip(labelsBody, config.compressionLevelLabels);
-                    }
-                    bodyBuilder.addFormDataPart("labels", "labels", labelsBody);
-                }
-                requestBody = bodyBuilder.build();
-            } else {
-                logger.log(Logger.Level.DEBUG, "Upload attempt %d to %s. collapsed: %s", tries, url.toString(), snapshot.data.length);
-                requestBody = RequestBody.create(snapshot.data);
+            byte[] labels = snapshot.labels.toByteArray();
+            logger.log(Logger.Level.DEBUG, "Upload attempt %d to %s. %s %s JFR: %s, labels: %s", tries, url.toString(),
+                snapshot.started.toString(), snapshot.ended.toString(), snapshot.data.length, labels.length);
+            MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+            RequestBody jfrBody = RequestBody.create(snapshot.data);
+            if (config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
+                jfrBody = GzipSink.gzip(jfrBody, config.compressionLevelJFR);
             }
+            bodyBuilder.addFormDataPart("jfr", "jfr", jfrBody);
+            if (labels.length > 0) {
+                RequestBody labelsBody = RequestBody.create(labels, PROTOBUF);
+                if (config.compressionLevelLabels != Deflater.NO_COMPRESSION) {
+                    labelsBody = GzipSink.gzip(labelsBody, config.compressionLevelLabels);
+                }
+                bodyBuilder.addFormDataPart("labels", "labels", labelsBody);
+            }
+            requestBody = bodyBuilder.build();
             Request.Builder request = new Request.Builder()
                 .post(requestBody)
                 .url(url);
@@ -153,8 +148,7 @@ public class PyroscopeExporter implements Exporter {
             .addQueryParameter("spyName", Config.DEFAULT_SPY_NAME);
         if (EventType.CPU == snapshot.eventType || EventType.ITIMER == snapshot.eventType || EventType.WALL == snapshot.eventType)
             builder.addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()));
-        if (config.format == Format.JFR)
-            builder.addQueryParameter("format", "jfr");
+        builder.addQueryParameter("format", "jfr");
         return builder.build();
     }
 
