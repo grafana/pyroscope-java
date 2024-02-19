@@ -7,10 +7,15 @@ import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.*;
 
 import java.lang.instrument.Instrumentation;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PyroscopeAgent {
-    private static final AtomicBoolean started = new AtomicBoolean(false);
+    // this is used to store the options passed to the agent
+    private static final AtomicReference<Options> startOptions = new AtomicReference<>(null);
+
+    private static final String stopLock = "";
+
+    private static final String startLock = "";
 
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
@@ -34,23 +39,50 @@ public class PyroscopeAgent {
     }
 
     public static void start(Options options) {
-        Logger logger = options.logger;
-
-        if (!options.config.agentEnabled) {
-            logger.log(Logger.Level.INFO, "Pyroscope agent start disabled by configuration");
-            return;
+        synchronized (startLock) {
+            Logger logger = options.logger;
+            if (!startOptions.compareAndSet(null, options)) {
+                logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
+                return;
+            }
+            if (!options.config.agentEnabled) {
+                logger.log(Logger.Level.INFO, "Pyroscope agent start disabled by configuration");
+                return;
+            }
+            logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
+            try {
+                options.scheduler.start(options.profiler);
+                logger.log(Logger.Level.INFO, "Profiling started");
+            } catch (final Throwable e) {
+                logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
+            }
         }
+    }
 
-        if (!started.compareAndSet(false, true)) {
-            logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
-            return;
-        }
-        logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
-        try {
-            options.scheduler.start(options.profiler);
-            logger.log(Logger.Level.INFO, "Profiling started");
-        } catch (final Throwable e) {
-            logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
+    /**
+     * stop is used to stop profiling
+     */
+    public static void stop() {
+        synchronized (stopLock) {
+            if (startOptions.get() == null) {
+                return;
+            }
+            ProfilingScheduler scheduler = startOptions.get().scheduler;
+            Logger logger = startOptions.get().logger;
+            Profiler profiler = startOptions.get().profiler;
+
+            if (logger == null) {
+                return;
+            }
+            if (scheduler == null || profiler == null) {
+                logger.log(Logger.Level.ERROR, "Failed to stop profiling - already stopped");
+                return;
+            }
+
+            logger.log(Logger.Level.DEBUG, "Config: %s", startOptions.get().config);
+            scheduler.stop(profiler);
+            startOptions.set(null);
+            logger.log(Logger.Level.INFO, "Profiling stopped");
         }
     }
 

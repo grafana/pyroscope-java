@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 public class App {
     public static final int N_THREADS = 8;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         PyroscopeAgent.start(
             new PyroscopeAgent.Options.Builder(
                 new Config.Builder()
@@ -30,6 +30,39 @@ public class App {
         Pyroscope.setStaticLabels(mapOf("region", "us-east-1"));
 
         appLogic();
+
+        // Test this by creating a new thread, stop the agent,  sleeping for a second, and then restarting the agent.
+        Thread newThread = new Thread(new Runnable() {
+            public void run()
+            {
+                // Sleep for a second to make sure the agent has started
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                // Stop the agent after a second
+                PyroscopeAgent.stop();
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                // Start the agent back up again after a second
+                PyroscopeAgent.start(
+                    new PyroscopeAgent.Options.Builder(
+                        new Config.Builder()
+                            .setApplicationName("demo.app{qweqwe=asdasd}")
+                            .setServerAddress("http://localhost:4040")
+                            .setFormat(Format.JFR)
+                            .setLogLevel(Logger.Level.DEBUG)
+                            .setLabels(mapOf("user", "tolyan"))
+                            .build())
+//                .setExporter(new MyStdoutExporter())
+                        .build()
+                );
+            }});
+        newThread.start();
     }
 
     private static void appLogic() {

@@ -50,6 +50,10 @@ public class PyroscopeAgentTest {
         PyroscopeAgent.start(optionsAgentEnabled);
 
         verify(profilingScheduler, times(1)).start(any());
+
+        PyroscopeAgent.stop();
+
+        verify(profilingScheduler, times(1)).stop(any());
     }
 
     @Test
@@ -58,4 +62,5 @@ public class PyroscopeAgentTest {
 
         verify(profilingScheduler, never()).start(any());
     }
+
 }
