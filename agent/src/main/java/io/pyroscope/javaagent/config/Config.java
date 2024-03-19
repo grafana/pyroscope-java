@@ -44,6 +44,7 @@ public final class Config {
     private static final String PYROSCOPE_FORMAT_CONFIG = "PYROSCOPE_FORMAT";
     private static final String PYROSCOPE_PUSH_QUEUE_CAPACITY_CONFIG = "PYROSCOPE_PUSH_QUEUE_CAPACITY";
     private static final String PYROSCOPE_LABELS = "PYROSCOPE_LABELS";
+    private static final String PYROSCOPE_NO_PROXY_CONFIG = "PYROSCOPE_NO_PROXY";
 
     private static final String PYROSCOPE_INGEST_MAX_TRIES = "PYROSCOPE_INGEST_MAX_TRIES";
     private static final String PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR = "PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR";
@@ -77,6 +78,7 @@ public final class Config {
     private static final int DEFAULT_JAVA_STACK_DEPTH_MAX = 2048;
     private static final String DEFAULT_SERVER_ADDRESS = "http://localhost:4040";
     private static final Format DEFAULT_FORMAT = Format.JFR;
+    private static final boolean DEFAULT_NO_PROXY = false;
     // The number of snapshots simultaneously stored in memory is limited by this.
     // The number is fairly arbitrary. If an average snapshot is 5KB, it's about 160 KB.
     private static final int DEFAULT_PUSH_QUEUE_CAPACITY = 8;
@@ -109,6 +111,7 @@ public final class Config {
     public final int ingestMaxTries;
     public final int compressionLevelJFR;
     public final int compressionLevelLabels;
+    public final boolean noProxy;
 
     public final boolean allocLive;
     public final boolean gcBeforeDump;
@@ -136,6 +139,7 @@ public final class Config {
            final Format format,
            final int pushQueueCapacity,
            final Map<String, String> labels,
+           final boolean noProxy,
            int ingestMaxRetries,
            int compressionLevelJFR,
            int compressionLevelLabels,
@@ -176,6 +180,7 @@ public final class Config {
         this.format = format;
         this.pushQueueCapacity = pushQueueCapacity;
         this.labels = Collections.unmodifiableMap(labels);
+        this.noProxy = noProxy;
         HttpUrl serverAddressUrl = HttpUrl.parse(serverAddress);
         if (serverAddressUrl == null) {
             throw new IllegalArgumentException("invalid url " + serverAddress);
@@ -219,6 +224,7 @@ public final class Config {
             ", format=" + format +
             ", pushQueueCapacity=" + pushQueueCapacity +
             ", labels=" + labels +
+            ", noProxy=" + noProxy +
             ", ingestMaxTries=" + ingestMaxTries +
             ", compressionLevelJFR=" + compressionLevelJFR +
             ", compressionLevelLabels=" + compressionLevelLabels +
@@ -246,6 +252,7 @@ public final class Config {
         String alloc = profilingAlloc(cp);
         boolean agentEnabled = bool(cp, PYROSCOPE_AGENT_ENABLED_CONFIG, DEFAULT_AGENT_ENABLED);
         boolean allocLive = bool(cp, PYROSCOPE_ALLOC_LIVE, DEFAULT_ALLOC_LIVE);
+        boolean noProxyEnabled = bool(cp, PYROSCOPE_NO_PROXY_CONFIG, DEFAULT_NO_PROXY);
         if (DEFAULT_PROFILER_ALLOC.equals(alloc) && allocLive) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "%s is ignored because %s is not configured",
                 PYROSCOPE_ALLOC_LIVE, PYROSCOPE_PROFILER_ALLOC_CONFIG);
@@ -267,6 +274,7 @@ public final class Config {
             format(cp),
             pushQueueCapacity(cp),
             labels(cp),
+            noProxyEnabled,
             ingestMaxRetries(cp),
             compressionLevel(cp, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_JFR),
             compressionLevel(cp, PYROSCOPE_EXPORT_COMPRESSION_LEVEL_LABELS),
@@ -648,6 +656,7 @@ public final class Config {
         public Format format = DEFAULT_FORMAT;
         public int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
         public Map<String, String> labels = Collections.emptyMap();
+        public boolean noProxy = DEFAULT_NO_PROXY;
         public int ingestMaxRetries = DEFAULT_INGEST_MAX_RETRIES;
         public int compressionLevelJFR = DEFAULT_COMPRESSION_LEVEL;
         public int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
@@ -768,6 +777,11 @@ public final class Config {
             return this;
         }
 
+        public Builder setNoProxy(boolean noProxy) {
+            this.noProxy = noProxy;
+            return this;
+        }
+
         public Builder setIngestMaxRetries(int ingestMaxRetries) {
             this.ingestMaxRetries = ingestMaxRetries;
             return this;
@@ -852,6 +866,7 @@ public final class Config {
                 format,
                 pushQueueCapacity,
                 labels,
+                noProxy,
                 ingestMaxRetries,
                 compressionLevelJFR,
                 compressionLevelLabels,
