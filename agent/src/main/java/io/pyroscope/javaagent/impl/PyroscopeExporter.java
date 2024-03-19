@@ -9,6 +9,7 @@ import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.util.zip.GzipSink;
 import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
+import java.net.Proxy;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -27,12 +28,16 @@ public class PyroscopeExporter implements Exporter {
     public PyroscopeExporter(Config config, Logger logger) {
         this.config = config;
         this.logger = logger;
-        this.client = new OkHttpClient.Builder()
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
             .connectTimeout(TIMEOUT)
             .readTimeout(TIMEOUT)
-            .callTimeout(TIMEOUT)
-            .build();
+            .callTimeout(TIMEOUT);
+         
+        if (config.noProxy) {
+            builder.proxy(Proxy.NO_PROXY);
+        }
 
+        this.client = builder.build();
     }
 
     @Override
