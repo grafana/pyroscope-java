@@ -1,11 +1,11 @@
 package io.pyroscope.labels;
 
-import one.profiler.AsyncProfiler;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+
+import io.pyroscope.labels.io.pyroscope.PyroscopeAsyncProfiler;
 
 public class ScopedContext implements AutoCloseable {
     static final ThreadLocal<Context> context = ThreadLocal.withInitial(() ->
@@ -56,7 +56,7 @@ public class ScopedContext implements AutoCloseable {
             }
         }
 
-        AsyncProfiler.getInstance().setContextId(currentRef.id);
+        PyroscopeAsyncProfiler.getAsyncProfiler().setContextId(currentRef.id);
         current = new Context(currentRef.id, nextContext);
         context.set(current);
     }
@@ -70,7 +70,7 @@ public class ScopedContext implements AutoCloseable {
         closed = true;
         currentRef.refCount.decrementAndGet();
         context.set(previous);
-        AsyncProfiler.getInstance().setContextId(previous.id);
+        PyroscopeAsyncProfiler.getAsyncProfiler().setContextId(previous.id);
     }
 
     public void forEach(BiConsumer<String, String> consumer) {
