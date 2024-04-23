@@ -39,7 +39,7 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
 
     @Override
     public void start(Profiler profiler) {
-        this.logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler#start");
+        this.logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler starting");
         synchronized (lock) {
             if (started) {
                 throw new IllegalStateException("already started");
@@ -62,18 +62,24 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
 
     @Override
     public void stop() {
-        ScheduledExecutorService svc;
-        synchronized (lock) {
-            stopSchedulerLocked();
-            svc = this.executor;
-            this.executor = null;
+        ScheduledExecutorService svc = null;
+        try {
+            synchronized (lock) {
+                try {
+                    stopSchedulerLocked();
+                } finally {
+                    svc = this.executor;
+                    this.executor = null;
+                }
+            }
+            this.logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler stopped");
+        } finally {
+            // shutdown here not under lock to avoid deadlock ( the task may block to wait for lock and
+            // we are holding the lock and waiting for task to finish)
+            // There is still synchronization happens from the PyroscopeAgent class,
+            // so there are no concurrent calls to start/stop. So there is no lock here
+            awaitTermination(svc);
         }
-        // shutdown here not under lock to avoid deadlock ( the task may block to wait for lock and
-        // we are holding the lock and waiting for task to finish)
-        // There is still synchronization happens from the PyroscopeAgent class,
-        // so there are no concurrent calls to start/stop. So there is no lock here
-        awaitTermination(svc);
-        this.logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler stopped");
     }
 
     private static void awaitTermination(ScheduledExecutorService svc) {
@@ -96,11 +102,12 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
         try {
             this.profiler.stop();
         } catch (Throwable throwable) {
-            logger.log(Logger.Level.ERROR, "Error stopping profiler %s", throwable);
+            throw new IllegalStateException(throwable);
+        } finally {
+            job.cancel(true);
+            executor.shutdown();
+            this.started = false;
         }
-        job.cancel(true);
-        executor.shutdown();
-        this.started = false;
     }
 
 
