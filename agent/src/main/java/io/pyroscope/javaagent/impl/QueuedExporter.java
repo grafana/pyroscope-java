@@ -41,6 +41,7 @@ public class QueuedExporter implements Exporter {
             queue.put(snapshot);
         } catch (final InterruptedException ignored) {
             Thread.currentThread().interrupt();
+            logger.log(Logger.Level.DEBUG, "QueuedExporter interrupted");
         }
     }
 }

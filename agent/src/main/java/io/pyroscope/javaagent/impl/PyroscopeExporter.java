@@ -41,6 +41,7 @@ public class PyroscopeExporter implements Exporter {
             uploadSnapshot(snapshot);
         } catch (final InterruptedException ignored) {
             Thread.currentThread().interrupt();
+            this.logger.log(Logger.Level.DEBUG, "PyroscopeExporter interrupted");
         }
     }
 

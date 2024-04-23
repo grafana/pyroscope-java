@@ -36,4 +36,6 @@ public interface ProfilingScheduler {
      *
      **/
     void start(Profiler profiler);
+
+    void stop();
 }
