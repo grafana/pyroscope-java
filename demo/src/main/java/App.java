@@ -12,22 +12,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class App {
-    public static final int N_THREADS = 2;
-    public static final PyroscopeAgent.Options CONFIG = new PyroscopeAgent.Options.Builder(
-        new Config.Builder()
-            .setApplicationName("demo.app{qweqwe=asdasd}")
-            .setServerAddress("http://localhost:4040")
-            .setFormat(Format.JFR)
-            .setProfilingEvent(EventType.ITIMER)
-            .setLogLevel(Logger.Level.DEBUG)
-            .setLabels(mapOf("user", "tolyan"))
-            .build())
-        .build();
-    public static final PyroscopeAgent.Options OPTIONS = CONFIG;
+    public static final int N_THREADS = 8;
 
     public static void main(String[] args) {
+        PyroscopeAgent.start(
+            new PyroscopeAgent.Options.Builder(
+                new Config.Builder()
+                    .setApplicationName("demo.app{qweqwe=asdasd}")
+                    .setServerAddress("http://localhost:4040")
+                    .setFormat(Format.JFR)
+                    .setProfilingEvent(EventType.CTIMER)
+                    .setLogLevel(Logger.Level.DEBUG)
+                    .setLabels(mapOf("user", "tolyan"))
+                    .build())
+                .build()
+        );
         Pyroscope.setStaticLabels(mapOf("region", "us-east-1"));
-        PyroscopeAgent.start(OPTIONS);
 
         appLogic();
     }
