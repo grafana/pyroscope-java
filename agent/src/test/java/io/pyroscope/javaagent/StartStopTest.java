@@ -29,31 +29,24 @@ public class StartStopTest {
 
     @Test
     void testStartFail() {
-        notStarted();
+        assertFalse(PyroscopeAgent.isStarted());
 
         PyroscopeAgent.start(INVALID);
-        notStarted();
+        assertFalse(PyroscopeAgent.isStarted());
 
         PyroscopeAgent.start(INVALID);
-        notStarted();
+        assertFalse(PyroscopeAgent.isStarted());
 
         PyroscopeAgent.stop();
-        notStarted();
+        assertFalse(PyroscopeAgent.isStarted());
         PyroscopeAgent.stop();
-        notStarted();
+        assertFalse(PyroscopeAgent.isStarted());
 
         PyroscopeAgent.start(VALID);
-        started();
+        assertTrue(PyroscopeAgent.isStarted());
 
         PyroscopeAgent.stop();
-        notStarted();
-    }
-
-    private static void started() {
-        assertTrue(PyroscopeAgent.isStarted());
-    }
-
-    private static void notStarted() {
         assertFalse(PyroscopeAgent.isStarted());
     }
+
 }
