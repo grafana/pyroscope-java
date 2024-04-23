@@ -11,7 +11,6 @@ import java.lang.instrument.Instrumentation;
 public class PyroscopeAgent {
     private static final Object sLock = new Object();
     private static Options sOptions = null;
-    private static boolean sFailed = false;
 
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
@@ -47,17 +46,12 @@ public class PyroscopeAgent {
                 logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
                 return;
             }
-            if (sFailed) {
-                logger.log(Logger.Level.ERROR, "Not start profiling due to recent failure");
-                return;
-            }
             sOptions = options;
             logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
             try {
                 options.scheduler.start(options.profiler);
                 logger.log(Logger.Level.INFO, "Profiling started");
             } catch (final Throwable e) {
-                sFailed = true;
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
                 sOptions = null;
             }
@@ -75,7 +69,6 @@ public class PyroscopeAgent {
                 sOptions.logger.log(Logger.Level.INFO, "Profiling stopped");
             } catch (Throwable e) {
                 sOptions.logger.log(Logger.Level.ERROR, "Error stopping profiler %s", e);
-                sFailed = true;
             }
 
             sOptions = null;
