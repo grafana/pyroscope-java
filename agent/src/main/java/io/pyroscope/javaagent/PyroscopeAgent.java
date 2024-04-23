@@ -48,7 +48,7 @@ public class PyroscopeAgent {
                 return;
             }
             if (sFailed) {
-                logger.log(Logger.Level.INFO, "Not start profiling due to recent failure");
+                logger.log(Logger.Level.ERROR, "Not start profiling due to recent failure");
                 return;
             }
             sOptions = options;
@@ -59,6 +59,7 @@ public class PyroscopeAgent {
             } catch (final Throwable e) {
                 sFailed = true;
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
+                sOptions = null;
             }
         }
     }
@@ -66,16 +67,24 @@ public class PyroscopeAgent {
     public static void stop() {
         synchronized (sLock) {
             if (sOptions == null) {
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Error stopping profiler: not started");
                 return;
             }
             try {
                 sOptions.scheduler.stop();
+                sOptions.logger.log(Logger.Level.INFO, "Profiling stopped");
             } catch (Throwable e) {
                 sOptions.logger.log(Logger.Level.ERROR, "Error stopping profiler %s", e);
                 sFailed = true;
             }
 
             sOptions = null;
+        }
+    }
+
+    public static boolean isStarted() {
+        synchronized (sLock) {
+            return sOptions != null;
         }
     }
 

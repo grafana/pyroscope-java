@@ -56,19 +56,23 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
             this.job = executor.scheduleAtFixedRate(this::schedulerTick,
                 firstProfilingDuration.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
             this.started = true;
+            logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler started");
         }
     }
 
     @Override
     public void stop() {
-        ScheduledExecutorService svc = this.executor;
+        ScheduledExecutorService svc;
         synchronized (lock) {
             stopSchedulerLocked();
+            svc = this.executor;
             this.executor = null;
         }
-        if (svc != null) {
-            awaitTermination(svc);
-        }
+        // shutdown here not under lock to avoid deadlock ( the task may block to wait for lock and
+        // we are holding the lock and waiting for task to finish)
+        // There is still synchronization happens from the PyroscopeAgent class,
+        // so there are no concurrent calls to start/stop. So there is no lock here
+        awaitTermination(svc);
         this.logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler stopped");
     }
 
