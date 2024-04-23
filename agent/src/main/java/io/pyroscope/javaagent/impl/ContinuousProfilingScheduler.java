@@ -98,9 +98,7 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
         } catch (Throwable throwable) {
             logger.log(Logger.Level.ERROR, "Error stopping profiler %s", throwable);
         }
-        if (job != null) {
-            job.cancel(true);
-        }
+        job.cancel(true);
         executor.shutdown();
         this.started = false;
     }
