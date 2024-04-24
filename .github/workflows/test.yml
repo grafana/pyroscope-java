@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macos]
-        java: ['8', '11', '17']
+        java: ['8', '11', '17', '21']
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -26,4 +26,4 @@ jobs:
       - name: Test with Gradle
         uses: gradle/gradle-build-action@937999e9cc2425eddc7fd62d1053baf041147db7
         with:
-          arguments: test
+          arguments: test --stacktrace

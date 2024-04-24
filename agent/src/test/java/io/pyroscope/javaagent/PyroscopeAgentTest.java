@@ -3,6 +3,7 @@ package io.pyroscope.javaagent;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,11 @@ public class PyroscopeAgentTest {
             .setScheduler(profilingScheduler)
             .setLogger(logger)
             .build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        PyroscopeAgent.stop();
     }
 
     @Test

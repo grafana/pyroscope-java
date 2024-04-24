@@ -70,13 +70,18 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
         );
     }
 
+    @Override
+    public void stop() {
+        throw new RuntimeException("not implemented");
+    }
+
     private void dumpProfile(final Profiler profiler, final long samplingDurationMillis, final Duration uploadInterval) {
         Instant profilingStartTime = Instant.now();
         try {
             profiler.start();
         } catch (Throwable e) {
             logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
-            stop();
+            stopProfiling();
             return;
         }
         try {
@@ -90,7 +95,7 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
         exporter.export(snapshot);
     }
 
-    private void stop() {
+    private void stopProfiling() {
         if (job != null) {
             job.cancel(true);
         }
