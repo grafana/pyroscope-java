@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":9,"i1":9,"i2":9,"i3":9};
+var data = {"i0":9,"i1":9,"i2":9,"i3":9,"i4":9,"i5":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -203,24 +203,34 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>static boolean</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isStarted()">isStarted</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#premain(java.lang.String,java.lang.instrument.Instrumentation)">premain</a></span>&#8203;(java.lang.String&nbsp;agentArgs,
        java.lang.instrument.Instrumentation&nbsp;inst)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#start()">start</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#start(io.pyroscope.javaagent.config.Config)">start</a></span>&#8203;(<a href="config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;config)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#start(io.pyroscope.javaagent.PyroscopeAgent.Options)">start</a></span>&#8203;(<a href="PyroscopeAgent.Options.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options</a>&nbsp;options)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>static void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#stop()">stop</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -297,10 +307,28 @@ extends java.lang.Object</pre>
 <a id="start(io.pyroscope.javaagent.PyroscopeAgent.Options)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>start</h4>
 <pre class="methodSignature">public static&nbsp;void&nbsp;start&#8203;(<a href="PyroscopeAgent.Options.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options</a>&nbsp;options)</pre>
+</li>
+</ul>
+<a id="stop()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>stop</h4>
+<pre class="methodSignature">public static&nbsp;void&nbsp;stop()</pre>
+</li>
+</ul>
+<a id="isStarted()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isStarted</h4>
+<pre class="methodSignature">public static&nbsp;boolean&nbsp;isStarted()</pre>
 </li>
 </ul>
 </li>

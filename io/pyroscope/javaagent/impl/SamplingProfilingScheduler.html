@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10};
+var data = {"i0":10,"i1":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -195,6 +195,11 @@ implements <a href="../api/ProfilingScheduler.html" title="interface in io.pyros
  Here is an example of naive implementation</div>
 </td>
 </tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#stop()">stop</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -243,7 +248,7 @@ implements <a href="../api/ProfilingScheduler.html" title="interface in io.pyros
 <a id="start(io.pyroscope.javaagent.Profiler)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>start</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;start&#8203;(<a href="../Profiler.html" title="class in io.pyroscope.javaagent">Profiler</a>&nbsp;profiler)</pre>
@@ -275,6 +280,19 @@ implements <a href="../api/ProfilingScheduler.html" title="interface in io.pyros
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../api/ProfilingScheduler.html#start(io.pyroscope.javaagent.Profiler)">start</a></code>&nbsp;in interface&nbsp;<code><a href="../api/ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="stop()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>stop</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;stop()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../api/ProfilingScheduler.html#stop()">stop</a></code>&nbsp;in interface&nbsp;<code><a href="../api/ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a></code></dd>
 </dl>
 </li>
 </ul>

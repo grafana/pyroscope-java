@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6};
+var data = {"i0":6,"i1":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -159,6 +159,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  Here is an example of naive implementation</div>
 </td>
 </tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#stop()">stop</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
 </table>
 </li>
 </ul>
@@ -179,7 +184,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <a id="start(io.pyroscope.javaagent.Profiler)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>start</h4>
 <pre class="methodSignature">void&nbsp;start&#8203;(<a href="../Profiler.html" title="class in io.pyroscope.javaagent">Profiler</a>&nbsp;profiler)</pre>
@@ -207,6 +212,15 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  The real-world example will be more complex since profile start and stop time should be aligned to 10s intervals
  See <a href="../impl/ContinuousProfilingScheduler.html" title="class in io.pyroscope.javaagent.impl"><code>ContinuousProfilingScheduler</code></a> and <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">
      Github issue #40</a> for more details.</div>
+</li>
+</ul>
+<a id="stop()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>stop</h4>
+<pre class="methodSignature">void&nbsp;stop()</pre>
 </li>
 </ul>
 </li>
