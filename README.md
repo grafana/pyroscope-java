@@ -27,3 +27,8 @@ If you want to build the agent JAR yourself, from this repo run:
 ```
 
 The file will be in `agent/build/libs/pyroscope.jar`.
+
+## Maintainers
+
+This package is maintained by [@grafana/pyroscope-java](https://github.com/orgs/grafana/teams/pyroscope-java).
+Mention this team on issues or PRs for feedback.
