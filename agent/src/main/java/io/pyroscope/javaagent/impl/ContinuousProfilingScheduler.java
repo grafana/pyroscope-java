@@ -1,6 +1,5 @@
 package io.pyroscope.javaagent.impl;
 
-import io.pyroscope.javaagent.AsyncProfilerDelegate;
 import io.pyroscope.javaagent.ProfilerDelegate;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
@@ -30,7 +29,7 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
     private Instant profilingIntervalStartTime;
     private ScheduledFuture<?> job;
     private boolean started;
-    private Profiler profiler;
+    private ProfilerDelegate profiler;
 
     public ContinuousProfilingScheduler(Config config, Exporter exporter, Logger logger) {
         this.config = config;

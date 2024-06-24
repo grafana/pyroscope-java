@@ -28,11 +28,11 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
     public AsyncProfilerDelegate(Config config) {
-        reset(config);
+        setConfig(config);
     }
 
     @Override
-    public void reset(final Config config) {
+    public void setConfig(final Config config) {
         this.config = config;
         this.alloc = config.profilingAlloc;
         this.lock = config.profilingLock;
