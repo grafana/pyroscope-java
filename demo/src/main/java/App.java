@@ -3,6 +3,7 @@ import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.PyroscopeAgent;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.config.ProfilerType;
 import io.pyroscope.labels.v2.LabelsSet;
 import io.pyroscope.labels.v2.Pyroscope;
 
@@ -23,6 +24,7 @@ public class App {
                     .setFormat(Format.JFR)
                     .setProfilingEvent(EventType.CTIMER)
                     .setLogLevel(Logger.Level.DEBUG)
+                    .setProfilerType(ProfilerType.JFR)
                     .setLabels(mapOf("user", "tolyan"))
                     .build())
                 .build()
