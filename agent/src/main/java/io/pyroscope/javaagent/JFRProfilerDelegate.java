@@ -34,7 +34,7 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
     public void setConfig(final Config config) {
         this.config = config;
         jcmdBin = findJcmdBin();
-        jfrSettingsPath = findJfrSettingsPath();
+        jfrSettingsPath = findJfrSettingsPath(config);
 
         try {
             tempJFRFile = File.createTempFile("pyroscope", ".jfr");
@@ -89,12 +89,12 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
         try {
             byte[] data = Files.readAllBytes(tempJFRFile.toPath());
             return new Snapshot(
-                    Format.JFR,
-                    EventType.CPU,
-                    started,
-                    ended,
-                    data,
-                    Pyroscope.LabelsWrapper.dump()
+                Format.JFR,
+                EventType.CPU,
+                started,
+                ended,
+                data,
+                Pyroscope.LabelsWrapper.dump()
             );
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -123,7 +123,12 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
         return jcmd;
     }
 
-    private static Path findJfrSettingsPath() {
+    private static Path findJfrSettingsPath(Config config) {
+        // first try to load settings from provided configuration
+        if (config.jfrProfilerSettings != null) {
+            return Paths.get(config.jfrProfilerSettings);
+        }
+        // otherwise load default settings
         try (InputStream inputStream = JFRProfilerDelegate.class.getResourceAsStream(JFR_SETTINGS_RESOURCE)) {
             Path jfrSettingsPath = Files.createTempFile("pyroscope", ".jfc");
             Files.copy(inputStream, jfrSettingsPath, StandardCopyOption.REPLACE_EXISTING);
