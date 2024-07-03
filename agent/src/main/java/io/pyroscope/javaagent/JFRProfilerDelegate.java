@@ -4,10 +4,7 @@ import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.Pyroscope;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +12,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -39,7 +37,6 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
         jfrSettingsPath = findJfrSettingsPath();
 
         try {
-            // flight recorder is built on top of a file descriptor, so we need a file.
             tempJFRFile = File.createTempFile("pyroscope", ".jfr");
             tempJFRFile.deleteOnExit();
         } catch (IOException e) {
@@ -52,25 +49,14 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
      */
     @Override
     public synchronized void start() {
-        try {
-            List<String> commands = new ArrayList<>();
-            commands.add(jcmdBin.toString());
-            commands.add(String.valueOf(CurrentPidProvider.getCurrentProcessId()));
-            commands.add("JFR.start");
-            commands.add("name=" + RECORDING_NAME);
-            commands.add("filename=" + tempJFRFile.getAbsolutePath());
-            commands.add("settings=" + jfrSettingsPath);
-            ProcessBuilder processBuilder = new ProcessBuilder(commands);
-            Process process = processBuilder.inheritIO().start();
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new RuntimeException("Invalid exit code: " + exitCode);
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        List<String> cmdLine = new ArrayList<>();
+        cmdLine.add(jcmdBin.toString());
+        cmdLine.add(String.valueOf(CurrentPidProvider.getCurrentProcessId()));
+        cmdLine.add("JFR.start");
+        cmdLine.add("name=" + RECORDING_NAME);
+        cmdLine.add("filename=" + tempJFRFile.getAbsolutePath());
+        cmdLine.add("settings=" + jfrSettingsPath);
+        executeCmd(cmdLine);
     }
 
     /**
@@ -78,21 +64,12 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
      */
     @Override
     public synchronized void stop() {
-        try {
-            List<String> commands = new ArrayList<>();
-            commands.add(jcmdBin.toString());
-            commands.add(String.valueOf(CurrentPidProvider.getCurrentProcessId()));
-            commands.add("JFR.stop");
-            commands.add("name=" + RECORDING_NAME);
-            ProcessBuilder processBuilder = new ProcessBuilder(commands);
-            Process process = processBuilder.start();
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new RuntimeException("Invalid exit code: " + exitCode);
-            }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("cannot stop JFR recording", e);
-        }
+        List<String> cmdLine = new ArrayList<>();
+        cmdLine.add(jcmdBin.toString());
+        cmdLine.add(String.valueOf(CurrentPidProvider.getCurrentProcessId()));
+        cmdLine.add("JFR.stop");
+        cmdLine.add("name=" + RECORDING_NAME);
+        executeCmd(cmdLine);
     }
 
     /**
@@ -112,12 +89,12 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
         try {
             byte[] data = Files.readAllBytes(tempJFRFile.toPath());
             return new Snapshot(
-                Format.JFR,
-                EventType.CPU,
-                started,
-                ended,
-                data,
-                Pyroscope.LabelsWrapper.dump()
+                    Format.JFR,
+                    EventType.CPU,
+                    started,
+                    ended,
+                    data,
+                    Pyroscope.LabelsWrapper.dump()
             );
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -158,10 +135,21 @@ public final class JFRProfilerDelegate implements ProfilerDelegate {
 
     private static boolean isWindowsOS() {
         String osName = System.getProperty(OS_NAME);
-        if (osName.contains("Windows")) {
-            return true;
+        return osName.contains("Windows");
+    }
+
+    private static void executeCmd(List<String> cmdLine) {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(cmdLine);
+            Process process = processBuilder.redirectErrorStream(true).start();
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                String processOutput = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+                throw new RuntimeException(format("Invalid exit code %s, process output %s", exitCode, processOutput));
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(format("failed to start process: %s", cmdLine), e);
         }
-        return false;
     }
 
 }
