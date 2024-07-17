@@ -5,19 +5,21 @@ import one.profiler.AsyncProfiler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 public class ScopedContext implements AutoCloseable {
-    static final ThreadLocal<Context> context = ThreadLocal.withInitial(() ->
-            new Context(0L, Collections.emptyMap())
-    );
+    static final Map<Thread, Context> threadContext = new ConcurrentHashMap<>();
 
     final Context previous;
     final Context current;
+    final Thread originalThread;
     final Ref<Map<Ref<String>, Ref<String>>> currentRef;
     boolean closed = false;
+
     public ScopedContext(LabelsSet labels) {
-        previous = context.get();
+        originalThread = Thread.currentThread();
+        previous = getContext();
         Map<Ref<String>, Ref<String>> nextContext = new HashMap<>(
                 previous.labels.size() + labels.args.length / 2
         );
@@ -58,7 +60,7 @@ public class ScopedContext implements AutoCloseable {
 
         AsyncProfiler.getInstance().setContextId(currentRef.id);
         current = new Context(currentRef.id, nextContext);
-        context.set(current);
+        setContext(current);
     }
 
 
@@ -69,7 +71,7 @@ public class ScopedContext implements AutoCloseable {
         }
         closed = true;
         currentRef.refCount.decrementAndGet();
-        context.set(previous);
+        setContext(previous);
         AsyncProfiler.getInstance().setContextId(previous.id);
     }
 
@@ -77,6 +79,18 @@ public class ScopedContext implements AutoCloseable {
         for (Map.Entry<Ref<String>, Ref<String>> it : current.labels.entrySet()) {
             consumer.accept(it.getKey().val, it.getValue().val);
         }
+    }
+
+    private Context getContext() {
+        return threadContext.computeIfAbsent(this.originalThread, k -> new Context(0L, Collections.emptyMap()));
+    }
+
+    private void setContext(Context context) {
+        threadContext.put(this.originalThread, context);
+    }
+
+    static Context currentContext() {
+        return threadContext.get(Thread.currentThread());
     }
 
     static class Context {

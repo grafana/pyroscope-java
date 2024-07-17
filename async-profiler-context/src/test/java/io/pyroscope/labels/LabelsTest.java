@@ -68,7 +68,7 @@ public class LabelsTest {
                 assertEquals(1, v1.refCount.get());
             }
         }
-        assertEquals(0, ScopedContext.context.get().id);
+        assertEquals(0, ScopedContext.currentContext().id);
         assertEquals(0, ctxRef.refCount.get());
         assertEquals(1, k1.refCount.get());
         assertEquals(1, v1.refCount.get());
@@ -195,7 +195,7 @@ public class LabelsTest {
 
         }
         Pyroscope.LabelsWrapper.dump();
-        assertEquals(0, ScopedContext.context.get().id);
+        assertEquals(0, ScopedContext.currentContext().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
     }
@@ -226,7 +226,7 @@ public class LabelsTest {
         e.shutdown();
         e.awaitTermination(100, TimeUnit.SECONDS);
         Snapshot res = Pyroscope.LabelsWrapper.dump();
-        assertEquals(0, ScopedContext.context.get().id);
+        assertEquals(0, ScopedContext.currentContext().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
     }
