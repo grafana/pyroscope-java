@@ -19,9 +19,9 @@ repositories {
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api project(":async-profiler-context")
-    implementation('com.squareup.okhttp3:okhttp:4.10.0')
+    implementation('com.squareup.okhttp3:okhttp:4.12.0')
     implementation("com.squareup.moshi:moshi:1.14.0")
-    api 'com.google.protobuf:protobuf-java:3.22.2'
+    api 'com.google.protobuf:protobuf-java:4.28.1'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.10.0'
