@@ -5,11 +5,11 @@ import one.profiler.AsyncProfiler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 
 public class ScopedContext implements AutoCloseable {
-    static final Map<Thread, Context> threadContext = new ConcurrentHashMap<>();
+    static final Map<Thread, Context> threadContext = Collections.synchronizedMap(new WeakHashMap<>());
 
     final Context previous;
     final Context current;
