@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macos]
-        java: ['8', '11', '17']
+        java: ['11', '17', '21']
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
