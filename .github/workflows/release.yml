@@ -37,18 +37,26 @@ jobs:
         id: bump_version
         run: |
           current_version=$(grep 'pyroscope_version=' gradle.properties | cut -d'=' -f2)
+          echo "Current version: $current_version"
+          IFS='.' read -r major minor patch <<< "$current_version"
 
           case "${{ inputs.version_bump }}" in
-            "patch")
-              new_version=$(echo $current_version | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
+            "major")
+              major=$((major + 1))
+              minor=0
+              patch=0
               ;;
             "minor")
-              new_version=$(echo $current_version | awk -F. '{$(NF-1) = $(NF-1) + 1; $NF = 0;} 1' OFS=.)
+              minor=$((minor + 1))
+              patch=0
               ;;
-            "major")
-              new_version=$(echo $current_version | awk -F. '{$(1) = $(1) + 1; $(NF-1) = 0; $NF = 0;} 1' OFS=.)
+            "patch")
+              patch=$((patch + 1))
               ;;
           esac
+
+          new_version="${major}.${minor}.${patch}"
+          echo "New version: $new_version"
 
           sed -i "s/pyroscope_version=.*/pyroscope_version=$new_version/" gradle.properties
           echo "version=$new_version" >> $GITHUB_OUTPUT
