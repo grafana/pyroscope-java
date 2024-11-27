@@ -9,13 +9,13 @@ build:
 .PHONY: publish
 publish:
 	@echo "./gradlew clean :agent:shadowJar publishToSonatype closeAndReleaseSonatypeStagingRepository"
-	@./gradlew clean :agent:shadowJar publishToSonatype closeAndReleaseSonatypeStagingRepository \
+	@./gradlew clean :agent:shadowJar publishToSonatype \
 		-PsonatypeUsername="$(NEXUS_USERNAME)" \
 		-PsonatypePassword="$(NEXUS_PASSWORD)" \
 		-Psigning.secretKeyRingFile="$(NEXUS_GPG_SECRING_FILE)" \
 		-Psigning.password="$(NEXUS_GPG_PASSWORD)" \
 		-Psigning.keyId="$(NEXUS_GPG_KEY_ID)"
-	@echo "Now you go https://s01.oss.sonatype.org, close the temporarly created staging repository and release it"
+	@echo "Now you go https://s01.oss.sonatype.org, close the temporarily created staging repository and release it"
 	@echo "https://central.sonatype.org/publish/release/#locate-and-examine-your-staging-repository"
 
 .PHONY: test
