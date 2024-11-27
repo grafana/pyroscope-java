@@ -68,7 +68,7 @@ jobs:
             NEXUS_USERNAME=publishing:nexus_username
             NEXUS_PASSWORD=publishing:nexus_password
             NEXUS_GPG_KEY_ID=publishing:nexus_gpg_key_id
-            NEXUS_GPG_PASSWORD=publishing:nexus_gpg_key_id
+            NEXUS_GPG_PASSWORD=publishing:nexus_gpg_password
             NEXUS_GPG_SECRING_FILE_BASE64=publishing:nexus_gpg_secring_file
 
       - name: Prepare GPG Keyring
