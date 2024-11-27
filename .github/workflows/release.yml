@@ -71,15 +71,17 @@ jobs:
             NEXUS_GPG_PASSWORD=publishing:nexus_gpg_key_id
             NEXUS_GPG_SECRING_FILE_BASE64=publishing:nexus_gpg_secring_file
 
-      - name: Decode GPG Keyring
+      - name: Prepare GPG Keyring
+        id: prepare_gpg_keyring
         run: |
           mkdir -p ${{ github.workspace }}/gpg
           echo "$NEXUS_GPG_SECRING_FILE_BASE64" | base64 -d > ${{ github.workspace }}/gpg/secring.gpg
           chmod 600 ${{ github.workspace }}/gpg/secring.gpg
-          export NEXUS_GPG_SECRING_FILE=${{ github.workspace }}/gpg/secring.gpg
+          echo "keyring_path=${{ github.workspace }}/gpg/secring.gpg" >> $GITHUB_OUTPUT
 
       - name: Build and Publish
         run: |
+          export NEXUS_GPG_SECRING_FILE=${{ steps.prepare_gpg_keyring.outputs.keyring_path }}
           make publish
 
       - name: Commit and Push Changes
