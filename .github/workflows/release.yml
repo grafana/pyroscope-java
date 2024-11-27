@@ -12,6 +12,7 @@ on:
           - patch
           - minor
           - major
+  pull_request:
 
 permissions:
   contents: write
