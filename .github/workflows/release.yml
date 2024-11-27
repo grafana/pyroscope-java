@@ -12,11 +12,11 @@ on:
           - patch
           - minor
           - major
-  pull_request:
 
 permissions:
   contents: write
   packages: write
+  id-token: write
 
 jobs:
   release:
