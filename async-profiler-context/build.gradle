@@ -21,7 +21,7 @@ repositories {
     mavenCentral()
 }
 
-def asyncProfilerVersion = "3.0.0.0"
+def asyncProfilerVersion = project.properties['async_profiler_version']
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$buildDir/async-profiler/async-profiler.jar")
@@ -64,18 +64,18 @@ shadowJar {
     archiveClassifier.set('')
 }
 
-task relocateShadowJar(type: ConfigureShadowRelocation) {
+tasks.register('relocateShadowJar', ConfigureShadowRelocation) {
     target = tasks.shadowJar
     prefix = "io.pyroscope"
 }
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
-task asyncProfilerLib {
+tasks.register('asyncProfilerLib') {
+    def useLocalArtifacts = project.findProperty('useLocalAsyncProfilerArtifacts') == 'true'
+
     def suffixes = [
         ['linux-arm64', 'tar.gz'],
         ['linux-x64', 'tar.gz'],
-        ['linux-musl-x64', 'tar.gz'],
-        ['linux-musl-arm64', 'tar.gz'],
         ['macos', 'zip']
     ]
 
@@ -87,11 +87,18 @@ task asyncProfilerLib {
 
     doLast {
         suffixes.forEach { suffix, ext ->
-            def repo = "https://github.com/grafana/async-profiler"
-            download {
-                src "$repo/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
-                dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
-                overwrite true
+            if (!useLocalArtifacts) {
+                def repo = "https://github.com/grafana/async-profiler"
+                download {
+                    src "$repo/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
+                    dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
+                    overwrite true
+                }
+            } else {
+                copy {
+                    from file("../async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
+                    into asyncProfilerDir
+                }
             }
 
             // Extract the native library files.
