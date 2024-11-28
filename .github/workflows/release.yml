@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version Bump Type'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+
+      - name: Bump Version
+        id: bump_version
+        run: |
+          current_version=$(grep 'pyroscope_version=' gradle.properties | cut -d'=' -f2)
+          echo "Current version: $current_version"
+          IFS='.' read -r major minor patch <<< "$current_version"
+
+          case "${{ inputs.version_bump }}" in
+            "major")
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            "minor")
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            "patch")
+              patch=$((patch + 1))
+              ;;
+          esac
+
+          new_version="${major}.${minor}.${patch}"
+          echo "New version: $new_version"
+
+          sed -i "s/pyroscope_version=.*/pyroscope_version=$new_version/" gradle.properties
+          echo "version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Get secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@main
+        with:
+          repo_secrets: |
+            NEXUS_USERNAME=publishing:nexus_username
+            NEXUS_PASSWORD=publishing:nexus_password
+            NEXUS_GPG_KEY_ID=publishing:nexus_gpg_key_id
+            NEXUS_GPG_PASSWORD=publishing:nexus_gpg_password
+            NEXUS_GPG_SECRING_FILE_BASE64=publishing:nexus_gpg_secring_file
+
+      - name: Prepare GPG Keyring
+        id: prepare_gpg_keyring
+        run: |
+          mkdir -p ${{ github.workspace }}/gpg
+          echo "$NEXUS_GPG_SECRING_FILE_BASE64" | base64 -d > ${{ github.workspace }}/gpg/secring.gpg
+          chmod 600 ${{ github.workspace }}/gpg/secring.gpg
+          echo "keyring_path=${{ github.workspace }}/gpg/secring.gpg" >> $GITHUB_OUTPUT
+
+      - name: Build and Publish
+        run: |
+          export NEXUS_GPG_SECRING_FILE=${{ steps.prepare_gpg_keyring.outputs.keyring_path }}
+          make publish
+
+      - name: Commit and Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add gradle.properties
+          git commit -m "version ${{ steps.bump_version.outputs.version }}"
+          git tag "v${{ steps.bump_version.outputs.version }}"
+          git push --atomic origin "refs/heads/main" "refs/tags/v${{ steps.bump_version.outputs.version }}"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.bump_version.outputs.version }}" \
+            agent/build/libs/pyroscope.jar \
+            --title "Release v${{ steps.bump_version.outputs.version }}" \
+            --notes "Automated release"
