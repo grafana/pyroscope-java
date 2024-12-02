@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConcurrentUseTest {
+public class ConcurrentUsageTest {
 
     @Test
-    public void testConcurrentUsage() throws IOException {
+    public void runConcurrently() throws IOException {
         int iterations = 10;
         List<Process> processes = new ArrayList<>();
         for (int i = 0; i < iterations; i++) {
