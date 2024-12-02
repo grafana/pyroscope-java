@@ -44,8 +44,13 @@ public class PyroscopeAsyncProfiler {
         final File targetDir = new File(tmpDir, userName + "-pyroscope/");
         targetDir.mkdirs();
 
+        final Path target = targetDir.toPath().resolve(targetLibraryFileName(fileName)).toAbsolutePath();
+        if (Files.exists(target)) {
+            // library already deployed
+            return target.toString();
+        }
+
         try (final InputStream is = loadResource(fileName)) {
-            final Path target = targetDir.toPath().resolve(targetLibraryFileName(fileName)).toAbsolutePath();
             Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
             return target.toString();
         }
