@@ -40,17 +40,10 @@ public class PyroscopeAsyncProfiler {
     private static String deployLibrary() throws IOException {
         final String fileName = libraryFileName();
         final String userName = System.getProperty("user.name");
-        final String tmpDir = System.getProperty("java.io.tmpdir");
-        final File targetDir = new File(tmpDir, userName + "-pyroscope/");
-        targetDir.mkdirs();
-
-        final Path target = targetDir.toPath().resolve(targetLibraryFileName(fileName)).toAbsolutePath();
-        if (Files.exists(target)) {
-            // library already deployed
-            return target.toString();
-        }
+        final Path targetDir = Files.createTempDirectory( userName + "-pyroscope");
 
         try (final InputStream is = loadResource(fileName)) {
+            final Path target = targetDir.resolve(targetLibraryFileName(fileName)).toAbsolutePath();
             Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
             return target.toString();
         }
