@@ -225,7 +225,7 @@ public class LabelsTest {
         }
         e.shutdown();
         e.awaitTermination(100, TimeUnit.SECONDS);
-        Snapshot res = Pyroscope.LabelsWrapper.dump();
+        Pyroscope.LabelsWrapper.dump();
         assertEquals(0, ScopedContext.context.get().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
