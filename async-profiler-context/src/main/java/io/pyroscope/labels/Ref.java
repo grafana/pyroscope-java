@@ -1,6 +1,5 @@
 package io.pyroscope.labels;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 class Ref<T> {
@@ -19,14 +18,12 @@ class Ref<T> {
         if (o == null || getClass() != o.getClass()) return false;
 
         Ref<?> valueRef = (Ref<?>) o;
-        if (val.getClass() != o.getClass()) return false;
-
-        return id.equals(valueRef.id) && val.equals(valueRef.val);
+        return id.equals(valueRef.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, val);
+        return id.hashCode();
     }
 
     @Override

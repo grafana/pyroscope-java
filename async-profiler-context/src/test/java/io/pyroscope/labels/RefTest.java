@@ -22,12 +22,12 @@ public class RefTest {
         assertTrue(ref1.equals(ref1));
         assertFalse(ref1.equals(null));
         assertFalse(ref1.equals(new Integer(3)));
-        assertFalse(ref1.equals(new Ref<Integer>(3, 1L)));
+        assertTrue(ref1.equals(new Ref<Integer>(3, 1L))); // We don't compare the value types.
     }
 
     @Test
     void testHashCode() {
         Ref<String> ref1 = new Ref<>("test", 1L);
-        assertEquals(3557490, ref1.hashCode());
+        assertEquals(1, ref1.hashCode());
     }
 }
