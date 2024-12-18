@@ -16,7 +16,8 @@ class Ref<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Ref<T> valueRef = (Ref<T>) o;
+
+        Ref<?> valueRef = (Ref<?>) o;
         return id.equals(valueRef.id);
     }
 

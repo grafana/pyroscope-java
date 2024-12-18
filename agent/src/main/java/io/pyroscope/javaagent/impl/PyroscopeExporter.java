@@ -1,6 +1,5 @@
 package io.pyroscope.javaagent.impl;
 
-import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
