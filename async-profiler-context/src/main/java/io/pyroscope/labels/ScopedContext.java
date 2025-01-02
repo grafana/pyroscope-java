@@ -61,7 +61,6 @@ public class ScopedContext implements AutoCloseable {
         context.set(current);
     }
 
-
     @Override
     public void close() {
         if (closed) {
@@ -73,9 +72,9 @@ public class ScopedContext implements AutoCloseable {
         AsyncProfiler.getInstance().setContextId(previous.id);
     }
 
-    public void forEach(BiConsumer<String, String> consumer) {
+    public void forEachLabel(BiConsumer<String, String> labelConsumer) {
         for (Map.Entry<Ref<String>, Ref<String>> it : current.labels.entrySet()) {
-            consumer.accept(it.getKey().val, it.getValue().val);
+            labelConsumer.accept(it.getKey().val, it.getValue().val);
         }
     }
 
