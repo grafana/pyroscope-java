@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+
 	profilev1 "github.com/grafana/pyroscope/api/gen/proto/go/google/v1"
 	querierv1 "github.com/grafana/pyroscope/api/gen/proto/go/querier/v1"
 
@@ -22,34 +23,34 @@ func main() {
 		target string
 		err    error
 	}
-    targets := os.Args[1:]
-    if len(targets) == 0 {
-        targets = []string{
-            "alpine-3.16-8",
-            "alpine-3.16-11",
-            "alpine-3.16-17",
-            "alpine-3.17-8",
-            "alpine-3.17-11",
-            "alpine-3.17-17",
-            "alpine-3.18-8",
-            "alpine-3.18-11",
-            "alpine-3.18-17",
-            "alpine-3.19-8",
-            "alpine-3.19-11",
-            "alpine-3.19-17",
-            "ubuntu-18.04-8",
-            "ubuntu-18.04-11",
-            "ubuntu-18.04-17",
-            "ubuntu-20.04-8",
-            "ubuntu-20.04-11",
-            "ubuntu-20.04-17",
-            "ubuntu-20.04-21",
-            "ubuntu-22.04-8",
-            "ubuntu-22.04-11",
-            "ubuntu-22.04-17",
-            "ubuntu-22.04-21",
-        }
-    }
+	targets := os.Args[1:]
+	if len(targets) == 0 {
+		targets = []string{
+			"alpine-3.16-8",
+			"alpine-3.16-11",
+			"alpine-3.16-17",
+			"alpine-3.17-8",
+			"alpine-3.17-11",
+			"alpine-3.17-17",
+			"alpine-3.18-8",
+			"alpine-3.18-11",
+			"alpine-3.18-17",
+			"alpine-3.19-8",
+			"alpine-3.19-11",
+			"alpine-3.19-17",
+			"ubuntu-18.04-8",
+			"ubuntu-18.04-11",
+			"ubuntu-18.04-17",
+			"ubuntu-20.04-8",
+			"ubuntu-20.04-11",
+			"ubuntu-20.04-17",
+			"ubuntu-20.04-21",
+			"ubuntu-22.04-8",
+			"ubuntu-22.04-11",
+			"ubuntu-22.04-17",
+			"ubuntu-22.04-21",
+		}
+	}
 	url := "http://localhost:4040"
 	qc := querierv1connect.NewQuerierServiceClient(
 		http.DefaultClient,
