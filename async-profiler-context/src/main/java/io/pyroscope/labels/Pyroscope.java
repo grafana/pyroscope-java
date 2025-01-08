@@ -28,8 +28,8 @@ public class Pyroscope {
             }
         }
 
-        public static JfrLabels.Snapshot dump() {
-            JfrLabels.Snapshot.Builder sb = JfrLabels.Snapshot.newBuilder();
+        public static JfrLabels.LabelsSnapshot dump() {
+            JfrLabels.LabelsSnapshot.Builder sb = JfrLabels.LabelsSnapshot.newBuilder();
 
             for (Ref<String> it : RefCounted.strings.valueToRef.values()) {
                 sb.putStrings(it.id, it.val);

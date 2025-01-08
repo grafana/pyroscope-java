@@ -11,9 +11,9 @@ public final class Snapshot {
     public final Instant started;
     public final Instant ended;
     public final byte[] data;
-    public final JfrLabels.Snapshot labels;
+    public final JfrLabels.LabelsSnapshot labels;
 
-    Snapshot(Format format, final EventType eventType, final Instant started, final Instant ended,final byte[] data, JfrLabels.Snapshot labels) {
+    Snapshot(Format format, final EventType eventType, final Instant started, final Instant ended,final byte[] data, JfrLabels.LabelsSnapshot labels) {
         this.format = format;
         this.eventType = eventType;
         this.started = started;

@@ -21,7 +21,7 @@ public class App {
                     .setApplicationName("demo.app{qweqwe=asdasd}")
                     .setServerAddress("http://localhost:4040")
                     .setFormat(Format.JFR)
-                    .setProfilingEvent(EventType.CTIMER)
+                    .setProfilingEvent(EventType.CPU)
                     .setLogLevel(Logger.Level.DEBUG)
                     .setLabels(mapOf("user", "tolyan"))
                     .build())
