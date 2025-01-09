@@ -2,7 +2,7 @@ package io.pyroscope.labels;
 
 
 import io.pyroscope.labels.io.pyroscope.PyroscopeAsyncProfiler;
-import io.pyroscope.labels.pb.JfrLabels.Snapshot;
+import io.pyroscope.labels.pb.JfrLabels.LabelsSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +57,7 @@ public class LabelsTest {
             assertEquals(1, ctxRef.refCount.get());
 
             {
-                Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
+                LabelsSnapshot snapshot = Pyroscope.LabelsWrapper.dump();
                 assertEquals(1, snapshot.getContextsCount());
                 assertEquals(2, snapshot.getStringsCount());
                 assertEquals("k1", snapshot.getStringsMap().get(1L));
@@ -73,7 +73,7 @@ public class LabelsTest {
         assertEquals(1, k1.refCount.get());
         assertEquals(1, v1.refCount.get());
         {
-            Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
+            LabelsSnapshot snapshot = Pyroscope.LabelsWrapper.dump();
             assertEquals(1, snapshot.getContextsCount());
             assertEquals(2, snapshot.getStringsCount());
             assertEquals("k1", snapshot.getStringsMap().get(1L));
@@ -85,7 +85,7 @@ public class LabelsTest {
         }
 
         {
-            Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
+            LabelsSnapshot snapshot = Pyroscope.LabelsWrapper.dump();
             assertEquals(0, snapshot.getContextsCount());
             assertEquals(0, snapshot.getStringsCount());
             assertEquals(-1, k1.refCount.get());
@@ -119,7 +119,7 @@ public class LabelsTest {
                 assertEquals(2, ctxRef.refCount.get());
 
                 {
-                    Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
+                    LabelsSnapshot snapshot = Pyroscope.LabelsWrapper.dump();
                     assertEquals(1, snapshot.getContextsCount());
                     assertEquals(2, snapshot.getStringsCount());
                     assertEquals("k1", snapshot.getStringsMap().get(1L));
@@ -176,7 +176,7 @@ public class LabelsTest {
                     assertEquals(1, ctxRef.refCount.get());
 
                     {
-                        Snapshot snapshot = Pyroscope.LabelsWrapper.dump();
+                        LabelsSnapshot snapshot = Pyroscope.LabelsWrapper.dump();
                         assertEquals(3, snapshot.getContextsCount());
                         assertEquals(5, snapshot.getStringsCount());
                         assertEquals("k1", snapshot.getStringsMap().get(1L));
