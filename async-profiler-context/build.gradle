@@ -206,9 +206,9 @@ tasks.register('generate-proto-classes') {
     doLast {
         exec {
             commandLine 'protoc',
-                '-I', 'src/main/resources',
+                '-I', '.',
                 '--java_out', 'src/main/java',
-                'src/main/resources/jfr_labels.proto'
+                'jfr_labels.proto'
         }
     }
 }
