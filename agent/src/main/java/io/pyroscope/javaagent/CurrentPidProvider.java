@@ -2,7 +2,6 @@ package io.pyroscope.javaagent;
 
 import sun.management.VMManagement;
 
-import java.lang.ProcessHandle;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
