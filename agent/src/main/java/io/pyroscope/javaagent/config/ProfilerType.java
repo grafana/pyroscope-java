@@ -5,22 +5,18 @@ import io.pyroscope.javaagent.JFRProfilerDelegate;
 import io.pyroscope.javaagent.ProfilerDelegate;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Function;
 
 public enum ProfilerType {
-    JFR(JFRProfilerDelegate.class), ASYNC(AsyncProfilerDelegate.class);
+    JFR(JFRProfilerDelegate::new), ASYNC(AsyncProfilerDelegate::new);
 
-    private final Class<? extends ProfilerDelegate> profilerDelegateClass;
+    private final Function<Config, ProfilerDelegate> profilerDelegateFactory;
 
-    ProfilerType(Class<? extends ProfilerDelegate> profilerDelegateClass) {
-        this.profilerDelegateClass = profilerDelegateClass;
+    ProfilerType(Function<Config, ProfilerDelegate> profilerDelegateFactory) {
+        this.profilerDelegateFactory = profilerDelegateFactory;
     }
 
     public ProfilerDelegate create(Config config) {
-        try {
-            return profilerDelegateClass.getConstructor(Config.class).newInstance(config);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                 NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+        return profilerDelegateFactory.apply(config);
     }
 }
