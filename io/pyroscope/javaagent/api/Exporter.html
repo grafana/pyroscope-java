@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6};
+var data = {"i0":6,"i1":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -156,6 +156,13 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  possible.</div>
 </td>
 </tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#stop()">stop</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Stop the resources that are held by the exporter like Threads and so on...</div>
+</td>
+</tr>
 </table>
 </li>
 </ul>
@@ -176,7 +183,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <a id="export(io.pyroscope.javaagent.Snapshot)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>export</h4>
 <pre class="methodSignature">void&nbsp;export&#8203;(<a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</pre>
@@ -195,6 +202,16 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
      }
  }
  </pre></div>
+</li>
+</ul>
+<a id="stop()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>stop</h4>
+<pre class="methodSignature">void&nbsp;stop()</pre>
+<div class="block">Stop the resources that are held by the exporter like Threads and so on...</div>
 </li>
 </ul>
 </li>

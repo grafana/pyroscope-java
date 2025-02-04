@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10};
+var data = {"i0":10,"i1":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -188,6 +188,13 @@ implements <a href="../api/Exporter.html" title="interface in io.pyroscope.javaa
  possible.</div>
 </td>
 </tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#stop()">stop</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Stop the resources that are held by the exporter like Threads and so on...</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -235,7 +242,7 @@ implements <a href="../api/Exporter.html" title="interface in io.pyroscope.javaa
 <a id="export(io.pyroscope.javaagent.Snapshot)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>export</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;export&#8203;(<a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</pre>
@@ -258,6 +265,21 @@ implements <a href="../api/Exporter.html" title="interface in io.pyroscope.javaa
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../api/Exporter.html#export(io.pyroscope.javaagent.Snapshot)">export</a></code>&nbsp;in interface&nbsp;<code><a href="../api/Exporter.html" title="interface in io.pyroscope.javaagent.api">Exporter</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="stop()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>stop</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;stop()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../api/Exporter.html#stop()">Exporter</a></code></span></div>
+<div class="block">Stop the resources that are held by the exporter like Threads and so on...</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../api/Exporter.html#stop()">stop</a></code>&nbsp;in interface&nbsp;<code><a href="../api/Exporter.html" title="interface in io.pyroscope.javaagent.api">Exporter</a></code></dd>
 </dl>
 </li>
 </ul>
