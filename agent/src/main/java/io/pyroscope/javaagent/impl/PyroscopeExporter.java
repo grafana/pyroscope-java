@@ -43,6 +43,18 @@ public class PyroscopeExporter implements Exporter {
         }
     }
 
+    @Override
+    public void stop() {
+        client.dispatcher().executorService().shutdown();
+        client.connectionPool().evictAll();
+        try {
+            if (client.cache() != null) {
+                client.cache().close();
+            }
+        }
+        catch (final IOException ignored) {}
+    }
+
     private void uploadSnapshot(final Snapshot snapshot) throws InterruptedException {
         final HttpUrl url = urlForSnapshot(snapshot);
         final ExponentialBackoff exponentialBackoff = new ExponentialBackoff(1_000, 30_000, new Random());
