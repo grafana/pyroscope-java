@@ -636,7 +636,7 @@ public final class Config {
 
         try {
             Map<String, String> httpHeaders = adapter.fromJson(sHttpHeaders);
-            return Objects.requireNonNullElse(httpHeaders, Collections.emptyMap());
+            return httpHeaders != null ? httpHeaders : Collections.emptyMap();
         } catch (Exception e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Failed to parse %s = %s configuration. " +
                                                                    "Falling back to no extra http headers. %s: ", PYROSCOPE_HTTP_HEADERS, sHttpHeaders, e.getMessage());
