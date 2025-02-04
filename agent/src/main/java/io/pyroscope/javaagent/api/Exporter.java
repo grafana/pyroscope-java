@@ -22,4 +22,9 @@ public interface Exporter {
      *
      */
     void export(Snapshot snapshot);
+
+    /**
+     * Stop the resources that are held by the exporter like Threads and so on...
+     */
+    void stop();
 }

@@ -43,4 +43,13 @@ public class QueuedExporter implements Exporter {
             Thread.currentThread().interrupt();
         }
     }
+
+    @Override
+    public void stop() {
+        try {
+            this.thread.interrupt();
+        } catch (Exception e) {
+            logger.log(Logger.Level.ERROR, "Error stopping thread", e);
+        }
+    }
 }

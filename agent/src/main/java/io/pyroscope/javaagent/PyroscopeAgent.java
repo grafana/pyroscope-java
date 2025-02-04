@@ -66,6 +66,7 @@ public class PyroscopeAgent {
             }
             try {
                 sOptions.scheduler.stop();
+                sOptions.exporter.stop();
                 sOptions.logger.log(Logger.Level.INFO, "Profiling stopped");
             } catch (Throwable e) {
                 sOptions.logger.log(Logger.Level.ERROR, "Error stopping profiler %s", e);
