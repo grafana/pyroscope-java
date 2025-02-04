@@ -27,6 +27,11 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.10.0'
 }
 
+javadoc{
+    // excluded as javadoc generation fails on inaccessible sun.management.VMManagement class
+    exclude("io/pyroscope/javaagent/CurrentPidProvider.java")
+}
+
 jar {
     manifest {
         attributes(
