@@ -213,7 +213,7 @@ public final class Config {
             ", javaStackDepthMax=" + javaStackDepthMax +
             ", logLevel=" + logLevel +
             ", serverAddress='" + serverAddress + '\'' +
-            ", authToken='" + authToken + '\'' +
+            ", authToken='*****'" + // Replacing the actual authToken with asterisks
             ", timeseriesName='" + timeseriesName + '\'' +
             ", timeseries=" + timeseries +
             ", format=" + format +
