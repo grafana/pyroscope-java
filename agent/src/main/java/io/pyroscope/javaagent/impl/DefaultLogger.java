@@ -7,28 +7,29 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 public class DefaultLogger implements Logger {
-    public static Logger PRECONFIG_LOGGER = new DefaultLogger(Level.DEBUG, System.err);
-    static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    final Level l;
-    final PrintStream out;
+    public static final Logger PRECONFIG_LOGGER = new DefaultLogger(Level.DEBUG, System.err);
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    private final Level logLevel;
+    private final PrintStream out;
 
-    public DefaultLogger(Level l, PrintStream out) {
-        this.l = l;
+    public DefaultLogger(Level logLevel, PrintStream out) {
+        this.logLevel = logLevel;
         this.out = out;
     }
 
     @Override
-    public void log(Level l, String msg, Object... args) {
-        if (l.level < this.l.level) {
-            return;
-        }
-        String date;
-        synchronized (this) {
-            date = DATE_FORMAT.format(System.currentTimeMillis());
-        }
-        String msg2 = String.format(msg, args);
+	public void log(Level logLevel, String msg, Object... args) {
+		if (logLevel.level < this.logLevel.level) {
+			return;
+		}
+		String date;
+		synchronized (this) {
+			date = DATE_FORMAT.format(System.currentTimeMillis());
+		}
+		String formattedMsg = (msg == null) ? "null"
+				: (args == null || args.length == 0) ? msg : String.format(msg, args);
 
-        out.printf("%s [%s] %s\n", date, l, msg2);
-    }
+		out.printf("%s [%s] %s%n", date, logLevel, formattedMsg);
+	}
 
 }
