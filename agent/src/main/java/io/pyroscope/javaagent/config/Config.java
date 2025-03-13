@@ -52,7 +52,8 @@ public final class Config {
     private static final String PYROSCOPE_GC_BEFORE_DUMP = "PYROSCOPE_GC_BEFORE_DUMP";
     private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
     private static final String PYROSCOPE_TENANT_ID = "PYROSCOPE_TENANT_ID";
-
+    private static final String PYROSCOPE_PROFILE_EXPORT_TIMEOUT = "PYROSCOPE_PROFILE_EXPORT_TIMEOUT";
+    
     /**
      * Experimental feature, may be removed in the future
      */
@@ -86,7 +87,8 @@ public final class Config {
     private static final boolean DEFAULT_ALLOC_LIVE = false;
     private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
     private static final Duration DEFAULT_SAMPLING_DURATION = null;
-
+    private static final Duration DEFAULT_PROFILE_EXPORT_TIMEOUT = Duration.ofSeconds(10);
+    
     public final boolean agentEnabled;
     public final String applicationName;
     public final Duration profilingInterval;
@@ -115,6 +117,7 @@ public final class Config {
 
     public final Map<String, String> httpHeaders;
     public final Duration samplingDuration;
+    public final Duration profileExportTimeout;
     public final String tenantID;
     public final String APLogLevel;
     public final String APExtraArguments;
@@ -147,7 +150,8 @@ public final class Config {
            String APLogLevel,
            String APExtraArguments,
            String basicAuthUser,
-           String basicAuthPassword) {
+           String basicAuthPassword,
+           Duration profileExportTimeout) {
         this.agentEnabled = agentEnabled;
         this.applicationName = applicationName;
         this.profilingInterval = profilingInterval;
@@ -176,6 +180,7 @@ public final class Config {
         this.format = format;
         this.pushQueueCapacity = pushQueueCapacity;
         this.labels = Collections.unmodifiableMap(labels);
+        this.profileExportTimeout = profileExportTimeout;
         HttpUrl serverAddressUrl = HttpUrl.parse(serverAddress);
         if (serverAddressUrl == null) {
             throw new IllegalArgumentException("invalid url " + serverAddress);
@@ -278,7 +283,8 @@ public final class Config {
             cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG),
             cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
             cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG),
-            cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG));
+            cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG),
+            profileExportTimeout(cp));
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -420,6 +426,21 @@ public final class Config {
             return DEFAULT_UPLOAD_INTERVAL;
         }
     }
+    
+    private static Duration profileExportTimeout(ConfigurationProvider configurationProvider) {
+        final String uploadIntervalStr = configurationProvider.get(PYROSCOPE_PROFILE_EXPORT_TIMEOUT);
+        if (uploadIntervalStr == null || uploadIntervalStr.isEmpty()) {
+            return DEFAULT_PROFILE_EXPORT_TIMEOUT;
+        }
+        try {
+            return IntervalParser.parse(uploadIntervalStr);
+        } catch (final NumberFormatException e) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
+            		PYROSCOPE_PROFILE_EXPORT_TIMEOUT, uploadIntervalStr, DEFAULT_PROFILE_EXPORT_TIMEOUT);
+            return DEFAULT_PROFILE_EXPORT_TIMEOUT;
+        }
+    }
+   
 
 
     private static int javaStackDepthMax(ConfigurationProvider configurationProvider) {
@@ -655,6 +676,7 @@ public final class Config {
         public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
         public Map<String, String> httpHeaders = new HashMap<>();
         public Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
+        public Duration profileExportTimeout = DEFAULT_PROFILE_EXPORT_TIMEOUT;
 
         private String tenantID = null;
         private String APLogLevel = null;
@@ -686,6 +708,7 @@ public final class Config {
             gcBeforeDump = buildUpon.gcBeforeDump;
             httpHeaders = new HashMap<>(buildUpon.httpHeaders);
             samplingDuration = buildUpon.samplingDuration;
+            profileExportTimeout = buildUpon.profileExportTimeout;
             tenantID = buildUpon.tenantID;
             APLogLevel = buildUpon.APLogLevel;
             APExtraArguments = buildUpon.APExtraArguments;
@@ -730,6 +753,11 @@ public final class Config {
 
         public Builder setUploadInterval(Duration uploadInterval) {
             this.uploadInterval = uploadInterval;
+            return this;
+        }
+
+        public Builder setProfileExportTimeout(Duration profileExportTimeout) {
+            this.profileExportTimeout = profileExportTimeout;
             return this;
         }
 
@@ -863,7 +891,8 @@ public final class Config {
                 APLogLevel,
                 APExtraArguments,
                 basicAuthUser,
-                basicAuthPassword);
+                basicAuthPassword,
+                profileExportTimeout);
         }
     }
 }
