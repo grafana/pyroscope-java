@@ -10,26 +10,26 @@ import io.pyroscope.labels.Pyroscope;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
 import java.util.zip.Deflater;
 
 public class PyroscopeExporter implements Exporter {
-    private static final Duration TIMEOUT = Duration.ofSeconds(10);//todo allow configuration
+
     private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
 
     final Config config;
     final Logger logger;
     final OkHttpClient client;
-
+    final String staticLabels;
     public PyroscopeExporter(Config config, Logger logger) {
         this.config = config;
         this.logger = logger;
+        this.staticLabels = nameWithStaticLabels(); 
         this.client = new OkHttpClient.Builder()
-            .connectTimeout(TIMEOUT)
-            .readTimeout(TIMEOUT)
-            .callTimeout(TIMEOUT)
+            .connectTimeout(config.profileExportTimeout)
+            .readTimeout(config.profileExportTimeout)
+            .callTimeout(config.profileExportTimeout)
             .build();
 
     }
@@ -121,7 +121,10 @@ public class PyroscopeExporter implements Exporter {
     }
 
     private static boolean shouldRetry(int status) {
-        return status == 429 || status / 100 == 5;
+        boolean isRateLimited = (status == 429);
+        boolean isServerError = (status >= 500 && status <= 599);
+        
+        return isRateLimited || isServerError;
     }
 
     private static void addAuthHeader(Request.Builder request, HttpUrl url, Config config) {
@@ -141,7 +144,6 @@ public class PyroscopeExporter implements Exporter {
         }
         if (config.authToken != null && !config.authToken.isEmpty()) {
             request.header("Authorization", "Bearer " + config.authToken);
-            return;
         }
     }
 
@@ -151,14 +153,15 @@ public class PyroscopeExporter implements Exporter {
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
             .newBuilder()
             .addPathSegment("ingest")
-            .addQueryParameter("name", nameWithStaticLabels())
+            .addQueryParameter("name", staticLabels)
             .addQueryParameter("units", snapshot.eventType.units.id)
             .addQueryParameter("aggregationType", snapshot.eventType.aggregationType.id)
             .addQueryParameter("from", Long.toString(started.getEpochSecond()))
             .addQueryParameter("until", Long.toString(finished.getEpochSecond()))
             .addQueryParameter("spyName", Config.DEFAULT_SPY_NAME);
-        if (EventType.CPU == snapshot.eventType || EventType.ITIMER == snapshot.eventType || EventType.WALL == snapshot.eventType)
+        if (EventType.CPU == snapshot.eventType || EventType.ITIMER == snapshot.eventType || EventType.WALL == snapshot.eventType) {
             builder.addQueryParameter("sampleRate", Long.toString(config.profilingIntervalInHertz()));
+        }
         builder.addQueryParameter("format", "jfr");
         return builder.build();
     }
