@@ -428,15 +428,15 @@ public final class Config {
     }
     
     private static Duration profileExportTimeout(ConfigurationProvider configurationProvider) {
-        final String uploadIntervalStr = configurationProvider.get(PYROSCOPE_PROFILE_EXPORT_TIMEOUT);
-        if (uploadIntervalStr == null || uploadIntervalStr.isEmpty()) {
+        final String  profileExportTimeoutStr = configurationProvider.get(PYROSCOPE_PROFILE_EXPORT_TIMEOUT);
+        if (profileExportTimeoutStr == null || profileExportTimeoutStr.isEmpty()) {
             return DEFAULT_PROFILE_EXPORT_TIMEOUT;
         }
         try {
-            return IntervalParser.parse(uploadIntervalStr);
+            return IntervalParser.parse(profileExportTimeoutStr);
         } catch (final NumberFormatException e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
-            		PYROSCOPE_PROFILE_EXPORT_TIMEOUT, uploadIntervalStr, DEFAULT_PROFILE_EXPORT_TIMEOUT);
+            		PYROSCOPE_PROFILE_EXPORT_TIMEOUT, profileExportTimeoutStr, DEFAULT_PROFILE_EXPORT_TIMEOUT);
             return DEFAULT_PROFILE_EXPORT_TIMEOUT;
         }
     }
