@@ -43,6 +43,10 @@ public class Pyroscope {
             }
             RefCounted.contexts.gc();
             RefCounted.strings.gc();
+            if (ScopedContext.isInBestEffortMode()) {
+                RefCounted.contexts.clear();
+                RefCounted.strings.clear();
+            }
             return sb.build();
         }
     }

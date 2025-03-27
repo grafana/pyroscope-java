@@ -5,6 +5,7 @@ import one.profiler.AsyncProfiler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 public class ScopedContext implements AutoCloseable {
@@ -25,11 +26,11 @@ public class ScopedContext implements AutoCloseable {
             Ref<String> key = it.getKey();
             Ref<String> value = it.getValue();
 
-            assertAlive(key.refCount.get());
-            assertAlive(value.refCount.get());
+            checkBestEffortMode(key.refCount.get());
+            checkBestEffortMode(value.refCount.get());
 
-            assertAlive(key.refCount.incrementAndGet());
-            assertAlive(value.refCount.incrementAndGet());
+            checkBestEffortMode(key.refCount.incrementAndGet());
+            checkBestEffortMode(value.refCount.incrementAndGet());
 
             nextContext.put(key, value);
         }
@@ -42,8 +43,8 @@ public class ScopedContext implements AutoCloseable {
 
             Ref<String> prev = nextContext.put(k, v);
             if (prev != null) {
-                assertAlive(k.refCount.decrementAndGet());
-                assertAlive(prev.refCount.decrementAndGet());
+                checkBestEffortMode(k.refCount.decrementAndGet());
+                checkBestEffortMode(prev.refCount.decrementAndGet());
             }
         }
 
@@ -88,9 +89,30 @@ public class ScopedContext implements AutoCloseable {
         }
     }
 
-    static void assertAlive(long counter) {
+    private static void checkBestEffortMode(long counter) {
         if (counter <= 0) {
-            throw new AssertionError();
+            BEST_EFFORT_MODE.set(true);
+            boolean warn = WARN_BEST_EFFORT_MODE_ONCE.compareAndSet(false, true);
+            if (warn) {
+//                // todo better message
+//                // todo should we even warn users?
+//                System.err.println("WARNING: RefCounted is in best effort mode.");
+            }
         }
+    }
+
+    private static final AtomicBoolean BEST_EFFORT_MODE = new AtomicBoolean(false);
+    private static final AtomicBoolean WARN_BEST_EFFORT_MODE_ONCE = new AtomicBoolean(false);
+    public static boolean isInBestEffortMode() {
+        return BEST_EFFORT_MODE.get();
+    }
+    static void resetBestEffortModeForTesting() {
+        BEST_EFFORT_MODE.set(false);
+        WARN_BEST_EFFORT_MODE_ONCE.set(false);
+        RefCounted.strings.clear();
+        RefCounted.strings.resetForTesting();
+        RefCounted.contexts.clear();
+        RefCounted.contexts.resetForTesting();
+        context.set(new Context(0L, Collections.emptyMap()));
     }
 }

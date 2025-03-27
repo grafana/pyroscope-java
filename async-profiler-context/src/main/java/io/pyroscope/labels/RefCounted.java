@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 class RefCounted<T> {
 
@@ -34,7 +35,13 @@ class RefCounted<T> {
 
     Ref<T> acquireRef(T v, boolean[] outFresh) {
         outFresh[0] = false;
+        int i = 0;
         while (true) {
+            i++;
+            if (i >= 10) {
+                // System.out.println("too busy loop...");
+                break;
+            }
             Ref<T> res = valueToRef.computeIfAbsent(v, t -> {
                 Ref<T> ref = new Ref<>(t, idCounter.incrementAndGet());
                 outFresh[0] = true;
@@ -56,6 +63,9 @@ class RefCounted<T> {
                 }
             }
         }
+        Ref<T> ref = new Ref<>(v, idCounter.incrementAndGet());
+        outFresh[0] = true;
+        return ref;
     }
 
 
@@ -77,6 +87,10 @@ class RefCounted<T> {
 
     void resetForTesting() {
         idCounter.set(0);
+    }
+
+    void clear() {
+        valueToRef.clear();
     }
 
     interface ReleasedCallback<T> {

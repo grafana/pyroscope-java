@@ -3,17 +3,18 @@ package io.pyroscope.labels;
 
 import io.pyroscope.labels.io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.labels.pb.JfrLabels.LabelsSnapshot;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LabelsTest {
     static {
@@ -229,6 +230,42 @@ public class LabelsTest {
         assertEquals(0, ScopedContext.context.get().id);
         assertEquals(0, RefCounted.strings.valueToRef.size());
         assertEquals(0, RefCounted.contexts.valueToRef.size());
+    }
+
+    @Test
+    void bestEffortMode() throws InterruptedException, ExecutionException {
+        PyroscopeAsyncProfiler.getAsyncProfiler();
+        ExecutorService executors = Executors.newFixedThreadPool(32);
+        AtomicBoolean dump = new AtomicBoolean(true);
+        Future<?> dumpFuture = executors.submit(() -> {
+            while (!ScopedContext.isInBestEffortMode() && dump.get()) {
+                Pyroscope.LabelsWrapper.dump();
+            }
+        });
+        long cnt = 0;
+        while (true) {
+            final ScopedContext c1 = new ScopedContext(new LabelsSet("k1", "v1"));
+            executors.submit(() -> {
+                c1.close();
+            });
+            ScopedContext c2 = new ScopedContext(new LabelsSet("k1", "v1"));
+            c2.close();
+            cnt++;
+
+            if (cnt % 100000 == 0) {
+                System.out.print(".");
+            }
+            if (cnt == 10000000/2) {
+                break;
+            }
+        }
+        assertTrue(ScopedContext.isInBestEffortMode());
+        executors.shutdownNow();
+        System.out.println("shutting down");
+        assertTrue(executors.awaitTermination(1, TimeUnit.HOURS));
+        dumpFuture.get();
+        System.out.println("shut down");
+        ScopedContext.resetBestEffortModeForTesting();
     }
 
     private static Map<Long, Long> mapOf(Long k, Long v) {
