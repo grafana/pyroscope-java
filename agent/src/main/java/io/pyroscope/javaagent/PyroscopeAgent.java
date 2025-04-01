@@ -30,7 +30,8 @@ public class PyroscopeAgent {
     }
 
     public static void start(Config config) {
-        start(new Options.Builder(config).build());
+        start(new Options.Builder(config)
+            .build());
     }
 
     public static void start(Options options) {
@@ -92,7 +93,7 @@ public class PyroscopeAgent {
         final Config config;
         final ProfilingScheduler scheduler;
         final Logger logger;
-        final Profiler profiler;
+        final ProfilerDelegate profiler;
         final Exporter exporter;
 
         private Options(Builder b) {
@@ -105,14 +106,13 @@ public class PyroscopeAgent {
 
         public static class Builder {
             final Config config;
-            final Profiler profiler;
+            ProfilerDelegate profiler;
             Exporter exporter;
             ProfilingScheduler scheduler;
             Logger logger;
 
             public Builder(Config config) {
                 this.config = config;
-                this.profiler = new Profiler(config);
             }
 
             public Builder setExporter(Exporter exporter) {
@@ -143,6 +143,9 @@ public class PyroscopeAgent {
                     } else {
                         scheduler = new SamplingProfilingScheduler(config, exporter, logger);
                     }
+                }
+                if (profiler == null) {
+                    profiler = ProfilerDelegate.create(config);
                 }
                 return new Options(this);
             }
