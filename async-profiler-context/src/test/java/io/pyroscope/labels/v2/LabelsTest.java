@@ -20,14 +20,12 @@ public class LabelsTest {
 
     @BeforeEach
     void setUp() {
-        Pyroscope.LabelsWrapper.resetForTesting();
+        resetForTesting();
     }
 
     @Test
     void testOneLabelSet() {
         try (ScopedContext s = new ScopedContext(new LabelsSet("k1", "v1"))) {
-
-
             {
                 assertSnapshot(
                         new ExpectedContextBuilder()
@@ -307,5 +305,11 @@ public class LabelsTest {
             i += 1;
         }
         return res;
+    }
+
+    static void resetForTesting() {
+        ScopedContext.CONTEXTS.clear();
+        ScopedContext.CONSTANT_CONTEXTS.clear();
+        ScopedContext.CONTEXT_COUNTER.set(0);
     }
 }

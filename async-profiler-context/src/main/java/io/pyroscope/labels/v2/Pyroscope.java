@@ -56,12 +56,6 @@ public final class Pyroscope {
             ScopedContext.CONTEXTS.clear();
         }
 
-        static void resetForTesting() {
-            ScopedContext.CONTEXTS.clear();
-            ScopedContext.CONSTANT_CONTEXTS.clear();
-            ScopedContext.CONTEXT_COUNTER.set(0);
-        }
-
         public static JfrLabels.LabelsSnapshot dump() {
             final JfrLabels.LabelsSnapshot.Builder sb = JfrLabels.LabelsSnapshot.newBuilder();
             if (ScopedContext.CONTEXTS.isEmpty() && ScopedContext.CONSTANT_CONTEXTS.isEmpty()) {
