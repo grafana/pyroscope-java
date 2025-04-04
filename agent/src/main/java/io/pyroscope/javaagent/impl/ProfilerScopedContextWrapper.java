@@ -1,7 +1,7 @@
 package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.javaagent.api.ProfilerScopedContext;
-import io.pyroscope.labels.ScopedContext;
+import io.pyroscope.labels.v2.ScopedContext;
 
 import java.util.function.BiConsumer;
 

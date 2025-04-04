@@ -6,7 +6,7 @@ import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.util.zip.GzipSink;
-import io.pyroscope.labels.Pyroscope;
+import io.pyroscope.labels.v2.Pyroscope;
 import okhttp3.*;
 
 import java.io.IOException;

@@ -4,8 +4,8 @@ import io.pyroscope.javaagent.api.ProfilerScopedContext;
 import io.pyroscope.javaagent.api.ProfilerApi;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.ProfilerScopedContextWrapper;
-import io.pyroscope.labels.LabelsSet;
-import io.pyroscope.labels.ScopedContext;
+import io.pyroscope.labels.v2.LabelsSet;
+import io.pyroscope.labels.v2.ScopedContext;
 
 import java.util.Map;
 
