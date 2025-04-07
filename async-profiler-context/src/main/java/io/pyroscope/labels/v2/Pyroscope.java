@@ -10,8 +10,8 @@ import java.util.function.BiConsumer;
 public final class Pyroscope {
     /**
      * LabelsWrapper accumulates dynamic labels and corelates them with async-profiler's contextId
-     * You are expected to call {@link LabelsWrapper#dump()} periodically, {@link io.pyroscope.javaagent.Profiler}
-     * does that. If you don't use {@link io.pyroscope.javaagent.Profiler},
+     * You are expected to call {@link LabelsWrapper#dump()} periodically, io.pyroscope.javaagent.Profiler
+     * does that. If you don't use io.pyroscope.javaagent.Profiler,
      * you need to call {@link LabelsWrapper#dump()} yourself.
      */
     public static class LabelsWrapper {
