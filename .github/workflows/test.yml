@@ -8,11 +8,11 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos]
+        os: [github-hosted-ubuntu-x64-small , macos-latest]
         java: ['8', '11', '17', '21']
     steps:
       - uses: actions/checkout@v2
@@ -21,9 +21,4 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-      - name: Test with Gradle
-        uses: gradle/gradle-build-action@937999e9cc2425eddc7fd62d1053baf041147db7
-        with:
-          arguments: test --stacktrace
+      - run: ./gradlew test --stacktrace

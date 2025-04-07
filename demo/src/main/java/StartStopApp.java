@@ -3,8 +3,8 @@ import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.PyroscopeAgent;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.labels.LabelsSet;
-import io.pyroscope.labels.Pyroscope;
+import io.pyroscope.labels.v2.LabelsSet;
+import io.pyroscope.labels.v2.Pyroscope;
 
 import java.util.HashMap;
 import java.util.Map;
