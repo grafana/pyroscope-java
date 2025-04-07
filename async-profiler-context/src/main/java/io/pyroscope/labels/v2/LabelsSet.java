@@ -3,6 +3,10 @@ package io.pyroscope.labels.v2;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import org.jetbrains.annotations.NotNull;
+
+import static io.pyroscope.Preconditions.checkNotNull;
+
 /**
  * LabelsSet represents an immutable set of key-value pairs used for profiling labels.
  *
@@ -16,6 +20,9 @@ import java.util.function.BiConsumer;
  * <p>LabelsSet instances are immutable once created and should be passed to
  * {@link ScopedContext} or {@link ConstantContext} to associate profiling data
  * with these labels.
+ *
+ * <p>All label keys and values must be non-null. Attempting to create a LabelsSet
+ * with null keys or values will result in a NullPointerException.
  *
  * <p>Example usage:
  * <pre>{@code
@@ -45,12 +52,18 @@ public final class LabelsSet {
      *
      * @param args An array of alternating key-value strings
      * @throws IllegalArgumentException if the number of arguments is not even
+     * @throws NullPointerException     if any key or value is null
      */
-    public LabelsSet(String... args) {
+    public LabelsSet(@NotNull String... args) {
         if (args.length % 2 != 0) {
             throw new IllegalArgumentException("args.length % 2 != 0: " +
                     "api.LabelsSet's  constructor arguments should be key-value pairs");
         }
+
+        for (int i = 0; i < args.length; i++) {
+            checkNotNull(args[i], "Label");
+        }
+
         this.args = new String[args.length];
         System.arraycopy(args, 0, this.args, 0, args.length);
     }
@@ -62,13 +75,15 @@ public final class LabelsSet {
      * internal array representation used by LabelsSet.
      *
      * @param args A map containing key-value pairs for labels
+     * @throws NullPointerException if args is null or any key or value in the map is null
      */
-    public LabelsSet(Map<String, String> args) {
+    public LabelsSet(@NotNull Map<@NotNull String, @NotNull String> args) {
+        checkNotNull(args, "Labels");
         this.args = new String[args.size() * 2];
         int i = 0;
         for (Map.Entry<String, String> it : args.entrySet()) {
-            this.args[i] = it.getKey();
-            this.args[i + 1] = it.getValue();
+            this.args[i] = checkNotNull(it.getKey(), "Key");
+            this.args[i + 1] = checkNotNull(it.getValue(), "Value");
             i += 2;
         }
     }
@@ -80,8 +95,10 @@ public final class LabelsSet {
      * exposing the internal representation.
      *
      * @param labelConsumer A function that accepts a key (String) and value (String)
+     * @throws NullPointerException if labelConsumer is null
      */
-    public void forEachLabel(BiConsumer<String, String> labelConsumer) {
+    public void forEachLabel(@NotNull BiConsumer<@NotNull String, @NotNull String> labelConsumer) {
+        checkNotNull(labelConsumer, "Consumer");
         for (int i = 0; i < args.length; i += 2) {
             labelConsumer.accept(args[i], args[i + 1]);
         }
