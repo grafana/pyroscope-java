@@ -20,8 +20,8 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          CLEAN: true
-          FOLDER: agent/build/docs/javadoc
-          TARGET_FOLDER: javadoc
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          clean: true
+          folder: agent/build/docs/javadoc
+          target-folder: javadoc
