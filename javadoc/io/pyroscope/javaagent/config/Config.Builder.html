@@ -27,8 +27,8 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":42,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -89,13 +89,13 @@ loadScripts(document, 'script');</script>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
@@ -143,139 +143,6 @@ extends java.lang.Object</pre>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
-<!-- =========== FIELD SUMMARY =========== -->
-<section>
-<ul class="blockList">
-<li class="blockList"><a id="field.summary">
-<!--   -->
-</a>
-<h3>Field Summary</h3>
-<table class="memberSummary">
-<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier and Type</th>
-<th class="colSecond" scope="col">Field</th>
-<th class="colLast" scope="col">Description</th>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#agentEnabled">agentEnabled</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#allocLive">allocLive</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#applicationName">applicationName</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#authToken">authToken</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>int</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#compressionLevelJFR">compressionLevelJFR</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>int</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#compressionLevelLabels">compressionLevelLabels</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code><a href="../../http/Format.html" title="enum in io.pyroscope.http">Format</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#format">format</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#gcBeforeDump">gcBeforeDump</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt;</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#httpHeaders">httpHeaders</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>int</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#ingestMaxRetries">ingestMaxRetries</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>int</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#javaStackDepthMax">javaStackDepthMax</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt;</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#labels">labels</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code><a href="../api/Logger.Level.html" title="enum in io.pyroscope.javaagent.api">Logger.Level</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#logLevel">logLevel</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.time.Duration</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profileExportTimeout">profileExportTimeout</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profilingAlloc">profilingAlloc</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code><a href="../EventType.html" title="enum in io.pyroscope.javaagent">EventType</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profilingEvent">profilingEvent</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.time.Duration</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profilingInterval">profilingInterval</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#profilingLock">profilingLock</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>int</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushQueueCapacity">pushQueueCapacity</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.time.Duration</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#samplingDuration">samplingDuration</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="../EventType.html" title="enum in io.pyroscope.javaagent">EventType</a>&gt;</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#samplingEventOrder">samplingEventOrder</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#serverAddress">serverAddress</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.time.Duration</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#uploadInterval">uploadInterval</a></span></code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-</table>
-</li>
-</ul>
-</section>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <section>
 <ul class="blockList">
@@ -309,7 +176,7 @@ extends java.lang.Object</pre>
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
@@ -354,7 +221,9 @@ extends java.lang.Object</pre>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setAuthToken(java.lang.String)">setAuthToken</a></span>&#8203;(java.lang.String&nbsp;authToken)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
+</td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
@@ -483,223 +352,6 @@ extends java.lang.Object</pre>
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
-<!-- ============ FIELD DETAIL =========== -->
-<section>
-<ul class="blockList">
-<li class="blockList"><a id="field.detail">
-<!--   -->
-</a>
-<h3>Field Detail</h3>
-<a id="agentEnabled">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>agentEnabled</h4>
-<pre>public&nbsp;boolean agentEnabled</pre>
-</li>
-</ul>
-<a id="applicationName">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>applicationName</h4>
-<pre>public&nbsp;java.lang.String applicationName</pre>
-</li>
-</ul>
-<a id="profilingInterval">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>profilingInterval</h4>
-<pre>public&nbsp;java.time.Duration profilingInterval</pre>
-</li>
-</ul>
-<a id="profilingEvent">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>profilingEvent</h4>
-<pre>public&nbsp;<a href="../EventType.html" title="enum in io.pyroscope.javaagent">EventType</a> profilingEvent</pre>
-</li>
-</ul>
-<a id="profilingAlloc">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>profilingAlloc</h4>
-<pre>public&nbsp;java.lang.String profilingAlloc</pre>
-</li>
-</ul>
-<a id="profilingLock">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>profilingLock</h4>
-<pre>public&nbsp;java.lang.String profilingLock</pre>
-</li>
-</ul>
-<a id="samplingEventOrder">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>samplingEventOrder</h4>
-<pre>public&nbsp;java.util.List&lt;<a href="../EventType.html" title="enum in io.pyroscope.javaagent">EventType</a>&gt; samplingEventOrder</pre>
-</li>
-</ul>
-<a id="uploadInterval">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>uploadInterval</h4>
-<pre>public&nbsp;java.time.Duration uploadInterval</pre>
-</li>
-</ul>
-<a id="javaStackDepthMax">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>javaStackDepthMax</h4>
-<pre>public&nbsp;int javaStackDepthMax</pre>
-</li>
-</ul>
-<a id="logLevel">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>logLevel</h4>
-<pre>public&nbsp;<a href="../api/Logger.Level.html" title="enum in io.pyroscope.javaagent.api">Logger.Level</a> logLevel</pre>
-</li>
-</ul>
-<a id="serverAddress">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>serverAddress</h4>
-<pre>public&nbsp;java.lang.String serverAddress</pre>
-</li>
-</ul>
-<a id="authToken">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>authToken</h4>
-<pre>public&nbsp;java.lang.String authToken</pre>
-</li>
-</ul>
-<a id="format">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>format</h4>
-<pre>public&nbsp;<a href="../../http/Format.html" title="enum in io.pyroscope.http">Format</a> format</pre>
-</li>
-</ul>
-<a id="pushQueueCapacity">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>pushQueueCapacity</h4>
-<pre>public&nbsp;int pushQueueCapacity</pre>
-</li>
-</ul>
-<a id="labels">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>labels</h4>
-<pre>public&nbsp;java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt; labels</pre>
-</li>
-</ul>
-<a id="ingestMaxRetries">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>ingestMaxRetries</h4>
-<pre>public&nbsp;int ingestMaxRetries</pre>
-</li>
-</ul>
-<a id="compressionLevelJFR">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>compressionLevelJFR</h4>
-<pre>public&nbsp;int compressionLevelJFR</pre>
-</li>
-</ul>
-<a id="compressionLevelLabels">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>compressionLevelLabels</h4>
-<pre>public&nbsp;int compressionLevelLabels</pre>
-</li>
-</ul>
-<a id="allocLive">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>allocLive</h4>
-<pre>public&nbsp;boolean allocLive</pre>
-</li>
-</ul>
-<a id="gcBeforeDump">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>gcBeforeDump</h4>
-<pre>public&nbsp;boolean gcBeforeDump</pre>
-</li>
-</ul>
-<a id="httpHeaders">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>httpHeaders</h4>
-<pre>public&nbsp;java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt; httpHeaders</pre>
-</li>
-</ul>
-<a id="samplingDuration">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>samplingDuration</h4>
-<pre>public&nbsp;java.time.Duration samplingDuration</pre>
-</li>
-</ul>
-<a id="profileExportTimeout">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>profileExportTimeout</h4>
-<pre>public&nbsp;java.time.Duration profileExportTimeout</pre>
-</li>
-</ul>
-</li>
-</ul>
-</section>
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 <section>
 <ul class="blockList">
@@ -722,7 +374,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Builder</h4>
-<pre>public&nbsp;Builder&#8203;(<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;buildUpon)</pre>
+<pre>public&nbsp;Builder&#8203;(@NotNull
+               <a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;buildUpon)</pre>
 </li>
 </ul>
 </li>
@@ -849,7 +502,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setAuthToken</h4>
-<pre class="methodSignature">public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;setAuthToken&#8203;(java.lang.String&nbsp;authToken)</pre>
+<pre class="methodSignature">@Deprecated
+public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;setAuthToken&#8203;(java.lang.String&nbsp;authToken)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 </li>
 </ul>
 <a id="setFormat(io.pyroscope.http.Format)">
@@ -1003,7 +658,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>build</h4>
-<pre class="methodSignature">public&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build()</pre>
+<pre class="methodSignature">@NotNull
+public&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build()</pre>
 </li>
 </ul>
 </li>
@@ -1058,13 +714,13 @@ extends java.lang.Object</pre>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>

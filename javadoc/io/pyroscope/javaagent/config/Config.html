@@ -206,7 +206,9 @@ extends java.lang.Object</pre>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#authToken">authToken</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
+</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
@@ -543,7 +545,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>authToken</h4>
-<pre>public final&nbsp;java.lang.String authToken</pre>
+<pre>@Deprecated
+public final&nbsp;java.lang.String authToken</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 </li>
 </ul>
 <a id="timeseriesName">
@@ -748,7 +752,8 @@ public final&nbsp;java.lang.String timeseriesName</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>newBuilder</h4>
-<pre class="methodSignature">public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;newBuilder()</pre>
+<pre class="methodSignature">@NotNull
+public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;newBuilder()</pre>
 </li>
 </ul>
 <a id="build()">
@@ -757,7 +762,8 @@ public final&nbsp;java.lang.String timeseriesName</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>build</h4>
-<pre class="methodSignature">public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build()</pre>
+<pre class="methodSignature">@NotNull
+public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build()</pre>
 </li>
 </ul>
 <a id="build(io.pyroscope.javaagent.api.ConfigurationProvider)">
@@ -766,7 +772,9 @@ public final&nbsp;java.lang.String timeseriesName</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>build</h4>
-<pre class="methodSignature">public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build&#8203;(<a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;cp)</pre>
+<pre class="methodSignature">@NotNull
+public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build&#8203;(@NotNull
+                           <a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;cp)</pre>
 </li>
 </ul>
 <a id="labels(io.pyroscope.javaagent.api.ConfigurationProvider)">
