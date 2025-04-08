@@ -183,7 +183,7 @@ implements <a href="../api/Exporter.html" title="interface in io.pyroscope.javaa
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#export(io.pyroscope.javaagent.Snapshot)">export</a></span>&#8203;(<a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#export(io.pyroscope.javaagent.Snapshot)">export</a></span>&#8203;(@NotNull <a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</code></th>
 <td class="colLast">
 <div class="block">PyroscopeAgent expects <a href="../api/Exporter.html#export(io.pyroscope.javaagent.Snapshot)"><code>Exporter.export(Snapshot)</code></a> method to be synchronous to profiling schedule, and should return as fast as
  possible.</div>
@@ -247,7 +247,8 @@ implements <a href="../api/Exporter.html" title="interface in io.pyroscope.javaa
 <ul class="blockList">
 <li class="blockList">
 <h4>export</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;export&#8203;(<a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;export&#8203;(@NotNull
+                   @NotNull <a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../api/Exporter.html#export(io.pyroscope.javaagent.Snapshot)">Exporter</a></code></span></div>
 <div class="block">PyroscopeAgent expects <a href="../api/Exporter.html#export(io.pyroscope.javaagent.Snapshot)"><code>Exporter.export(Snapshot)</code></a> method to be synchronous to profiling schedule, and should return as fast as
  possible. <br>See QueuedExporter for an asynchronous implementation example.<br>

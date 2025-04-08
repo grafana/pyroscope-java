@@ -180,8 +180,8 @@ implements <a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaa
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#createScopedContext(java.util.Map)">createScopedContext</a></span>&#8203;(java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt;&nbsp;labels)</code></th>
+<td class="colFirst"><code>@NotNull <a href="api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#createScopedContext(java.util.Map)">createScopedContext</a></span>&#8203;(@NotNull java.util.Map&lt;@NotNull java.lang.String,&#8203;@NotNull java.lang.String&gt;&nbsp;labels)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -269,7 +269,9 @@ implements <a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaa
 <ul class="blockListLast">
 <li class="blockList">
 <h4>createScopedContext</h4>
-<pre class="methodSignature">public&nbsp;<a href="api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a>&nbsp;createScopedContext&#8203;(java.util.Map&lt;java.lang.String,&#8203;java.lang.String&gt;&nbsp;labels)</pre>
+<pre class="methodSignature">@NotNull
+public&nbsp;@NotNull <a href="api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a>&nbsp;createScopedContext&#8203;(@NotNull
+                                                          @NotNull java.util.Map&lt;@NotNull java.lang.String,&#8203;@NotNull java.lang.String&gt;&nbsp;labels)</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="api/ProfilerApi.html#createScopedContext(java.util.Map)">createScopedContext</a></code>&nbsp;in interface&nbsp;<code><a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaagent.api">ProfilerApi</a></code></dd>

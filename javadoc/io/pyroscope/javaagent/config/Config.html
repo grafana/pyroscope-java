@@ -363,13 +363,13 @@ extends java.lang.Object</pre>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>static <a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a></code></td>
+<td class="colFirst"><code>static @NotNull <a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#build()">build</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>static <a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#build(io.pyroscope.javaagent.api.ConfigurationProvider)">build</a></span>&#8203;(<a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;cp)</code></th>
+<td class="colFirst"><code>static @NotNull <a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#build(io.pyroscope.javaagent.api.ConfigurationProvider)">build</a></span>&#8203;(@NotNull <a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;cp)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
@@ -389,7 +389,7 @@ extends java.lang.Object</pre>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#newBuilder()">newBuilder</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -753,7 +753,7 @@ public final&nbsp;java.lang.String timeseriesName</pre>
 <li class="blockList">
 <h4>newBuilder</h4>
 <pre class="methodSignature">@NotNull
-public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;newBuilder()</pre>
+public&nbsp;@NotNull <a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;newBuilder()</pre>
 </li>
 </ul>
 <a id="build()">
@@ -763,7 +763,7 @@ public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent
 <li class="blockList">
 <h4>build</h4>
 <pre class="methodSignature">@NotNull
-public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build()</pre>
+public static&nbsp;@NotNull <a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build()</pre>
 </li>
 </ul>
 <a id="build(io.pyroscope.javaagent.api.ConfigurationProvider)">
@@ -773,8 +773,8 @@ public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.
 <li class="blockList">
 <h4>build</h4>
 <pre class="methodSignature">@NotNull
-public static&nbsp;<a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build&#8203;(@NotNull
-                           <a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;cp)</pre>
+public static&nbsp;@NotNull <a href="Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;build&#8203;(@NotNull
+                                    @NotNull <a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a>&nbsp;cp)</pre>
 </li>
 </ul>
 <a id="labels(io.pyroscope.javaagent.api.ConfigurationProvider)">

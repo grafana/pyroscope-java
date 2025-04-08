@@ -158,7 +158,7 @@ implements <a href="../api/ProfilerScopedContext.html" title="interface in io.py
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(io.pyroscope.labels.v2.ScopedContext)">ProfilerScopedContextWrapper</a></span>&#8203;(io.pyroscope.labels.v2.ScopedContext&nbsp;ctx)</code></th>
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(io.pyroscope.labels.v2.ScopedContext)">ProfilerScopedContextWrapper</a></span>&#8203;(@NotNull io.pyroscope.labels.v2.ScopedContext&nbsp;ctx)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -186,7 +186,7 @@ implements <a href="../api/ProfilerScopedContext.html" title="interface in io.py
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#forEachLabel(java.util.function.BiConsumer)">forEachLabel</a></span>&#8203;(java.util.function.BiConsumer&lt;java.lang.String,&#8203;java.lang.String&gt;&nbsp;consumer)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#forEachLabel(java.util.function.BiConsumer)">forEachLabel</a></span>&#8203;(@NotNull java.util.function.BiConsumer&lt;@NotNull java.lang.String,&#8203;@NotNull java.lang.String&gt;&nbsp;consumer)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -219,7 +219,8 @@ implements <a href="../api/ProfilerScopedContext.html" title="interface in io.py
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ProfilerScopedContextWrapper</h4>
-<pre>public&nbsp;ProfilerScopedContextWrapper&#8203;(io.pyroscope.labels.v2.ScopedContext&nbsp;ctx)</pre>
+<pre>public&nbsp;ProfilerScopedContextWrapper&#8203;(@NotNull
+                                    @NotNull io.pyroscope.labels.v2.ScopedContext&nbsp;ctx)</pre>
 </li>
 </ul>
 </li>
@@ -238,7 +239,8 @@ implements <a href="../api/ProfilerScopedContext.html" title="interface in io.py
 <ul class="blockList">
 <li class="blockList">
 <h4>forEachLabel</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;forEachLabel&#8203;(java.util.function.BiConsumer&lt;java.lang.String,&#8203;java.lang.String&gt;&nbsp;consumer)</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;forEachLabel&#8203;(@NotNull
+                         @NotNull java.util.function.BiConsumer&lt;@NotNull java.lang.String,&#8203;@NotNull java.lang.String&gt;&nbsp;consumer)</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../api/ProfilerScopedContext.html#forEachLabel(java.util.function.BiConsumer)">forEachLabel</a></code>&nbsp;in interface&nbsp;<code><a href="../api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a></code></dd>

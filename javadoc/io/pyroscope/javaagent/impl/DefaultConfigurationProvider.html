@@ -208,8 +208,8 @@ implements <a href="../api/ConfigurationProvider.html" title="interface in io.py
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#get(java.lang.String)">get</a></span>&#8203;(java.lang.String&nbsp;key)</code></th>
+<td class="colFirst"><code>@Nullable java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#get(java.lang.String)">get</a></span>&#8203;(@NotNull java.lang.String&nbsp;key)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -280,7 +280,9 @@ implements <a href="../api/ConfigurationProvider.html" title="interface in io.py
 <ul class="blockListLast">
 <li class="blockList">
 <h4>get</h4>
-<pre class="methodSignature">public&nbsp;java.lang.String&nbsp;get&#8203;(java.lang.String&nbsp;key)</pre>
+<pre class="methodSignature">@Nullable
+public&nbsp;@Nullable java.lang.String&nbsp;get&#8203;(@NotNull
+                                      @NotNull java.lang.String&nbsp;key)</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../api/ConfigurationProvider.html#get(java.lang.String)">get</a></code>&nbsp;in interface&nbsp;<code><a href="../api/ConfigurationProvider.html" title="interface in io.pyroscope.javaagent.api">ConfigurationProvider</a></code></dd>

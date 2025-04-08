@@ -158,7 +158,7 @@ implements okio.Sink</pre>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(okio.Sink,int)">GzipSink</a></span>&#8203;(okio.Sink&nbsp;sink,
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(okio.Sink,int)">GzipSink</a></span>&#8203;(@NotNull okio.Sink&nbsp;sink,
         int&nbsp;compressionLevel)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -205,13 +205,13 @@ implements okio.Sink</pre>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>okio.Timeout</code></td>
+<td class="colFirst"><code>@NotNull okio.Timeout</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#timeout()">timeout</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(okio.Buffer,long)">write</a></span>&#8203;(okio.Buffer&nbsp;source,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(okio.Buffer,long)">write</a></span>&#8203;(@NotNull okio.Buffer&nbsp;source,
      long&nbsp;byteCount)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -246,7 +246,7 @@ implements okio.Sink</pre>
 <li class="blockList">
 <h4>GzipSink</h4>
 <pre>public&nbsp;GzipSink&#8203;(@NotNull
-                okio.Sink&nbsp;sink,
+                @NotNull okio.Sink&nbsp;sink,
                 int&nbsp;compressionLevel)</pre>
 </li>
 </ul>
@@ -267,7 +267,7 @@ implements okio.Sink</pre>
 <li class="blockList">
 <h4>write</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(@NotNull
-                  okio.Buffer&nbsp;source,
+                  @NotNull okio.Buffer&nbsp;source,
                   long&nbsp;byteCount)
            throws java.io.IOException</pre>
 <dl>
@@ -337,7 +337,7 @@ implements okio.Sink</pre>
 <li class="blockList">
 <h4>timeout</h4>
 <pre class="methodSignature">@NotNull
-public&nbsp;okio.Timeout&nbsp;timeout()</pre>
+public&nbsp;@NotNull okio.Timeout&nbsp;timeout()</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code>timeout</code>&nbsp;in interface&nbsp;<code>okio.Sink</code></dd>

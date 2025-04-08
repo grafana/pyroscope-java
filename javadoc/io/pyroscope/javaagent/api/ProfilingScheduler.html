@@ -150,12 +150,12 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#start(io.pyroscope.javaagent.Profiler)">start</a></span>&#8203;(<a href="../Profiler.html" title="class in io.pyroscope.javaagent">Profiler</a>&nbsp;profiler)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#start(io.pyroscope.javaagent.ProfilerDelegate)">start</a></span>&#8203;(@NotNull <a href="../ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a>&nbsp;profiler)</code></th>
 <td class="colLast">
-<div class="block">Use Profiler's to start, stop, dumpProfile
- <a href="../Profiler.html#start()"><code>Profiler.start()</code></a>
- <a href="../Profiler.html#stop()"><code>Profiler.stop()</code></a>
- <a href="../Profiler.html#dumpProfile(java.time.Instant,java.time.Instant)"><code>Profiler.dumpProfile(Instant, Instant)</code></a>
+<div class="block">Use AsyncProfilerDelegate's to start, stop, dumpProfile
+ <a href="../ProfilerDelegate.html#start()"><code>ProfilerDelegate.start()</code></a>
+ <a href="../ProfilerDelegate.html#stop()"><code>ProfilerDelegate.stop()</code></a>
+ <a href="../ProfilerDelegate.html#dumpProfile(java.time.Instant,java.time.Instant)"><code>ProfilerDelegate.dumpProfile(Instant, Instant)</code></a>
  Here is an example of naive implementation</div>
 </td>
 </tr>
@@ -181,20 +181,21 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a id="start(io.pyroscope.javaagent.Profiler)">
+<a id="start(io.pyroscope.javaagent.ProfilerDelegate)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>start</h4>
-<pre class="methodSignature">void&nbsp;start&#8203;(<a href="../Profiler.html" title="class in io.pyroscope.javaagent">Profiler</a>&nbsp;profiler)</pre>
-<div class="block">Use Profiler's to start, stop, dumpProfile
- <a href="../Profiler.html#start()"><code>Profiler.start()</code></a>
- <a href="../Profiler.html#stop()"><code>Profiler.stop()</code></a>
- <a href="../Profiler.html#dumpProfile(java.time.Instant,java.time.Instant)"><code>Profiler.dumpProfile(Instant, Instant)</code></a>
+<pre class="methodSignature">void&nbsp;start&#8203;(@NotNull
+           @NotNull <a href="../ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a>&nbsp;profiler)</pre>
+<div class="block">Use AsyncProfilerDelegate's to start, stop, dumpProfile
+ <a href="../ProfilerDelegate.html#start()"><code>ProfilerDelegate.start()</code></a>
+ <a href="../ProfilerDelegate.html#stop()"><code>ProfilerDelegate.stop()</code></a>
+ <a href="../ProfilerDelegate.html#dumpProfile(java.time.Instant,java.time.Instant)"><code>ProfilerDelegate.dumpProfile(Instant, Instant)</code></a>
  Here is an example of naive implementation
  <pre>
- public void start(Profiler profiler) {
+ public void start(ProfilerDelegate profiler) {
       new Thread(() -&#062; {
           while (true) {
               Instant startTime = Instant.now();
@@ -208,10 +209,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
           }
       }).start();
   }
- </pre>
- The real-world example will be more complex since profile start and stop time should be aligned to 10s intervals
- See <a href="../impl/ContinuousProfilingScheduler.html" title="class in io.pyroscope.javaagent.impl"><code>ContinuousProfilingScheduler</code></a> and <a href="https://github.com/pyroscope-io/pyroscope-java/issues/40">
-     Github issue #40</a> for more details.</div>
+ </pre></div>
 </li>
 </ul>
 <a id="stop()">

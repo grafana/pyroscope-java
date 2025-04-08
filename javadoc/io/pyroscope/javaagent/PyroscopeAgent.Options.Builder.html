@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -157,7 +157,7 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(io.pyroscope.javaagent.config.Config)">Builder</a></span>&#8203;(<a href="config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;config)</code></th>
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(io.pyroscope.javaagent.config.Config)">Builder</a></span>&#8203;(@NotNull <a href="config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;config)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -179,23 +179,28 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="PyroscopeAgent.Options.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="PyroscopeAgent.Options.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#build()">build</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setExporter(io.pyroscope.javaagent.api.Exporter)">setExporter</a></span>&#8203;(<a href="api/Exporter.html" title="interface in io.pyroscope.javaagent.api">Exporter</a>&nbsp;exporter)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setExporter(io.pyroscope.javaagent.api.Exporter)">setExporter</a></span>&#8203;(@NotNull <a href="api/Exporter.html" title="interface in io.pyroscope.javaagent.api">Exporter</a>&nbsp;exporter)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setLogger(io.pyroscope.javaagent.api.Logger)">setLogger</a></span>&#8203;(<a href="api/Logger.html" title="interface in io.pyroscope.javaagent.api">Logger</a>&nbsp;logger)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setLogger(io.pyroscope.javaagent.api.Logger)">setLogger</a></span>&#8203;(@NotNull <a href="api/Logger.html" title="interface in io.pyroscope.javaagent.api">Logger</a>&nbsp;logger)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setScheduler(io.pyroscope.javaagent.api.ProfilingScheduler)">setScheduler</a></span>&#8203;(<a href="api/ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a>&nbsp;scheduler)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfiler(io.pyroscope.javaagent.ProfilerDelegate)">setProfiler</a></span>&#8203;(@NotNull <a href="ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a>&nbsp;profiler)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code><a href="PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setScheduler(io.pyroscope.javaagent.api.ProfilingScheduler)">setScheduler</a></span>&#8203;(@NotNull <a href="api/ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a>&nbsp;scheduler)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -229,7 +234,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>Builder</h4>
 <pre>public&nbsp;Builder&#8203;(@NotNull
-               <a href="config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;config)</pre>
+               @NotNull <a href="config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a>&nbsp;config)</pre>
 </li>
 </ul>
 </li>
@@ -249,7 +254,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setExporter</h4>
 <pre class="methodSignature">public&nbsp;<a href="PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a>&nbsp;setExporter&#8203;(@NotNull
-                                                  <a href="api/Exporter.html" title="interface in io.pyroscope.javaagent.api">Exporter</a>&nbsp;exporter)</pre>
+                                                  @NotNull <a href="api/Exporter.html" title="interface in io.pyroscope.javaagent.api">Exporter</a>&nbsp;exporter)</pre>
 </li>
 </ul>
 <a id="setScheduler(io.pyroscope.javaagent.api.ProfilingScheduler)">
@@ -259,7 +264,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setScheduler</h4>
 <pre class="methodSignature">public&nbsp;<a href="PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a>&nbsp;setScheduler&#8203;(@NotNull
-                                                   <a href="api/ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a>&nbsp;scheduler)</pre>
+                                                   @NotNull <a href="api/ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a>&nbsp;scheduler)</pre>
 </li>
 </ul>
 <a id="setLogger(io.pyroscope.javaagent.api.Logger)">
@@ -269,7 +274,17 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setLogger</h4>
 <pre class="methodSignature">public&nbsp;<a href="PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a>&nbsp;setLogger&#8203;(@NotNull
-                                                <a href="api/Logger.html" title="interface in io.pyroscope.javaagent.api">Logger</a>&nbsp;logger)</pre>
+                                                @NotNull <a href="api/Logger.html" title="interface in io.pyroscope.javaagent.api">Logger</a>&nbsp;logger)</pre>
+</li>
+</ul>
+<a id="setProfiler(io.pyroscope.javaagent.ProfilerDelegate)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setProfiler</h4>
+<pre class="methodSignature">public&nbsp;<a href="PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a>&nbsp;setProfiler&#8203;(@NotNull
+                                                  @NotNull <a href="ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a>&nbsp;profiler)</pre>
 </li>
 </ul>
 <a id="build()">
@@ -279,7 +294,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>build</h4>
 <pre class="methodSignature">@NotNull
-public&nbsp;<a href="PyroscopeAgent.Options.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options</a>&nbsp;build()</pre>
+public&nbsp;@NotNull <a href="PyroscopeAgent.Options.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options</a>&nbsp;build()</pre>
 </li>
 </ul>
 </li>

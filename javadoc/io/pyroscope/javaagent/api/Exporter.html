@@ -150,7 +150,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#export(io.pyroscope.javaagent.Snapshot)">export</a></span>&#8203;(<a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#export(io.pyroscope.javaagent.Snapshot)">export</a></span>&#8203;(@NotNull <a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</code></th>
 <td class="colLast">
 <div class="block">PyroscopeAgent expects <a href="#export(io.pyroscope.javaagent.Snapshot)"><code>export(Snapshot)</code></a> method to be synchronous to profiling schedule, and should return as fast as
  possible.</div>
@@ -186,7 +186,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <ul class="blockList">
 <li class="blockList">
 <h4>export</h4>
-<pre class="methodSignature">void&nbsp;export&#8203;(<a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</pre>
+<pre class="methodSignature">void&nbsp;export&#8203;(@NotNull
+            @NotNull <a href="../Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a>&nbsp;snapshot)</pre>
 <div class="block">PyroscopeAgent expects <a href="#export(io.pyroscope.javaagent.Snapshot)"><code>export(Snapshot)</code></a> method to be synchronous to profiling schedule, and should return as fast as
  possible. <br>See QueuedExporter for an asynchronous implementation example.<br>
  Here is an example of an alternative to <a href="../impl/PyroscopeExporter.html" title="class in io.pyroscope.javaagent.impl"><code>PyroscopeExporter</code></a>
