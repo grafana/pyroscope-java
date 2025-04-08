@@ -5,6 +5,7 @@ import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
+import org.jetbrains.annotations.NotNull;
 
 public class QueuedExporter implements Exporter {
     final Exporter impl;
@@ -36,7 +37,7 @@ public class QueuedExporter implements Exporter {
     }
 
     @Override
-    public void export(Snapshot snapshot) {
+    public void export(@NotNull Snapshot snapshot) {
         try {
             queue.put(snapshot);
         } catch (final InterruptedException ignored) {

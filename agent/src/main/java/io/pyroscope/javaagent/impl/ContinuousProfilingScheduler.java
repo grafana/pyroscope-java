@@ -1,12 +1,13 @@
 package io.pyroscope.javaagent.impl;
 
-import io.pyroscope.javaagent.Profiler;
+import io.pyroscope.javaagent.ProfilerDelegate;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 import kotlin.random.Random;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -29,16 +30,16 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
     private Instant profilingIntervalStartTime;
     private ScheduledFuture<?> job;
     private boolean started;
-    private Profiler profiler;
+    private ProfilerDelegate profiler;
 
-    public ContinuousProfilingScheduler(Config config, Exporter exporter, Logger logger) {
+    public ContinuousProfilingScheduler(@NotNull Config config, @NotNull Exporter exporter, @NotNull Logger logger) {
         this.config = config;
         this.exporter = exporter;
         this.logger = logger;
     }
 
     @Override
-    public void start(Profiler profiler) {
+    public void start(@NotNull ProfilerDelegate profiler) {
         this.logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler starting");
         synchronized (lock) {
             if (started) {
@@ -54,7 +55,7 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
             this.profiler = profiler;
             this.executor = Executors.newSingleThreadScheduledExecutor(THREAD_FACTORY);
             this.job = executor.scheduleAtFixedRate(this::schedulerTick,
-                firstProfilingDuration.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
+                    firstProfilingDuration.toMillis(), config.uploadInterval.toMillis(), TimeUnit.MILLISECONDS);
             this.started = true;
             logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler started");
         }
@@ -143,7 +144,7 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
      *
      * @return Duration of the first profiling interval
      */
-    private Duration startFirst(Profiler profiler) {
+    private Duration startFirst(ProfilerDelegate profiler) {
         Instant now = Instant.now();
 
         long uploadIntervalMillis = config.uploadInterval.toMillis();

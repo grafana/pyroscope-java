@@ -2,6 +2,8 @@ package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.javaagent.api.ConfigurationProvider;
 import io.pyroscope.javaagent.api.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +50,8 @@ public class DefaultConfigurationProvider implements ConfigurationProvider {
     }
 
     @Override
-    public String get(String key) {
+    @Nullable
+    public String get(@NotNull String key) {
         for (int i = 0; i < delegates.size(); i++) {
             String v = delegates.get(i).get(key);
             if (v != null) {

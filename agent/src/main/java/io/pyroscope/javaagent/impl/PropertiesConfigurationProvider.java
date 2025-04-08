@@ -1,6 +1,8 @@
 package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.javaagent.api.ConfigurationProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +22,8 @@ public class PropertiesConfigurationProvider implements ConfigurationProvider {
     }
 
     @Override
-    public String get(String key) {
+    @Nullable
+    public String get(@NotNull String key) {
         String v = properties.getProperty(key);
         if (v == null) {
             String k2 = key.toLowerCase(Locale.ROOT)

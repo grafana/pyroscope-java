@@ -8,6 +8,7 @@ import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.util.zip.GzipSink;
 import io.pyroscope.labels.v2.Pyroscope;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -35,7 +36,7 @@ public class PyroscopeExporter implements Exporter {
     }
 
     @Override
-    public void export(Snapshot snapshot) {
+    public void export(@NotNull Snapshot snapshot) {
         try {
             uploadSnapshot(snapshot);
         } catch (final InterruptedException ignored) {

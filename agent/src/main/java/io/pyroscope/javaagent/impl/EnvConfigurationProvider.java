@@ -1,6 +1,8 @@
 package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.javaagent.api.ConfigurationProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -13,7 +15,8 @@ public class EnvConfigurationProvider implements ConfigurationProvider {
     }
 
     @Override
-    public String get(String key) {
+    @Nullable
+    public String get(@NotNull String key) {
         return env.get(key);
     }
 }
