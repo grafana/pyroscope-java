@@ -2,7 +2,7 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.labels.Pyroscope;
+import io.pyroscope.labels.v2.Pyroscope;
 
 import java.io.BufferedReader;
 import java.io.File;

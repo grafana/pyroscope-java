@@ -109,7 +109,7 @@ public class PyroscopeAgent {
 
         public static class Builder {
             private final Config config;
-            private final ProfilerDelegate profiler;
+            private ProfilerDelegate profiler;
             private Exporter exporter;
             private ProfilingScheduler scheduler;
             private Logger logger;

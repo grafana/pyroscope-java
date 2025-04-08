@@ -2,7 +2,7 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.labels.Pyroscope;
+import io.pyroscope.labels.v2.Pyroscope;
 import jdk.jfr.Recording;
 
 import java.io.File;
@@ -11,6 +11,8 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
+
+import static io.pyroscope.labels.v2.Pyroscope.*;
 
 /**
  * This implementation of JFR profiler, uses JDK JFR APi to manage JFR recordings.
@@ -93,7 +95,7 @@ public final class JFRJDKProfilerDelegate implements ProfilerDelegate {
                 started,
                 ended,
                 data,
-                Pyroscope.LabelsWrapper.dump()
+                LabelsWrapper.dump()
             );
         } catch (IOException e) {
             throw new IllegalStateException(e);
