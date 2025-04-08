@@ -6,6 +6,7 @@ import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.labels.v2.Pyroscope;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -15,7 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 
-public final class Profiler {
+import static io.pyroscope.Preconditions.checkNotNull;
+
+public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private Config config;
     private EventType eventType;
     private String alloc;
@@ -26,11 +29,13 @@ public final class Profiler {
 
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
-    Profiler(Config config) {
-        reset(config);
+    public AsyncProfilerDelegate(@NotNull Config config) {
+        setConfig(config);
     }
 
-    public void reset(final Config config) {
+    @Override
+    public void setConfig(@NotNull final Config config) {
+        checkNotNull(config, "config");
         this.config = config;
         this.alloc = config.profilingAlloc;
         this.lock = config.profilingLock;
@@ -52,6 +57,7 @@ public final class Profiler {
     /**
      * Start async-profiler
      */
+    @Override
     public synchronized void start() {
         if (format == Format.JFR) {
             try {
@@ -67,21 +73,21 @@ public final class Profiler {
     /**
      * Stop async-profiler
      */
+    @Override
     public synchronized void stop() {
         instance.stop();
     }
 
     /**
-     *
      * @param started - time when profiling has been started
-     * @param ended - time when profiling has ended
+     * @param ended   - time when profiling has ended
      * @return Profiling data and dynamic labels as {@link Snapshot}
      */
-    public synchronized Snapshot dumpProfile(Instant started, Instant ended) {
+    @Override
+    @NotNull
+    public synchronized Snapshot dumpProfile(@NotNull Instant started, @NotNull Instant ended) {
         return dumpImpl(started, ended);
     }
-
-
 
     private String createJFRCommand() {
         StringBuilder sb = new StringBuilder();
@@ -96,7 +102,7 @@ public final class Profiler {
             sb.append(",lock=").append(lock);
         }
         sb.append(",interval=").append(interval.toNanos())
-            .append(",file=").append(tempJFRFile.toString());
+                .append(",file=").append(tempJFRFile.toString());
         if (config.APLogLevel != null) {
             sb.append(",loglevel=").append(config.APLogLevel);
         }
@@ -118,12 +124,12 @@ public final class Profiler {
             data = instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8);
         }
         return new Snapshot(
-            format,
-            eventType,
-            started,
-            ended,
-            data,
-            Pyroscope.LabelsWrapper.dump()
+                format,
+                eventType,
+                started,
+                ended,
+                data,
+                Pyroscope.LabelsWrapper.dump()
         );
     }
 

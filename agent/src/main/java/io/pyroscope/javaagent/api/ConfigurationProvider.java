@@ -1,6 +1,9 @@
 package io.pyroscope.javaagent.api;
 
-public interface ConfigurationProvider {
-    String get(String key);
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+public interface ConfigurationProvider {
+    @Nullable
+    String get(@NotNull String key);
 }

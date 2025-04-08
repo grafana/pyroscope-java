@@ -6,6 +6,7 @@ import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.ProfilerScopedContextWrapper;
 import io.pyroscope.labels.v2.LabelsSet;
 import io.pyroscope.labels.v2.ScopedContext;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -22,7 +23,8 @@ public class ProfilerSdk implements ProfilerApi {
     }
 
     @Override
-    public ProfilerScopedContext createScopedContext(Map<String, String> labels) {
+    @NotNull
+    public ProfilerScopedContext createScopedContext(@NotNull Map<@NotNull String, @NotNull String> labels) {
         return new ProfilerScopedContextWrapper(new ScopedContext(new LabelsSet(labels)));
     }
 }

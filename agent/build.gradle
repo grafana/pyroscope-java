@@ -17,6 +17,7 @@ repositories {
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api project(":async-profiler-context")
+    compileOnly 'org.jetbrains:annotations:24.1.0'
     implementation('com.squareup.okhttp3:okhttp:4.12.0')
     implementation("com.squareup.moshi:moshi:1.14.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0")

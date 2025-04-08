@@ -33,10 +33,13 @@ public class PyroscopeAgent {
     }
 
     public static void start(@NotNull Config config) {
+        checkNotNull(config, "config");
         start(new Options.Builder(config).build());
     }
 
     public static void start(@NotNull Options options) {
+        checkNotNull(options, "options");
+
         synchronized (sLock) {
             Logger logger = options.logger;
 
@@ -95,7 +98,7 @@ public class PyroscopeAgent {
         final Config config;
         final ProfilingScheduler scheduler;
         final Logger logger;
-        final Profiler profiler;
+        final ProfilerDelegate profiler;
         final Exporter exporter;
 
         private Options(@NotNull Builder b) {
@@ -108,7 +111,7 @@ public class PyroscopeAgent {
 
         public static class Builder {
             private final Config config;
-            private final Profiler profiler;
+            private ProfilerDelegate profiler;
             private Exporter exporter;
             private ProfilingScheduler scheduler;
             private Logger logger;
@@ -116,24 +119,29 @@ public class PyroscopeAgent {
             public Builder(@NotNull Config config) {
                 checkNotNull(config, "config");
                 this.config = config;
-                this.profiler = new Profiler(config);
             }
 
             public Builder setExporter(@NotNull Exporter exporter) {
-                checkNotNull(config, "exporter");
+                checkNotNull(exporter, "exporter");
                 this.exporter = exporter;
                 return this;
             }
 
             public Builder setScheduler(@NotNull ProfilingScheduler scheduler) {
-                checkNotNull(config, "scheduler");
+                checkNotNull(scheduler, "scheduler");
                 this.scheduler = scheduler;
                 return this;
             }
 
             public Builder setLogger(@NotNull Logger logger) {
-                checkNotNull(config, "logger");
+                checkNotNull(logger, "logger");
                 this.logger = logger;
+                return this;
+            }
+
+            public Builder setProfiler(@NotNull ProfilerDelegate profiler) {
+                checkNotNull(profiler, "logger");
+                this.profiler = profiler;
                 return this;
             }
 
@@ -150,6 +158,9 @@ public class PyroscopeAgent {
                     } else {
                         scheduler = new SamplingProfilingScheduler(config, exporter, logger);
                     }
+                }
+                if (profiler == null) {
+                    this.profiler = new AsyncProfilerDelegate(config);
                 }
                 return new Options(this);
             }

@@ -1,6 +1,7 @@
 package io.pyroscope.javaagent.api;
 
 import io.pyroscope.javaagent.Snapshot;
+import org.jetbrains.annotations.NotNull;
 
 public interface Exporter {
     /**
@@ -21,7 +22,7 @@ public interface Exporter {
      * </pre>
      *
      */
-    void export(Snapshot snapshot);
+    void export(@NotNull Snapshot snapshot);
 
     /**
      * Stop the resources that are held by the exporter like Threads and so on...

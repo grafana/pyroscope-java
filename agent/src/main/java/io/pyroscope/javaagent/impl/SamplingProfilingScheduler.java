@@ -2,7 +2,7 @@ package io.pyroscope.javaagent.impl;
 
 
 import io.pyroscope.javaagent.EventType;
-import io.pyroscope.javaagent.Profiler;
+import io.pyroscope.javaagent.ProfilerDelegate;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
@@ -11,6 +11,7 @@ import io.pyroscope.javaagent.config.Config;
 import kotlin.random.Random;
 
 import io.pyroscope.javaagent.config.Config.Builder;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -38,35 +39,35 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
     });
     private ScheduledFuture<?> job;
 
-    public SamplingProfilingScheduler(Config config, Exporter exporter, Logger logger) {
+    public SamplingProfilingScheduler(@NotNull Config config, @NotNull Exporter exporter, @NotNull Logger logger) {
         this.config = config;
         this.exporter = exporter;
         this.logger = logger;
     }
 
     @Override
-    public void start(Profiler profiler) {
+    public void start(@NotNull ProfilerDelegate profiler) {
         final long samplingDurationMillis = config.samplingDuration.toMillis();
         final Duration uploadInterval = config.uploadInterval;
 
         final Runnable task = (null != config.samplingEventOrder) ?
-        () -> {
-            for (int i = 0; i < config.samplingEventOrder.size(); i++) {
-                final EventType t = config.samplingEventOrder.get(i);
-                final Config tmp = isolate(t, config);
-                logger.log(Logger.Level.DEBUG, "Config for %s ordinal %d: %s", t.id, i, tmp);
-                profiler.reset(tmp);
-                dumpProfile(profiler, samplingDurationMillis, uploadInterval);
-            }
-        } :
-        () -> dumpProfile(profiler, samplingDurationMillis, uploadInterval);
+                () -> {
+                    for (int i = 0; i < config.samplingEventOrder.size(); i++) {
+                        final EventType t = config.samplingEventOrder.get(i);
+                        final Config tmp = isolate(t, config);
+                        logger.log(Logger.Level.DEBUG, "Config for %s ordinal %d: %s", t.id, i, tmp);
+                        profiler.setConfig(tmp);
+                        dumpProfile(profiler, samplingDurationMillis, uploadInterval);
+                    }
+                } :
+                () -> dumpProfile(profiler, samplingDurationMillis, uploadInterval);
 
         Duration initialDelay = getInitialDelay();
         job = executor.scheduleAtFixedRate(
-            task,
-            initialDelay.toMillis(),
-            config.uploadInterval.toMillis(),
-            TimeUnit.MILLISECONDS
+                task,
+                initialDelay.toMillis(),
+                config.uploadInterval.toMillis(),
+                TimeUnit.MILLISECONDS
         );
     }
 
@@ -75,7 +76,7 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
         throw new RuntimeException("not implemented");
     }
 
-    private void dumpProfile(final Profiler profiler, final long samplingDurationMillis, final Duration uploadInterval) {
+    private void dumpProfile(final ProfilerDelegate profiler, final long samplingDurationMillis, final Duration uploadInterval) {
         Instant profilingStartTime = Instant.now();
         try {
             profiler.start();
@@ -105,7 +106,7 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
     private Duration getInitialDelay() {
         long uploadIntervalMillis = config.uploadInterval.toMillis();
         float randomOffset = Random.Default.nextFloat();
-        uploadIntervalMillis = (long)((float)uploadIntervalMillis * randomOffset);
+        uploadIntervalMillis = (long) ((float) uploadIntervalMillis * randomOffset);
         if (uploadIntervalMillis < 2000) {
             uploadIntervalMillis = 2000;
         }
