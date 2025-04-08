@@ -5,8 +5,11 @@ import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.instrument.Instrumentation;
+
+import static io.pyroscope.Preconditions.checkNotNull;
 
 public class PyroscopeAgent {
     private static final Object sLock = new Object();
@@ -29,11 +32,11 @@ public class PyroscopeAgent {
         start(new Config.Builder().build());
     }
 
-    public static void start(Config config) {
+    public static void start(@NotNull Config config) {
         start(new Options.Builder(config).build());
     }
 
-    public static void start(Options options) {
+    public static void start(@NotNull Options options) {
         synchronized (sLock) {
             Logger logger = options.logger;
 
@@ -95,7 +98,7 @@ public class PyroscopeAgent {
         final Profiler profiler;
         final Exporter exporter;
 
-        private Options(Builder b) {
+        private Options(@NotNull Builder b) {
             this.config = b.config;
             this.profiler = b.profiler;
             this.scheduler = b.scheduler;
@@ -104,33 +107,37 @@ public class PyroscopeAgent {
         }
 
         public static class Builder {
-            final Config config;
-            final Profiler profiler;
-            Exporter exporter;
-            ProfilingScheduler scheduler;
-            Logger logger;
+            private final Config config;
+            private final Profiler profiler;
+            private Exporter exporter;
+            private ProfilingScheduler scheduler;
+            private Logger logger;
 
-            public Builder(Config config) {
+            public Builder(@NotNull Config config) {
+                checkNotNull(config, "config");
                 this.config = config;
                 this.profiler = new Profiler(config);
             }
 
-            public Builder setExporter(Exporter exporter) {
+            public Builder setExporter(@NotNull Exporter exporter) {
+                checkNotNull(config, "exporter");
                 this.exporter = exporter;
                 return this;
             }
 
-            public Builder setScheduler(ProfilingScheduler scheduler) {
+            public Builder setScheduler(@NotNull ProfilingScheduler scheduler) {
+                checkNotNull(config, "scheduler");
                 this.scheduler = scheduler;
                 return this;
             }
 
-            public Builder setLogger(Logger logger) {
+            public Builder setLogger(@NotNull Logger logger) {
+                checkNotNull(config, "logger");
                 this.logger = logger;
                 return this;
             }
 
-            public Options build() {
+            public @NotNull Options build() {
                 if (logger == null) {
                     logger = new DefaultLogger(config.logLevel, System.err);
                 }
@@ -147,7 +154,5 @@ public class PyroscopeAgent {
                 return new Options(this);
             }
         }
-
     }
-
 }
