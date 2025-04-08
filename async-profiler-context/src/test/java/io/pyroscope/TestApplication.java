@@ -1,6 +1,5 @@
 package io.pyroscope;
 
-import io.pyroscope.labels.io.pyroscope.PyroscopeAsyncProfiler;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
 

@@ -1,4 +1,4 @@
-package io.pyroscope.labels.io.pyroscope;
+package io.pyroscope;
 
 import one.profiler.AsyncProfiler;
 
@@ -34,7 +34,7 @@ public class PyroscopeAsyncProfiler {
     private static String deployLibrary() throws IOException {
         final String fileName = libraryFileName();
         final String userName = System.getProperty("user.name");
-        final Path targetDir = Files.createTempDirectory( userName + "-pyroscope");
+        final Path targetDir = Files.createTempDirectory(userName + "-pyroscope");
 
         try (final InputStream is = loadResource(fileName)) {
             final Path target = targetDir.resolve(targetLibraryFileName(fileName)).toAbsolutePath();

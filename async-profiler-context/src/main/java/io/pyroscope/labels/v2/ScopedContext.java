@@ -1,12 +1,15 @@
 package io.pyroscope.labels.v2;
 
-import io.pyroscope.labels.io.pyroscope.PyroscopeAsyncProfiler;
+import io.pyroscope.PyroscopeAsyncProfiler;
 import one.profiler.AsyncProfiler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
+
+import static io.pyroscope.Preconditions.checkNotNull;
 
 /**
  * ScopedContext associates profiling data with a set of labels for the current execution scope.
@@ -19,6 +22,9 @@ import java.util.function.BiConsumer;
  * <p>When a ScopedContext is closed, it's marked as such but remains in memory until the next call
  * to {@link io.pyroscope.labels.v2.Pyroscope.LabelsWrapper#dump()}. After being included in a dump,
  * closed contexts are removed from the internal map, allowing them to be garbage collected.
+ *
+ * <p>All constructor parameters (labels, previous context) must be non-null. Attempting to create
+ * a ScopedContext with null parameters will result in a NullPointerException.
  *
  * <p>Use ScopedContext for:
  * <ul>
@@ -68,9 +74,13 @@ public final class ScopedContext implements AutoCloseable {
      * The previous context ID is set to 0 (root context).
      *
      * @param labels The labels to associate with this context
+     * @throws NullPointerException if labels is null
      */
-    public ScopedContext(LabelsSet labels) {
-        this(labels, 0);
+    public ScopedContext(@NotNull LabelsSet labels) {
+        this(
+                checkNotNull(labels, "Labels"),
+                0
+        );
     }
 
     /**
@@ -79,9 +89,13 @@ public final class ScopedContext implements AutoCloseable {
      *
      * @param labels The labels to associate with this context
      * @param prev   The previous context that this context will replace temporarily
+     * @throws NullPointerException if labels or prev is null
      */
-    public ScopedContext(LabelsSet labels, ScopedContext prev) {
-        this(labels, prev.contextId);
+    public ScopedContext(@NotNull LabelsSet labels, @NotNull ScopedContext prev) {
+        this(
+                checkNotNull(labels, "Labels"),
+                checkNotNull(prev, "Context").contextId
+        );
     }
 
     /**
@@ -89,9 +103,10 @@ public final class ScopedContext implements AutoCloseable {
      *
      * @param labels        The labels to associate with this context
      * @param prevContextId The context ID to restore when this context is closed
+     * @throws NullPointerException if labels is null
      */
-    ScopedContext(LabelsSet labels, long prevContextId) {
-        this.labels = labels;
+    ScopedContext(@NotNull LabelsSet labels, long prevContextId) {
+        this.labels = checkNotNull(labels, "Labels");
         this.contextId = CONTEXT_COUNTER.incrementAndGet();
         this.prevContextId = prevContextId;
         CONTEXTS.put(contextId, this);
@@ -117,8 +132,11 @@ public final class ScopedContext implements AutoCloseable {
      * Applies a consumer function to each label in this context.
      *
      * @param labelConsumer A function that will be called with each key-value pair in the labels
+     * @throws NullPointerException if labelConsumer is null
      */
-    public void forEachLabel(BiConsumer<String, String> labelConsumer) {
-        labels.forEachLabel(labelConsumer);
+    public void forEachLabel(@NotNull BiConsumer<@NotNull String, @NotNull String> labelConsumer) {
+        labels.forEachLabel(
+                checkNotNull(labelConsumer, "Consumer")
+        );
     }
 }

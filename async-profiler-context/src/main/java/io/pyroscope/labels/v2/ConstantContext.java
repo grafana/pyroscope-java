@@ -1,5 +1,9 @@
 package io.pyroscope.labels.v2;
 
+import org.jetbrains.annotations.NotNull;
+
+import static io.pyroscope.Preconditions.checkNotNull;
+
 /**
  * ConstantContext provides a way to define a set of labels that will be permanently stored
  * in memory for the life of the process.
@@ -15,6 +19,9 @@ package io.pyroscope.labels.v2;
  *
  * <p>For high-cardinality or ephemeral labels, use {@link ScopedContext} instead, which properly
  * cleans up references after context is closed and labels are dumped.
+ *
+ * <p>All parameters must be non-null. Attempting to create a ConstantContext with null parameters
+ * will result in a NullPointerException.
  *
  * <p>Example usage:
  * <pre>{@code
@@ -43,8 +50,10 @@ public class ConstantContext {
      *
      * @param labels The labels to associate with this context
      * @return A new ConstantContext instance
+     * @throws NullPointerException if labels is null
      */
-    public static ConstantContext of(LabelsSet labels) {
+    public static @NotNull ConstantContext of(@NotNull LabelsSet labels) {
+        checkNotNull(labels, "Labels");
         long contextId = ScopedContext.CONTEXT_COUNTER.incrementAndGet();
         ScopedContext.CONSTANT_CONTEXTS.put(contextId, labels);
         return new ConstantContext(contextId);

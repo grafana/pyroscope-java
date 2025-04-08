@@ -1,7 +1,7 @@
 package io.pyroscope.labels.v2;
 
 
-import io.pyroscope.labels.io.pyroscope.PyroscopeAsyncProfiler;
+import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.labels.pb.JfrLabels.LabelsSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

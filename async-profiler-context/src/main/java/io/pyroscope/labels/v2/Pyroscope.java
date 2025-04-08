@@ -2,10 +2,13 @@ package io.pyroscope.labels.v2;
 
 
 import io.pyroscope.labels.pb.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
+
+import static io.pyroscope.Preconditions.checkNotNull;
 
 public final class Pyroscope {
     /**
@@ -16,15 +19,15 @@ public final class Pyroscope {
      */
     public static class LabelsWrapper {
 
-        public static <T> T run(LabelsSet labels, Callable<T> c) throws Exception {
-            try (ScopedContext s = new ScopedContext(labels)) {
-                return c.call();
+        public static <T> T run(@NotNull LabelsSet labels, @NotNull Callable<T> c) throws Exception {
+            try (ScopedContext s = new ScopedContext(checkNotNull(labels, "Labels"))) {
+                return checkNotNull(c, "Callable").call();
             }
         }
 
-        public static void run(LabelsSet labels, Runnable c) {
-            try (ScopedContext s = new ScopedContext(labels)) {
-                c.run();
+        public static void run(@NotNull LabelsSet labels, @NotNull Runnable c) {
+            try (ScopedContext s = new ScopedContext(checkNotNull(labels, "Labels"))) {
+                checkNotNull(c, "Runnable").run();
             }
         }
 
@@ -93,8 +96,27 @@ public final class Pyroscope {
 
     private static Map<String, String> staticLabels = Collections.emptyMap();
 
-    public static void setStaticLabels(Map<String, String> labels) {
-        staticLabels = Collections.unmodifiableMap(labels);
+    /**
+     * Sets the static labels to be included with all profiling data.
+     *
+     * <p>Static labels are constant across the entire application lifetime and are used
+     * to identify and categorize profiling data at a global level.
+     *
+     * <p>All label keys and values must be non-null. Attempting to set static labels
+     * with null keys or values will result in a NullPointerException.
+     *
+     * @param labels A map containing key-value pairs for static labels
+     * @throws NullPointerException if labels is null or any key or value in the map is null
+     */
+    public static void setStaticLabels(@NotNull Map<@NotNull String, @NotNull String> labels) {
+        checkNotNull(labels, "Labels");
+
+        for (Map.Entry<String, String> entry : labels.entrySet()) {
+            checkNotNull(entry.getKey(), "Key");
+            checkNotNull(entry.getValue(), "Value");
+        }
+
+        staticLabels = Collections.unmodifiableMap(new HashMap<>(labels));
     }
 
     public static Map<String, String> getStaticLabels() {
@@ -107,7 +129,7 @@ public final class Pyroscope {
         public StringTableBuilder() {
         }
 
-        public long get(String s) {
+        public long get(@NotNull String s) {
             Long prev = indexes.get(s);
             if (prev != null) {
                 return prev;

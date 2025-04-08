@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Deflater;
 
+import static io.pyroscope.Preconditions.checkNotNull;
+
 /**
  * Config allows to tweak parameters of existing pyroscope components at start time
  * through pyroscope.properties file or System.getevn - see io.pyroscope.javaagent.impl.DefaultConfigurationProvider
@@ -100,6 +102,7 @@ public final class Config {
     public final int javaStackDepthMax;
     public final Logger.Level logLevel;
     public final String serverAddress;
+    @Deprecated
     public final String authToken;
 
     @Deprecated
@@ -234,7 +237,7 @@ public final class Config {
             '}';
     }
 
-    public Builder newBuilder() {
+    public @NotNull Builder newBuilder() {
         return new Builder(this);
     }
 
@@ -243,11 +246,12 @@ public final class Config {
         return oneSecond.toNanos() / duration.toNanos();
     }
 
-    public static Config build() {
+    public static @NotNull Config build() {
         return build(DefaultConfigurationProvider.INSTANCE);
     }
 
-    public static Config build(ConfigurationProvider cp) {
+    public static @NotNull Config build(@NotNull ConfigurationProvider cp) {
+        checkNotNull(cp, "cp");
         String alloc = profilingAlloc(cp);
         boolean agentEnabled = bool(cp, PYROSCOPE_AGENT_ENABLED_CONFIG, DEFAULT_AGENT_ENABLED);
         boolean allocLive = bool(cp, PYROSCOPE_ALLOC_LIVE, DEFAULT_ALLOC_LIVE);
@@ -654,30 +658,30 @@ public final class Config {
     }
 
     public static class Builder {
-        public boolean agentEnabled = DEFAULT_AGENT_ENABLED;
-        public String applicationName = null;
-        public Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
-        public EventType profilingEvent = DEFAULT_PROFILER_EVENT;
-        public String profilingAlloc = "";
-        public String profilingLock = "";
-        public List<EventType> samplingEventOrder = null;
-        public Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
-        public int javaStackDepthMax = DEFAULT_JAVA_STACK_DEPTH_MAX;
-        public Logger.Level logLevel = Logger.Level.INFO;
-        public String serverAddress = DEFAULT_SERVER_ADDRESS;
-        public String authToken = null;
-        public Format format = DEFAULT_FORMAT;
-        public int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
-        public Map<String, String> labels = Collections.emptyMap();
-        public int ingestMaxRetries = DEFAULT_INGEST_MAX_RETRIES;
-        public int compressionLevelJFR = DEFAULT_COMPRESSION_LEVEL;
-        public int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
-        public boolean allocLive = DEFAULT_ALLOC_LIVE;
-        public boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
-        public Map<String, String> httpHeaders = new HashMap<>();
-        public Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
-        public Duration profileExportTimeout = DEFAULT_PROFILE_EXPORT_TIMEOUT;
-
+        private boolean agentEnabled = DEFAULT_AGENT_ENABLED;
+        private String applicationName = null;
+        private Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
+        private EventType profilingEvent = DEFAULT_PROFILER_EVENT;
+        private String profilingAlloc = "";
+        private String profilingLock = "";
+        private List<EventType> samplingEventOrder = null;
+        private Duration uploadInterval = DEFAULT_UPLOAD_INTERVAL;
+        private int javaStackDepthMax = DEFAULT_JAVA_STACK_DEPTH_MAX;
+        private Logger.Level logLevel = Logger.Level.INFO;
+        private String serverAddress = DEFAULT_SERVER_ADDRESS;
+        @Deprecated
+        private String authToken = null;
+        private Format format = DEFAULT_FORMAT;
+        private int pushQueueCapacity = DEFAULT_PUSH_QUEUE_CAPACITY;
+        private Map<String, String> labels = Collections.emptyMap();
+        private int ingestMaxRetries = DEFAULT_INGEST_MAX_RETRIES;
+        private int compressionLevelJFR = DEFAULT_COMPRESSION_LEVEL;
+        private int compressionLevelLabels = DEFAULT_COMPRESSION_LEVEL;
+        private boolean allocLive = DEFAULT_ALLOC_LIVE;
+        private boolean gcBeforeDump = DEFAULT_GC_BEFORE_DUMP;
+        private Map<String, String> httpHeaders = new HashMap<>();
+        private Duration samplingDuration = DEFAULT_SAMPLING_DURATION;
+        private Duration profileExportTimeout = DEFAULT_PROFILE_EXPORT_TIMEOUT;
         private String tenantID = null;
         private String APLogLevel = null;
         private String APExtraArguments = null;
@@ -687,7 +691,8 @@ public final class Config {
         public Builder() {
         }
 
-        public Builder(Config buildUpon) {
+        public Builder(@NotNull Config buildUpon) {
+            checkNotNull(buildUpon, "config");
             agentEnabled = buildUpon.agentEnabled;
             applicationName = buildUpon.applicationName;
             profilingInterval = buildUpon.profilingInterval;
@@ -702,6 +707,8 @@ public final class Config {
             authToken = buildUpon.authToken;
             format = buildUpon.format;
             pushQueueCapacity = buildUpon.pushQueueCapacity;
+            labels = buildUpon.labels;
+            ingestMaxRetries = buildUpon.ingestMaxTries;
             compressionLevelJFR = buildUpon.compressionLevelJFR;
             compressionLevelLabels = buildUpon.compressionLevelLabels;
             allocLive = buildUpon.allocLive;
@@ -776,6 +783,7 @@ public final class Config {
             return this;
         }
 
+        @Deprecated
         public Builder setAuthToken(String authToken) {
             this.authToken = authToken;
             return this;
@@ -861,7 +869,7 @@ public final class Config {
             return this;
         }
 
-        public Config build() {
+        public @NotNull Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
             }
