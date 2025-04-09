@@ -127,6 +127,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><a href="io/pyroscope/javaagent/config/AppName.Builder.html" title="class in io.pyroscope.javaagent.config"><span class="typeNameLink">AppName.Builder</span></a> - Class in <a href="io/pyroscope/javaagent/config/package-summary.html">io.pyroscope.javaagent.config</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/ProfilerType.html#ASYNC">ASYNC</a></span> - io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/ProfilerType.html" title="enum in io.pyroscope.javaagent.config">ProfilerType</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/pyroscope/javaagent/AsyncProfilerDelegate.html" title="class in io.pyroscope.javaagent"><span class="typeNameLink">AsyncProfilerDelegate</span></a> - Class in <a href="io/pyroscope/javaagent/package-summary.html">io.pyroscope.javaagent</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/AsyncProfilerDelegate.html#%3Cinit%3E(io.pyroscope.javaagent.config.Config)">AsyncProfilerDelegate(Config)</a></span> - Constructor for class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/AsyncProfilerDelegate.html" title="class in io.pyroscope.javaagent">AsyncProfilerDelegate</a></dt>
@@ -204,6 +206,12 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/EventType.html#CPU">CPU</a></span> - io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/EventType.html" title="enum in io.pyroscope.javaagent">EventType</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/ProfilerType.html#create(io.pyroscope.javaagent.config.Config)">create(Config)</a></span> - Method in enum io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/ProfilerType.html" title="enum in io.pyroscope.javaagent.config">ProfilerType</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/ProfilerDelegate.html#create(io.pyroscope.javaagent.config.Config)">create(Config)</a></span> - Static method in interface io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a></dt>
+<dd>
+<div class="block">Creates profiler delegate instance based on configuration.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/api/ProfilerApi.html#createScopedContext(java.util.Map)">createScopedContext(Map&lt;String, String&gt;)</a></span> - Method in interface io.pyroscope.javaagent.api.<a href="io/pyroscope/javaagent/api/ProfilerApi.html" title="interface in io.pyroscope.javaagent.api">ProfilerApi</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/ProfilerSdk.html#createScopedContext(java.util.Map)">createScopedContext(Map&lt;String, String&gt;)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/ProfilerSdk.html" title="class in io.pyroscope.javaagent">ProfilerSdk</a></dt>
@@ -239,6 +247,12 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/AsyncProfilerDelegate.html#dumpProfile(java.time.Instant,java.time.Instant)">dumpProfile(Instant, Instant)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/AsyncProfilerDelegate.html" title="class in io.pyroscope.javaagent">AsyncProfilerDelegate</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/ProfilerDelegate.html#dumpProfile(java.time.Instant,java.time.Instant)">dumpProfile(Instant, Instant)</a></span> - Method in interface io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html#dumpProfile(java.time.Instant,java.time.Instant)">dumpProfile(Instant, Instant)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJCMDProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html#dumpProfile(java.time.Instant,java.time.Instant)">dumpProfile(Instant, Instant)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJDKProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRProfilerDelegate.html#dumpProfile(java.time.Instant,java.time.Instant)">dumpProfile(Instant, Instant)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRProfilerDelegate</a></dt>
 <dd>&nbsp;</dd>
 </dl>
 <a id="I:E">
@@ -390,6 +404,28 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/http/Format.html#JFR">JFR</a></span> - io.pyroscope.http.<a href="io/pyroscope/http/Format.html" title="enum in io.pyroscope.http">Format</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/ProfilerType.html#JFR">JFR</a></span> - io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/ProfilerType.html" title="enum in io.pyroscope.javaagent.config">ProfilerType</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html" title="class in io.pyroscope.javaagent"><span class="typeNameLink">JFRJCMDProfilerDelegate</span></a> - Class in <a href="io/pyroscope/javaagent/package-summary.html">io.pyroscope.javaagent</a></dt>
+<dd>
+<div class="block">This implementation of JFR profiler, uses external <code>jcmd</code> command to manage JFR recordings.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html#%3Cinit%3E(io.pyroscope.javaagent.config.Config)">JFRJCMDProfilerDelegate(Config)</a></span> - Constructor for class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJCMDProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html" title="class in io.pyroscope.javaagent"><span class="typeNameLink">JFRJDKProfilerDelegate</span></a> - Class in <a href="io/pyroscope/javaagent/package-summary.html">io.pyroscope.javaagent</a></dt>
+<dd>
+<div class="block">This implementation of JFR profiler, uses JDK JFR APi to manage JFR recordings.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html#%3Cinit%3E(io.pyroscope.javaagent.config.Config)">JFRJDKProfilerDelegate(Config)</a></span> - Constructor for class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJDKProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/pyroscope/javaagent/JFRProfilerDelegate.html" title="class in io.pyroscope.javaagent"><span class="typeNameLink">JFRProfilerDelegate</span></a> - Class in <a href="io/pyroscope/javaagent/package-summary.html">io.pyroscope.javaagent</a></dt>
+<dd>
+<div class="block">This is a JFR profiler delegate, which checks JVM version and registers proper delegate implementation.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRProfilerDelegate.html#%3Cinit%3E(io.pyroscope.javaagent.config.Config)">JFRProfilerDelegate(Config)</a></span> - Constructor for class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.html#jfrProfilerSettings">jfrProfilerSettings</a></span> - Variable in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <a id="I:L">
 <!--   -->
@@ -471,6 +507,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><a href="io/pyroscope/javaagent/ProfilerSdk.html" title="class in io.pyroscope.javaagent"><span class="typeNameLink">ProfilerSdk</span></a> - Class in <a href="io/pyroscope/javaagent/package-summary.html">io.pyroscope.javaagent</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/ProfilerSdk.html#%3Cinit%3E()">ProfilerSdk()</a></span> - Constructor for class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/ProfilerSdk.html" title="class in io.pyroscope.javaagent">ProfilerSdk</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.html#profilerType">profilerType</a></span> - Variable in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/pyroscope/javaagent/config/ProfilerType.html" title="enum in io.pyroscope.javaagent.config"><span class="typeNameLink">ProfilerType</span></a> - Enum in <a href="io/pyroscope/javaagent/config/package-summary.html">io.pyroscope.javaagent.config</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.html#profilingAlloc">profilingAlloc</a></span> - Variable in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a></dt>
 <dd>&nbsp;</dd>
@@ -570,6 +610,12 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/ProfilerDelegate.html#setConfig(io.pyroscope.javaagent.config.Config)">setConfig(Config)</a></span> - Method in interface io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html#setConfig(io.pyroscope.javaagent.config.Config)">setConfig(Config)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJCMDProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html#setConfig(io.pyroscope.javaagent.config.Config)">setConfig(Config)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJDKProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRProfilerDelegate.html#setConfig(io.pyroscope.javaagent.config.Config)">setConfig(Config)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRProfilerDelegate</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/PyroscopeAgent.Options.Builder.html#setExporter(io.pyroscope.javaagent.api.Exporter)">setExporter(Exporter)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.Builder.html#setFormat(io.pyroscope.http.Format)">setFormat(Format)</a></span> - Method in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></dt>
@@ -582,6 +628,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.Builder.html#setJavaStackDepthMax(int)">setJavaStackDepthMax(int)</a></span> - Method in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.Builder.html#setJFRProfilerSettings(java.lang.String)">setJFRProfilerSettings(String)</a></span> - Method in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.Builder.html#setLabels(java.util.Map)">setLabels(Map&lt;String, String&gt;)</a></span> - Method in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/PyroscopeAgent.Options.Builder.html#setLogger(io.pyroscope.javaagent.api.Logger)">setLogger(Logger)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a></dt>
@@ -593,6 +641,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.Builder.html#setProfileExportTimeout(java.time.Duration)">setProfileExportTimeout(Duration)</a></span> - Method in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/PyroscopeAgent.Options.Builder.html#setProfiler(io.pyroscope.javaagent.ProfilerDelegate)">setProfiler(ProfilerDelegate)</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.Builder.html#setProfilerType(io.pyroscope.javaagent.config.ProfilerType)">setProfilerType(ProfilerType)</a></span> - Method in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.Builder.html#setProfilingAlloc(java.lang.String)">setProfilingAlloc(String)</a></span> - Method in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></dt>
 <dd>&nbsp;</dd>
@@ -626,6 +676,18 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/AsyncProfilerDelegate.html#start()">start()</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/AsyncProfilerDelegate.html" title="class in io.pyroscope.javaagent">AsyncProfilerDelegate</a></dt>
 <dd>
 <div class="block">Start async-profiler</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html#start()">start()</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJCMDProfilerDelegate</a></dt>
+<dd>
+<div class="block">Start JFR profiler</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html#start()">start()</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJDKProfilerDelegate</a></dt>
+<dd>
+<div class="block">Start JFR profiler</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRProfilerDelegate.html#start()">start()</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRProfilerDelegate</a></dt>
+<dd>
+<div class="block">Start JFR profiler</div>
 </dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/ProfilerDelegate.html#start()">start()</a></span> - Method in interface io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a></dt>
 <dd>&nbsp;</dd>
@@ -671,6 +733,18 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/impl/SamplingProfilingScheduler.html#stop()">stop()</a></span> - Method in class io.pyroscope.javaagent.impl.<a href="io/pyroscope/javaagent/impl/SamplingProfilingScheduler.html" title="class in io.pyroscope.javaagent.impl">SamplingProfilingScheduler</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html#stop()">stop()</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJCMDProfilerDelegate</a></dt>
+<dd>
+<div class="block">Stop JFR profiler</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html#stop()">stop()</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJDKProfilerDelegate</a></dt>
+<dd>
+<div class="block">Stop JFR profiler</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/JFRProfilerDelegate.html#stop()">stop()</a></span> - Method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/JFRProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRProfilerDelegate</a></dt>
+<dd>
+<div class="block">Stop JFR profiler</div>
+</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/ProfilerDelegate.html#stop()">stop()</a></span> - Method in interface io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/PyroscopeAgent.html#stop()">stop()</a></span> - Static method in class io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/PyroscopeAgent.html" title="class in io.pyroscope.javaagent">PyroscopeAgent</a></dt>
@@ -743,6 +817,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Returns the enum constant of this type with the specified name.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/ProfilerType.html#valueOf(java.lang.String)">valueOf(String)</a></span> - Static method in enum io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/ProfilerType.html" title="enum in io.pyroscope.javaagent.config">ProfilerType</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this type with the specified name.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/EventType.html#valueOf(java.lang.String)">valueOf(String)</a></span> - Static method in enum io.pyroscope.javaagent.<a href="io/pyroscope/javaagent/EventType.html" title="enum in io.pyroscope.javaagent">EventType</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this type with the specified name.</div>
@@ -763,6 +841,11 @@ the order they are declared.</div>
 the order they are declared.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/api/Logger.Level.html#values()">values()</a></span> - Static method in enum io.pyroscope.javaagent.api.<a href="io/pyroscope/javaagent/api/Logger.Level.html" title="enum in io.pyroscope.javaagent.api">Logger.Level</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum type, in
+the order they are declared.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/ProfilerType.html#values()">values()</a></span> - Static method in enum io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/ProfilerType.html" title="enum in io.pyroscope.javaagent.config">ProfilerType</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum type, in
 the order they are declared.</div>
