@@ -16,6 +16,8 @@ import static io.pyroscope.labels.v2.Pyroscope.*;
 /**
  * This implementation of JFR profiler, uses JDK JFR APi to manage JFR recordings.
  * This only to be used with JDK 9 and above.
+ * <p>
+ * NOTE: This is an experimental feature and is subject to API changes or may be removed in future releases.
  */
 public final class JFRJDKProfilerDelegate implements ProfilerDelegate {
     private static final String RECORDING_NAME = "pyroscope";

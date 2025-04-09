@@ -9,6 +9,8 @@ import static java.lang.String.format;
 
 /**
  * This is a JFR profiler delegate, which checks JVM version and registers proper delegate implementation.
+ * <p>
+ * NOTE: This is an experimental feature and is subject to API changes or may be removed in future releases.
  */
 public final class JFRProfilerDelegate implements ProfilerDelegate {
 

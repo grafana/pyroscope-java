@@ -24,6 +24,8 @@ import static java.lang.String.format;
 /**
  * This implementation of JFR profiler, uses external <code>jcmd</code> command to manage JFR recordings.
  * This only to be used with JDK 8.
+ * <p>
+ * NOTE: This is an experimental feature and is subject to API changes or may be removed in future releases.
  */
 public final class JFRJCMDProfilerDelegate implements ProfilerDelegate {
     private static final String RECORDING_NAME = "pyroscope";

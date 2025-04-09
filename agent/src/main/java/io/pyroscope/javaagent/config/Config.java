@@ -308,6 +308,11 @@ public final class Config {
             profileExportTimeout(cp));
     }
 
+    /**
+     * Retrieves JFR profiler settings from configuration.
+     * <p>
+     * NOTE: This is an experimental feature and is subject to API changes or may be removed in future releases.
+     */
     private static String jfrProfilerSettings(ConfigurationProvider configurationProvider) {
         String jfrProfilerSettings = configurationProvider.get(PYROSCOPE_JFR_PROFILER_SETTINGS);
         if (jfrProfilerSettings != null && !Files.isRegularFile(Paths.get(jfrProfilerSettings))) {
@@ -316,6 +321,12 @@ public final class Config {
         return null;
     }
 
+    /**
+     * Determines the profiler type from configuration.
+     * <p>
+     * NOTE: When this returns ProfilerType.JFR, it is considered an experimental feature 
+     * and is subject to API changes or may be removed in future releases.
+     */
     private static ProfilerType profilerType(ConfigurationProvider configurationProvider) {
         String profilerTypeName = configurationProvider.get(PYROSCOPE_PROFILER_TYPE_CONFIG);
         if (profilerTypeName == null || profilerTypeName.isEmpty()) {
@@ -823,6 +834,14 @@ public final class Config {
             return this;
         }
 
+        /**
+         * Sets JFR profiler settings.
+         * <p>
+         * NOTE: This is an experimental feature and is subject to API changes or may be removed in future releases.
+         *
+         * @param jfrProfilerSettings the JFR profiler settings path
+         * @return this builder instance
+         */
         public Builder setJFRProfilerSettings(String jfrProfilerSettings) {
             this.jfrProfilerSettings = jfrProfilerSettings;
             return this;
@@ -908,6 +927,14 @@ public final class Config {
             return this;
         }
 
+        /**
+         * Sets the profiler type.
+         * <p>
+         * NOTE: ProfilerType.JFR is an experimental feature and is subject to API changes or may be removed in future releases.
+         *
+         * @param profilerType the profiler type to set
+         * @return this builder instance
+         */
         public Builder setProfilerType(ProfilerType profilerType) {
             this.profilerType = profilerType;
             return this;

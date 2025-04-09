@@ -4,11 +4,16 @@ import io.pyroscope.javaagent.AsyncProfilerDelegate;
 import io.pyroscope.javaagent.JFRProfilerDelegate;
 import io.pyroscope.javaagent.ProfilerDelegate;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.function.Function;
 
 public enum ProfilerType {
-    JFR(JFRProfilerDelegate::new), ASYNC(AsyncProfilerDelegate::new);
+    /**
+     * JFR profiler type.
+     * <p>
+     * NOTE: This is an experimental feature and is subject to API changes or may be removed in future releases.
+     */
+    JFR(JFRProfilerDelegate::new),
+    ASYNC(AsyncProfilerDelegate::new);
 
     private final Function<Config, ProfilerDelegate> profilerDelegateFactory;
 
