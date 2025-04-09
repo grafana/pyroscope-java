@@ -5,6 +5,7 @@ import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.*;
+import io.pyroscope.labels.v2.ScopedContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.instrument.Instrumentation;
@@ -56,6 +57,7 @@ public class PyroscopeAgent {
             logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
             try {
                 options.scheduler.start(options.profiler);
+                ScopedContext.ENABLED.set(true);
                 logger.log(Logger.Level.INFO, "Profiling started");
             } catch (final Throwable e) {
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
@@ -65,6 +67,7 @@ public class PyroscopeAgent {
     }
 
     public static void stop() {
+        ScopedContext.ENABLED.set(false);
         synchronized (sLock) {
             if (sOptions == null) {
                 DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Error stopping profiler: not started");

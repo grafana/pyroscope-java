@@ -308,6 +308,7 @@ public class LabelsTest {
     }
 
     static void resetForTesting() {
+        ScopedContext.ENABLED.set(true);
         ScopedContext.CONTEXTS.clear();
         ScopedContext.CONSTANT_CONTEXTS.clear();
         ScopedContext.CONTEXT_COUNTER.set(0);

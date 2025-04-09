@@ -50,6 +50,7 @@ import static io.pyroscope.Preconditions.checkNotNull;
  * }</pre>
  */
 public final class ScopedContext implements AutoCloseable {
+    public static final AtomicBoolean ENABLED = new AtomicBoolean(false);
     static final AtomicLong CONTEXT_COUNTER = new AtomicLong(0);
     static final ConcurrentHashMap<Long, ScopedContext> CONTEXTS = new ConcurrentHashMap<>();
     static final ConcurrentHashMap<Long, LabelsSet> CONSTANT_CONTEXTS = new ConcurrentHashMap<>();
@@ -107,10 +108,15 @@ public final class ScopedContext implements AutoCloseable {
      */
     ScopedContext(@NotNull LabelsSet labels, long prevContextId) {
         this.labels = checkNotNull(labels, "Labels");
-        this.contextId = CONTEXT_COUNTER.incrementAndGet();
-        this.prevContextId = prevContextId;
-        CONTEXTS.put(contextId, this);
-        getAsyncProfiler().setContextId(contextId);
+        if (ENABLED.get()) {
+            this.contextId = CONTEXT_COUNTER.incrementAndGet();
+            this.prevContextId = prevContextId;
+            CONTEXTS.put(contextId, this);
+            getAsyncProfiler().setContextId(contextId);
+        } else {
+            this.contextId = 0;
+            this.prevContextId = 0;
+        }
     }
 
     /**
@@ -125,7 +131,9 @@ public final class ScopedContext implements AutoCloseable {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
-        getAsyncProfiler().setContextId(this.prevContextId);
+        if (ENABLED.get()) {
+            getAsyncProfiler().setContextId(this.prevContextId);
+        }
     }
 
     /**
