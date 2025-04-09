@@ -1,6 +1,7 @@
 package io.pyroscope.javaagent.impl;
 
 
+import io.pyroscope.javaagent.AsyncProfilerDelegate;
 import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.ProfilerDelegate;
 import io.pyroscope.javaagent.Snapshot;

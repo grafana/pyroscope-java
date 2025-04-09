@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,6 +32,7 @@ public final class Config {
     private static final String PYROSCOPE_AGENT_ENABLED_CONFIG = "PYROSCOPE_AGENT_ENABLED";
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
+    private static final String PYROSCOPE_PROFILER_TYPE_CONFIG = "PYROSCOPE_PROFILER_TYPE";
     private static final String PYROSCOPE_PROFILER_EVENT_CONFIG = "PYROSCOPE_PROFILER_EVENT";
     private static final String PYROSCOPE_PROFILER_ALLOC_CONFIG = "PYROSCOPE_PROFILER_ALLOC";
     private static final String PYROSCOPE_PROFILER_LOCK_CONFIG = "PYROSCOPE_PROFILER_LOCK";
@@ -55,7 +58,7 @@ public final class Config {
     private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
     private static final String PYROSCOPE_TENANT_ID = "PYROSCOPE_TENANT_ID";
     private static final String PYROSCOPE_PROFILE_EXPORT_TIMEOUT = "PYROSCOPE_PROFILE_EXPORT_TIMEOUT";
-    
+
     /**
      * Experimental feature, may be removed in the future
      */
@@ -68,6 +71,12 @@ public final class Config {
      * Experimental feature, may be removed in the future
      */
     private static final String PYROSCOPE_SAMPLING_EVENT_ORDER_CONFIG = "PYROSCOPE_SAMPLING_EVENT_ORDER";
+
+    // JFR profiler settings
+    /**
+     * Allows you to overwrite default JFR profiler settings
+     */
+    private static final String PYROSCOPE_JFR_PROFILER_SETTINGS = "PYROSCOPE_JFR_PROFILER_SETTINGS";
 
     private static final boolean DEFAULT_AGENT_ENABLED = true;
     public static final String DEFAULT_SPY_NAME = "javaspy";
@@ -90,9 +99,10 @@ public final class Config {
     private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
     private static final Duration DEFAULT_SAMPLING_DURATION = null;
     private static final Duration DEFAULT_PROFILE_EXPORT_TIMEOUT = Duration.ofSeconds(10);
-    
+
     public final boolean agentEnabled;
     public final String applicationName;
+    public final ProfilerType profilerType;
     public final Duration profilingInterval;
     public final EventType profilingEvent;
     public final String profilingAlloc;
@@ -104,6 +114,7 @@ public final class Config {
     public final String serverAddress;
     @Deprecated
     public final String authToken;
+    public final String jfrProfilerSettings;
 
     @Deprecated
     public final String timeseriesName;
@@ -129,6 +140,7 @@ public final class Config {
 
     Config(final boolean agentEnabled,
            final String applicationName,
+           final ProfilerType profilerType,
            final Duration profilingInterval,
            final EventType profilingEvent,
            final String profilingAlloc,
@@ -138,7 +150,7 @@ public final class Config {
            final int javaStackDepthMax,
            final Logger.Level logLevel,
            final String serverAddress,
-           final String authToken,
+           final String authToken, String jfrProfilerSettings,
            final Format format,
            final int pushQueueCapacity,
            final Map<String, String> labels,
@@ -157,6 +169,7 @@ public final class Config {
            Duration profileExportTimeout) {
         this.agentEnabled = agentEnabled;
         this.applicationName = applicationName;
+        this.profilerType = profilerType;
         this.profilingInterval = profilingInterval;
         this.profilingEvent = profilingEvent;
         this.profilingAlloc = profilingAlloc;
@@ -166,6 +179,7 @@ public final class Config {
         this.logLevel = logLevel;
         this.serverAddress = serverAddress;
         this.authToken = authToken;
+        this.jfrProfilerSettings = jfrProfilerSettings;
         this.ingestMaxTries = ingestMaxRetries;
         this.compressionLevelJFR = validateCompressionLevel(compressionLevelJFR);
         this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
@@ -210,31 +224,33 @@ public final class Config {
     @Override
     public String toString() {
         return "Config{" +
-            "agentEnabled=" + agentEnabled +
-            ", applicationName='" + applicationName + '\'' +
-            ", profilingInterval=" + profilingInterval +
-            ", profilingEvent=" + profilingEvent +
-            ", profilingAlloc='" + profilingAlloc + '\'' +
-            ", profilingLock='" + profilingLock + '\'' +
-            ", samplingEventOrder='" + samplingEventOrder + '\'' +
-            ", uploadInterval=" + uploadInterval +
-            ", javaStackDepthMax=" + javaStackDepthMax +
-            ", logLevel=" + logLevel +
-            ", serverAddress='" + serverAddress + '\'' +
-            ", authToken='*****'" + // Replacing the actual authToken with asterisks
-            ", timeseriesName='" + timeseriesName + '\'' +
-            ", timeseries=" + timeseries +
-            ", format=" + format +
-            ", pushQueueCapacity=" + pushQueueCapacity +
-            ", labels=" + labels +
-            ", ingestMaxTries=" + ingestMaxTries +
-            ", compressionLevelJFR=" + compressionLevelJFR +
-            ", compressionLevelLabels=" + compressionLevelLabels +
-            ", allocLive=" + allocLive +
-            ", httpHeaders=" + httpHeaders +
-            ", samplingDuration=" + samplingDuration +
-            ", tenantID=" + tenantID +
-            '}';
+               "agentEnabled=" + agentEnabled +
+               ", applicationName='" + applicationName + '\'' +
+               ", profilerType=" + profilerType +
+               ", profilingInterval=" + profilingInterval +
+               ", profilingEvent=" + profilingEvent +
+               ", profilingAlloc='" + profilingAlloc + '\'' +
+               ", profilingLock='" + profilingLock + '\'' +
+               ", samplingEventOrder='" + samplingEventOrder + '\'' +
+               ", uploadInterval=" + uploadInterval +
+               ", javaStackDepthMax=" + javaStackDepthMax +
+               ", logLevel=" + logLevel +
+               ", serverAddress='" + serverAddress + '\'' +
+               ", authToken='*****'" + // Replacing the actual authToken with asterisks
+               ", jfrProfilerSettings='" + jfrProfilerSettings + '\'' +
+               ", timeseriesName='" + timeseriesName + '\'' +
+               ", timeseries=" + timeseries +
+               ", format=" + format +
+               ", pushQueueCapacity=" + pushQueueCapacity +
+               ", labels=" + labels +
+               ", ingestMaxTries=" + ingestMaxTries +
+               ", compressionLevelJFR=" + compressionLevelJFR +
+               ", compressionLevelLabels=" + compressionLevelLabels +
+               ", allocLive=" + allocLive +
+               ", httpHeaders=" + httpHeaders +
+               ", samplingDuration=" + samplingDuration +
+               ", tenantID=" + tenantID +
+               '}';
     }
 
     public @NotNull Builder newBuilder() {
@@ -263,6 +279,7 @@ public final class Config {
         return new Config(
             agentEnabled,
             applicationName(cp),
+            profilerType(cp),
             profilingInterval(cp),
             profilingEvent(cp),
             alloc,
@@ -273,6 +290,7 @@ public final class Config {
             logLevel(cp),
             serverAddress(cp),
             authToken(cp),
+            jfrProfilerSettings(cp),
             format(cp),
             pushQueueCapacity(cp),
             labels(cp),
@@ -286,9 +304,24 @@ public final class Config {
             tenantID(cp),
             cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG),
             cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
-            cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG),
-            cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG),
+            cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG), cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG),
             profileExportTimeout(cp));
+    }
+
+    private static String jfrProfilerSettings(ConfigurationProvider configurationProvider) {
+        String jfrProfilerSettings = configurationProvider.get(PYROSCOPE_JFR_PROFILER_SETTINGS);
+        if (jfrProfilerSettings != null && !Files.isRegularFile(Paths.get(jfrProfilerSettings))) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "unable to find JFR profiler settings at %s", jfrProfilerSettings);
+        }
+        return null;
+    }
+
+    private static ProfilerType profilerType(ConfigurationProvider configurationProvider) {
+        String profilerTypeName = configurationProvider.get(PYROSCOPE_PROFILER_TYPE_CONFIG);
+        if (profilerTypeName == null || profilerTypeName.isEmpty()) {
+            return ProfilerType.ASYNC;
+        }
+        return ProfilerType.valueOf(profilerTypeName);
     }
 
     private static String applicationName(ConfigurationProvider configurationProvider) {
@@ -387,8 +420,8 @@ public final class Config {
                     return null;
                 }
             })
-            .filter(t -> null != t)
-            .collect(Collectors.toCollection(() -> new ArrayList<>()));
+            .filter(Objects::nonNull)
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     // extra args events not supported
@@ -430,7 +463,7 @@ public final class Config {
             return DEFAULT_UPLOAD_INTERVAL;
         }
     }
-    
+
     private static Duration profileExportTimeout(ConfigurationProvider configurationProvider) {
         final String  profileExportTimeoutStr = configurationProvider.get(PYROSCOPE_PROFILE_EXPORT_TIMEOUT);
         if (profileExportTimeoutStr == null || profileExportTimeoutStr.isEmpty()) {
@@ -444,7 +477,7 @@ public final class Config {
             return DEFAULT_PROFILE_EXPORT_TIMEOUT;
         }
     }
-   
+
 
 
     private static int javaStackDepthMax(ConfigurationProvider configurationProvider) {
@@ -603,13 +636,10 @@ public final class Config {
 
         try {
             Map<String, String> httpHeaders = adapter.fromJson(sHttpHeaders);
-            if (httpHeaders == null) {
-                return Collections.emptyMap();
-            }
-            return httpHeaders;
+            return httpHeaders != null ? httpHeaders : Collections.emptyMap();
         } catch (Exception e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Failed to parse %s = %s configuration. " +
-                "Falling back to no extra http headers. %s: ", PYROSCOPE_HTTP_HEADERS, sHttpHeaders, e.getMessage());
+                                                                   "Falling back to no extra http headers. %s: ", PYROSCOPE_HTTP_HEADERS, sHttpHeaders, e.getMessage());
             return Collections.emptyMap();
         }
     }
@@ -660,6 +690,7 @@ public final class Config {
     public static class Builder {
         private boolean agentEnabled = DEFAULT_AGENT_ENABLED;
         private String applicationName = null;
+        private ProfilerType profilerType = ProfilerType.ASYNC;
         private Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
         private EventType profilingEvent = DEFAULT_PROFILER_EVENT;
         private String profilingAlloc = "";
@@ -687,6 +718,7 @@ public final class Config {
         private String APExtraArguments = null;
         private String basicAuthUser;
         private String basicAuthPassword;
+        private String jfrProfilerSettings;
 
         public Builder() {
         }
@@ -695,6 +727,7 @@ public final class Config {
             checkNotNull(buildUpon, "config");
             agentEnabled = buildUpon.agentEnabled;
             applicationName = buildUpon.applicationName;
+            profilerType = buildUpon.profilerType;
             profilingInterval = buildUpon.profilingInterval;
             profilingEvent = buildUpon.profilingEvent;
             profilingAlloc = buildUpon.profilingAlloc;
@@ -705,6 +738,7 @@ public final class Config {
             logLevel = buildUpon.logLevel;
             serverAddress = buildUpon.serverAddress;
             authToken = buildUpon.authToken;
+            jfrProfilerSettings = buildUpon.jfrProfilerSettings;
             format = buildUpon.format;
             pushQueueCapacity = buildUpon.pushQueueCapacity;
             labels = buildUpon.labels;
@@ -789,6 +823,11 @@ public final class Config {
             return this;
         }
 
+        public Builder setJFRProfilerSettings(String jfrProfilerSettings) {
+            this.jfrProfilerSettings = jfrProfilerSettings;
+            return this;
+        }
+
         public Builder setFormat(Format format) {
             this.format = format;
             return this;
@@ -869,12 +908,18 @@ public final class Config {
             return this;
         }
 
+        public Builder setProfilerType(ProfilerType profilerType) {
+            this.profilerType = profilerType;
+            return this;
+        }
+
         public @NotNull Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
             }
             return new Config(agentEnabled,
                 applicationName,
+                profilerType,
                 profilingInterval,
                 profilingEvent,
                 profilingAlloc,
@@ -885,6 +930,7 @@ public final class Config {
                 logLevel,
                 serverAddress,
                 authToken,
+                jfrProfilerSettings,
                 format,
                 pushQueueCapacity,
                 labels,
@@ -898,8 +944,7 @@ public final class Config {
                 tenantID,
                 APLogLevel,
                 APExtraArguments,
-                basicAuthUser,
-                basicAuthPassword,
+                basicAuthUser, basicAuthPassword,
                 profileExportTimeout);
         }
     }

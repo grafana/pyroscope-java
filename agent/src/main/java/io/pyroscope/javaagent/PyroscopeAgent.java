@@ -160,7 +160,7 @@ public class PyroscopeAgent {
                     }
                 }
                 if (profiler == null) {
-                    this.profiler = new AsyncProfilerDelegate(config);
+                    profiler = ProfilerDelegate.create(config);
                 }
                 return new Options(this);
             }
