@@ -273,7 +273,9 @@ extends java.lang.Object</pre>
 <tr id="i17" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setJFRProfilerSettings(java.lang.String)">setJFRProfilerSettings</a></span>&#8203;(java.lang.String&nbsp;jfrProfilerSettings)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Sets JFR profiler settings.</div>
+</td>
 </tr>
 <tr id="i18" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
@@ -293,7 +295,9 @@ extends java.lang.Object</pre>
 <tr id="i21" class="rowColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setProfilerType(io.pyroscope.javaagent.config.ProfilerType)">setProfilerType</a></span>&#8203;(<a href="ProfilerType.html" title="enum in io.pyroscope.javaagent.config">ProfilerType</a>&nbsp;profilerType)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Sets the profiler type.</div>
+</td>
 </tr>
 <tr id="i22" class="altColor">
 <td class="colFirst"><code><a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a></code></td>
@@ -524,6 +528,15 @@ public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent
 <li class="blockList">
 <h4>setJFRProfilerSettings</h4>
 <pre class="methodSignature">public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;setJFRProfilerSettings&#8203;(java.lang.String&nbsp;jfrProfilerSettings)</pre>
+<div class="block">Sets JFR profiler settings.
+ <p>
+ NOTE: This is an experimental feature and is subject to API changes or may be removed in future releases.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>jfrProfilerSettings</code> - the JFR profiler settings path</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder instance</dd>
+</dl>
 </li>
 </ul>
 <a id="setFormat(io.pyroscope.http.Format)">
@@ -678,6 +691,15 @@ public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent
 <li class="blockList">
 <h4>setProfilerType</h4>
 <pre class="methodSignature">public&nbsp;<a href="Config.Builder.html" title="class in io.pyroscope.javaagent.config">Config.Builder</a>&nbsp;setProfilerType&#8203;(<a href="ProfilerType.html" title="enum in io.pyroscope.javaagent.config">ProfilerType</a>&nbsp;profilerType)</pre>
+<div class="block">Sets the profiler type.
+ <p>
+ NOTE: ProfilerType.JFR is an experimental feature and is subject to API changes or may be removed in future releases.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>profilerType</code> - the profiler type to set</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder instance</dd>
+</dl>
 </li>
 </ul>
 <a id="build()">
