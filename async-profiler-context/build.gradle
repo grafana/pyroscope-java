@@ -20,7 +20,9 @@ repositories {
 def asyncProfilerVersion = project.properties['async_profiler_version']
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
-    api files("$buildDir/async-profiler/async-profiler.jar")
+// TODO
+    // api files("$buildDir/async-profiler/async-profiler.jar")
+    api files("/home/korniltsev/p/async-profiler/build/jar/async-profiler.jar")
     compileOnly 'org.jetbrains:annotations:24.1.0'
     implementation 'com.google.protobuf:protobuf-java:4.29.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.2'

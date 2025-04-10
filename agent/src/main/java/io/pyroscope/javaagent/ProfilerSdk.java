@@ -6,6 +6,7 @@ import io.pyroscope.javaagent.api.ProfilerApi;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.ProfilerScopedContextWrapper;
 import io.pyroscope.labels.v2.LabelsSet;
+import io.pyroscope.labels.v2.Pyroscope;
 import io.pyroscope.labels.v2.ScopedContext;
 import one.profiler.AsyncProfiler;
 import org.jetbrains.annotations.NotNull;
@@ -39,5 +40,10 @@ public class ProfilerSdk implements ProfilerApi {
     @Override
     public void setTracingContext(long spanId, long spanName) {
         asprof.setTracingContext(spanId, spanName);
+    }
+
+    @Override
+    public long registerConstant(String constant) {
+        return Pyroscope.LabelsWrapper.registerConstant(constant);
     }
 }

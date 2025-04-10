@@ -1,6 +1,6 @@
-apply plugin: 'application'
-
-mainClassName = 'App'
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.1.20'
+}
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8

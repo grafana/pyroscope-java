@@ -13,4 +13,6 @@ public interface ProfilerApi {
     @NotNull ProfilerScopedContext createScopedContext(@NotNull Map<@NotNull String, @NotNull String> labels);
 
     void setTracingContext(long spanId, long spanName);
+
+    long registerConstant(String constant);
 }
