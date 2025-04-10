@@ -92,9 +92,8 @@ public final class Pyroscope {
             return sb.build();
         }
 
-        private static final ConcurrentHashMap<String, Long> CONSTANTS = new ConcurrentHashMap<>();
+        static final ConcurrentHashMap<String, Long> CONSTANTS = new ConcurrentHashMap<>();
 
-        //todo ADD unit tests
         public static long registerConstant(@NotNull String constant) {
             checkNotNull(constant, "constant");
             Long v = CONSTANTS.get(constant);
