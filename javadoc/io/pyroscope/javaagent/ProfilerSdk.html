@@ -27,8 +27,8 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var data = {"i0":42,"i1":10,"i2":10,"i3":10,"i4":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -173,7 +173,7 @@ implements <a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaa
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
@@ -182,7 +182,9 @@ implements <a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaa
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>@NotNull <a href="api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#createScopedContext(java.util.Map)">createScopedContext</a></span>&#8203;(@NotNull java.util.Map&lt;@NotNull java.lang.String,&#8203;@NotNull java.lang.String&gt;&nbsp;labels)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
@@ -190,6 +192,17 @@ implements <a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaa
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>long</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#registerConstant(java.lang.String)">registerConstant</a></span>&#8203;(java.lang.String&nbsp;constant)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTracingContext(long,long)">setTracingContext</a></span>&#8203;(long&nbsp;spanId,
+                 long&nbsp;spanName)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#startProfiling()">startProfiling</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -266,15 +279,44 @@ implements <a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaa
 <a id="createScopedContext(java.util.Map)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>createScopedContext</h4>
-<pre class="methodSignature">@NotNull
+<pre class="methodSignature">@Deprecated
+@NotNull
 public&nbsp;@NotNull <a href="api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a>&nbsp;createScopedContext&#8203;(@NotNull
                                                           @NotNull java.util.Map&lt;@NotNull java.lang.String,&#8203;@NotNull java.lang.String&gt;&nbsp;labels)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="api/ProfilerApi.html#createScopedContext(java.util.Map)">createScopedContext</a></code>&nbsp;in interface&nbsp;<code><a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaagent.api">ProfilerApi</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="setTracingContext(long,long)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setTracingContext</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setTracingContext&#8203;(long&nbsp;spanId,
+                              long&nbsp;spanName)</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="api/ProfilerApi.html#setTracingContext(long,long)">setTracingContext</a></code>&nbsp;in interface&nbsp;<code><a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaagent.api">ProfilerApi</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="registerConstant(java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>registerConstant</h4>
+<pre class="methodSignature">public&nbsp;long&nbsp;registerConstant&#8203;(java.lang.String&nbsp;constant)</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="api/ProfilerApi.html#registerConstant(java.lang.String)">registerConstant</a></code>&nbsp;in interface&nbsp;<code><a href="api/ProfilerApi.html" title="interface in io.pyroscope.javaagent.api">ProfilerApi</a></code></dd>
 </dl>
 </li>
 </ul>
