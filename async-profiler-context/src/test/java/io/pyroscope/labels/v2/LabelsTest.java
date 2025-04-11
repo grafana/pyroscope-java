@@ -28,31 +28,31 @@ public class LabelsTest {
         try (ScopedContext s = new ScopedContext(new LabelsSet("k1", "v1"))) {
             {
                 assertSnapshot(
-                        new ExpectedContextBuilder()
+                        expectSnapshot()
                                 .add(1L, "k1", "v1")
-                                .contexts,
+                        ,
                         Pyroscope.LabelsWrapper.dump());
             }
             {
                 assertSnapshot(
-                        new ExpectedContextBuilder()
+                        expectSnapshot()
                                 .add(1L, "k1", "v1")
-                                .contexts,
+                        ,
                         Pyroscope.LabelsWrapper.dump());
             }
         }
         {
             assertSnapshot(
-                    new ExpectedContextBuilder()
+                    expectSnapshot()
                             .add(1L, "k1", "v1")
-                            .contexts,
+                    ,
                     Pyroscope.LabelsWrapper.dump());
         }
 
         {
             assertSnapshot(
-                    new ExpectedContextBuilder()
-                            .contexts,
+                    expectSnapshot()
+                    ,
                     Pyroscope.LabelsWrapper.dump());
         }
     }
@@ -63,35 +63,35 @@ public class LabelsTest {
         try (ScopedContext ignored = new ScopedContext(new LabelsSet("k1", "v1"))) {
             try (ScopedContext s = new ScopedContext(new LabelsSet("k1", "v1"))) {
                 assertSnapshot(
-                        new ExpectedContextBuilder()
+                        expectSnapshot()
                                 .add(1L, "k1", "v1")
                                 .add(2L, "k1", "v1")
-                                .contexts,
+                        ,
                         Pyroscope.LabelsWrapper.dump());
             }
             assertSnapshot(
-                    new ExpectedContextBuilder()
+                    expectSnapshot()
                             .add(1L, "k1", "v1")
                             .add(2L, "k1", "v1")
-                            .contexts,
+                    ,
                     Pyroscope.LabelsWrapper.dump());
             assertSnapshot(
-                    new ExpectedContextBuilder()
+                    expectSnapshot()
                             .add(1L, "k1", "v1")
-                            .contexts,
+                    ,
                     Pyroscope.LabelsWrapper.dump());
         }
         {
             assertSnapshot(
-                    new ExpectedContextBuilder()
+                    expectSnapshot()
                             .add(1L, "k1", "v1")
-                            .contexts,
+                    ,
                     Pyroscope.LabelsWrapper.dump());
         }
         {
             assertSnapshot(
-                    new ExpectedContextBuilder()
-                            .contexts,
+                    expectSnapshot()
+                    ,
                     Pyroscope.LabelsWrapper.dump());
         }
     }
@@ -103,42 +103,42 @@ public class LabelsTest {
             try {
                 try (ScopedContext s2 = new ScopedContext(new LabelsSet("k1", "v2"))) {
                     assertSnapshot(
-                            new ExpectedContextBuilder()
+                            expectSnapshot()
                                     .add(1L, "k1", "v1")
                                     .add(2L, "k1", "v2")
-                                    .contexts,
+                            ,
                             Pyroscope.LabelsWrapper.dump());
                     throw new AssertionError();
                 }
             } catch (AssertionError e) {
                 {
                     assertSnapshot(
-                            new ExpectedContextBuilder()
+                            expectSnapshot()
                                     .add(1L, "k1", "v1")
                                     .add(2L, "k1", "v2")
-                                    .contexts,
+                            ,
                             Pyroscope.LabelsWrapper.dump());
                 }
                 {
                     assertSnapshot(
-                            new ExpectedContextBuilder()
+                            expectSnapshot()
                                     .add(1L, "k1", "v1")
-                                    .contexts,
+                            ,
                             Pyroscope.LabelsWrapper.dump());
                 }
             }
         }
         {
             assertSnapshot(
-                    new ExpectedContextBuilder()
+                    expectSnapshot()
                             .add(1L, "k1", "v1")
-                            .contexts,
+                    ,
                     Pyroscope.LabelsWrapper.dump());
         }
         {
             assertSnapshot(
-                    new ExpectedContextBuilder()
-                            .contexts,
+                    expectSnapshot()
+                    ,
                     Pyroscope.LabelsWrapper.dump());
         }
     }
@@ -153,22 +153,23 @@ public class LabelsTest {
         ConstantContext.of(new LabelsSet("path", "/qwe/asd", "zxc", "ass"));
 
         assertSnapshot(
-                new ExpectedContextBuilder()
+                expectSnapshot()
                         .add(1L, "k1", "v1")
                         .add(2L, "path", "/foo/bar", "qwe", "asd")
                         .add(3L, "path", "/qwe/asd", "zxc", "ass")
-                        .contexts,
+                ,
                 Pyroscope.LabelsWrapper.dump());
 
         assertSnapshot(
-                new ExpectedContextBuilder()
+                expectSnapshot()
                         .add(2L, "path", "/foo/bar", "qwe", "asd")
                         .add(3L, "path", "/qwe/asd", "zxc", "ass")
-                        .contexts,
+                ,
                 Pyroscope.LabelsWrapper.dump());
     }
 
-    void assertSnapshot(Map<Long, Map<String, String>> expectedContexts, LabelsSnapshot snapshot) {
+    void assertSnapshot(ExpectedContextBuilder expected, LabelsSnapshot snapshot) {
+        Map<Long, Map<String, String>> expectedContexts = expected.contexts;
         final HashSet<String> uniqueStrings = new HashSet<>();
         Map<Long, Map<String, String>> actualContexts = new HashMap<>();
         snapshot.getContextsMap().forEach((contextID, context) -> {
@@ -180,6 +181,7 @@ public class LabelsTest {
             });
             actualContexts.put(contextID, ctx);
         });
+        uniqueStrings.addAll(expected.constant.values());
         assertEquals(uniqueStrings.size(), snapshot.getStringsCount());
         assertEquals(expectedContexts, actualContexts);
     }
@@ -258,6 +260,41 @@ public class LabelsTest {
         Pyroscope.LabelsWrapper.dump();
     }
 
+    @Test
+    void registerStringConstant() {
+        long c1 = Pyroscope.LabelsWrapper.registerConstant("const1");
+        long c2;
+        try (ScopedContext s = new ScopedContext(new LabelsSet("k1", "v1"))) {
+            c2 = Pyroscope.LabelsWrapper.registerConstant("const2");
+        }
+        long c3 = Pyroscope.LabelsWrapper.registerConstant("const3");
+        {
+            LabelsSnapshot snapshot = Pyroscope.LabelsWrapper.dump();
+            assertSnapshot(
+                    expectSnapshot()
+                            .constant(1L, "const1")
+                            .constant(2L, "const2")
+                            .constant(3L, "const3")
+                            .add(1L, "k1", "v1"),
+                    snapshot
+            );
+        }
+        {
+            LabelsSnapshot snapshot = Pyroscope.LabelsWrapper.dump();
+            assertSnapshot(
+                    expectSnapshot()
+                            .constant(1L, "const1")
+                            .constant(2L, "const2")
+                            .constant(3L, "const3"),
+                    snapshot
+            );
+        }
+    }
+
+    private static ExpectedContextBuilder expectSnapshot() {
+        return new ExpectedContextBuilder();
+    }
+
     private static List<ConstantContext> generateConstantContexts(Random r) {
         final int nctx = 10240;
         final List<ConstantContext> ctxs = new ArrayList<>(nctx);
@@ -279,9 +316,16 @@ public class LabelsTest {
 
     private static class ExpectedContextBuilder {
         final Map<Long, Map<String, String>> contexts = new HashMap<>();
+        final Map<Long, String> constant = new HashMap<>();
+
 
         ExpectedContextBuilder add(Long cid, String... ss) {
             contexts.put(cid, mapOf(ss));
+            return this;
+        }
+
+        ExpectedContextBuilder constant(Long cid, String s) {
+            constant.put(cid, s);
             return this;
         }
 
@@ -312,5 +356,6 @@ public class LabelsTest {
         ScopedContext.CONTEXTS.clear();
         ScopedContext.CONSTANT_CONTEXTS.clear();
         ScopedContext.CONTEXT_COUNTER.set(0);
+        Pyroscope.LabelsWrapper.CONSTANTS.clear();
     }
 }

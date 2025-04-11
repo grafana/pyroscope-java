@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 import static io.pyroscope.Preconditions.checkNotNull;
@@ -61,10 +62,8 @@ public final class Pyroscope {
 
         public static JfrLabels.LabelsSnapshot dump() {
             final JfrLabels.LabelsSnapshot.Builder sb = JfrLabels.LabelsSnapshot.newBuilder();
-            if (ScopedContext.CONTEXTS.isEmpty() && ScopedContext.CONSTANT_CONTEXTS.isEmpty()) {
-                return sb.build();
-            }
             final StringTableBuilder stb = new StringTableBuilder();
+            stb.indexes.putAll(CONSTANTS);
             final Set<Long> closedContexts = new HashSet<>();
             final BiConsumer<Long, LabelsSet> collect = (contextID, ls) -> {
                 final JfrLabels.Context.Builder cb = JfrLabels.Context.newBuilder();
@@ -91,6 +90,25 @@ public final class Pyroscope {
                 ScopedContext.CONTEXTS.remove(cid);
             }
             return sb.build();
+        }
+
+        static final ConcurrentHashMap<String, Long> CONSTANTS = new ConcurrentHashMap<>();
+
+        public static long registerConstant(@NotNull String constant) {
+            checkNotNull(constant, "constant");
+            Long v = CONSTANTS.get(constant);
+            if (v != null) {
+                return v;
+            }
+            synchronized (CONSTANTS) {
+                v = CONSTANTS.get(constant);
+                if (v != null) {
+                    return v;
+                }
+                long id = CONSTANTS.size() + 1;
+                CONSTANTS.put(constant, id);
+                return id;
+            }
         }
     }
 
@@ -134,7 +152,7 @@ public final class Pyroscope {
             if (prev != null) {
                 return prev;
             }
-            long index = indexes.size();
+            long index = indexes.size() + 1;
             indexes.put(s, index);
             return index;
 
