@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@main
+        uses: grafana/shared-workflows/actions/get-vault-secrets@fa48192dac470ae356b3f7007229f3ac28c48a25
         with:
           repo_secrets: |
             NEXUS_USERNAME=publishing:nexus_username
@@ -42,9 +42,10 @@ jobs:
           private-key: ${{ env.GITHUB_APP_PRIVATE_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
 
       - name: Set up Java 8
         uses: actions/setup-java@v4
@@ -54,12 +55,14 @@ jobs:
 
       - name: Bump Version
         id: bump_version
+        env:
+          VERSION_BUMP: ${{ inputs.version_bump }}
         run: |
           current_version=$(grep 'pyroscope_version=' gradle.properties | cut -d'=' -f2)
           echo "Current version: $current_version"
           IFS='.' read -r major minor patch <<< "$current_version"
 
-          case "${{ inputs.version_bump }}" in
+          case "$VERSION_BUMP" in
             "major")
               major=$((major + 1))
               minor=0
