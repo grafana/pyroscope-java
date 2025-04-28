@@ -5,20 +5,24 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write # pushes to the gh-pages branch
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-java@v1
         with:
           java-version: 11
       - name: Generate Javadoc
         run: ./gradlew javaDoc 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.3.4
+        uses: JamesIves/github-pages-deploy-action@e6d003d0839927f5a4b998bfd92ed8e448fde37a # v4.3.4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
