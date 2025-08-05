@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import static io.pyroscope.labels.v2.Pyroscope.*;
+import static java.lang.String.format;
 
 /**
  * This implementation of JFR profiler, uses JDK JFR APi to manage JFR recordings.
@@ -53,11 +54,24 @@ public final class JFRJDKProfilerDelegate implements ProfilerDelegate {
     public synchronized void start() {
         try {
             recording = new Recording();
-            recording.enable("jdk.ExecutionSample").withPeriod(Duration.ofMillis(1));
-            recording.enable("jdk.ThreadPark").withPeriod(Duration.ofMillis(10)).withStackTrace();
-            recording.enable("jdk.ObjectAllocationInNewTLAB").withStackTrace();
-            recording.enable("jdk.ObjectAllocationOutsideTLAB").withStackTrace();
-            recording.enable("jdk.JavaMonitorEnter").withPeriod(Duration.ofMillis(10)).withStackTrace();
+            switch (config.profilingEvent) {
+                case CPU: {
+                    recording.enable("jdk.ExecutionSample").withPeriod(Duration.ofMillis(1));
+                    break;
+                }
+                case ALLOC: {
+                    recording.enable("jdk.ObjectAllocationInNewTLAB").withStackTrace();
+                    recording.enable("jdk.ObjectAllocationOutsideTLAB").withStackTrace();
+                    break;
+                }
+                case LOCK: {
+                    recording.enable("jdk.ThreadPark").withPeriod(Duration.ofMillis(10)).withStackTrace();
+                    recording.enable("jdk.JavaMonitorEnter").withPeriod(Duration.ofMillis(10)).withStackTrace();
+                    break;
+                }
+                default:
+                    throw new IllegalArgumentException(format("Unsupported event type: %s", config.profilingEvent));
+            }
             recording.setToDisk(true);
             recording.setDestination(tempJFRFile.toPath());
             recording.start();
@@ -92,7 +106,7 @@ public final class JFRJDKProfilerDelegate implements ProfilerDelegate {
             byte[] data = Files.readAllBytes(tempJFRFile.toPath());
             return new Snapshot(
                 Format.JFR,
-                EventType.CPU,
+                config.profilingEvent,
                 started,
                 ended,
                 data,
