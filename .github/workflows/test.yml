@@ -11,11 +11,11 @@ permissions:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.agent }}
     strategy:
       fail-fast: false
       matrix:
-        os: [github-hosted-ubuntu-x64-small , macos-latest]
+        agent: [ubuntu-x64-small, macos-latest]
         java: ['8', '11', '17', '21']
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -28,7 +28,7 @@ jobs:
           distribution: 'zulu'
       - run: ./gradlew test --stacktrace
   javadoc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-x64
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
