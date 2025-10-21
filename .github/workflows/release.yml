@@ -35,7 +35,7 @@ jobs:
             GITHUB_APP_PRIVATE_KEY=pyroscope-development-app:app-private-key
 
       - name: Generate GitHub token
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2
         id: app-token
         with:
           app-id: ${{ env.GITHUB_APP_ID }}
