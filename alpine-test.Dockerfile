@@ -2,7 +2,7 @@ ARG IMAGE_VERSION
 ARG JAVA_VERSION
 
 FROM alpine:3.22.2@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412 AS builder
-RUN apk add openjdk8
+RUN apk add openjdk11
 
 WORKDIR /app
 ADD gradlew build.gradle settings.gradle gradle.properties /app/
@@ -11,11 +11,6 @@ RUN ./gradlew --no-daemon --version
 ADD agent agent
 ADD async-profiler-context async-profiler-context
 ADD demo/build.gradle demo/
-
-# for testing locally produced artifacts
-#COPY async-profiler-3.0.0.1-linux-x64.tar.gz .
-#COPY async-profiler-3.0.0.1-linux-arm64.tar.gz .
-#COPY async-profiler-3.0.0.1-macos.zip .
 
 RUN ./gradlew --no-daemon shadowJar
 
