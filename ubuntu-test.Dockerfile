@@ -2,7 +2,7 @@ ARG IMAGE_VERSION
 ARG JAVA_VERSION
 
 FROM ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98 AS builder
-RUN apt-get update && apt-get install -y openjdk-8-jdk-headless
+RUN apt-get update && apt-get install -y openjdk-11-jdk-headless
 
 WORKDIR /app
 ADD gradlew build.gradle settings.gradle gradle.properties /app/
@@ -12,10 +12,6 @@ ADD agent agent
 ADD async-profiler-context async-profiler-context
 ADD demo/build.gradle demo/
 
-# for testing locally produced artifacts
-#COPY async-profiler-3.0.0.1-linux-x64.tar.gz .
-#COPY async-profiler-3.0.0.1-linux-arm64.tar.gz .
-#COPY async-profiler-3.0.0.1-macos.zip .
 
 RUN ./gradlew --no-daemon shadowJar
 
