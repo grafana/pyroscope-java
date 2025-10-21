@@ -2,7 +2,7 @@ module java-test-querier
 
 go 1.23.0
 
-toolchain go1.23.4
+toolchain go1.25.3
 
 require (
 	connectrpc.com/connect v1.18.0
