@@ -2,7 +2,7 @@
 version: "3.9"
 services:
   pyroscope:
-    image: "pyroscope/pyroscope:latest"
+    image: "pyroscope/pyroscope:latest@sha256:dbca95a15bc1af46b25eb85f417934dcd78f2e0bbe2037aa52b92cb3b0d391ff"
     ports:
       - "4040:4040"
     command:
