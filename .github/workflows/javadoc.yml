@@ -22,7 +22,7 @@ jobs:
       - name: Generate Javadoc
         run: ./gradlew javaDoc 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@6c2d9db40f9296374acc17b90404b6e8864128c8 # v4.7.3
+        uses: JamesIves/github-pages-deploy-action@9d877eea73427180ae43cf98e8914934fe157a1a # v4.7.6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
