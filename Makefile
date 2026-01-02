@@ -24,14 +24,14 @@ test:
 .PHONY: docker-example-base
 docker-example-base: build
 	cp agent/build/libs/pyroscope.jar examples
-	docker-compose -f examples/docker-compose-base.yml build
-	docker-compose -f examples/docker-compose-base.yml up
+	docker compose -f examples/docker-compose-base.yml build
+	docker compose -f examples/docker-compose-base.yml up
 
 .PHONY: docker-example-expt
 docker-example-expt: build
 	cp agent/build/libs/pyroscope.jar examples
-	docker-compose -f examples/docker-compose-expt.yml build
-	docker-compose -f examples/docker-compose-expt.yml up
+	docker compose -f examples/docker-compose-expt.yml build
+	docker compose -f examples/docker-compose-expt.yml up
 
 ITEST_SERVICE ?=
 
