@@ -19,6 +19,7 @@ jobs:
       - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5
         with:
           java-version: 11
+          distribution: 'temurin'
       - name: Generate Javadoc
         run: ./gradlew javaDoc 
       - name: Deploy 🚀
