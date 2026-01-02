@@ -16,9 +16,10 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-java@b6e674f4b717d7b0ae3baee0fbe79f498905dfde # v1
+      - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5
         with:
           java-version: 11
+          distribution: 'temurin'
       - name: Generate Javadoc
         run: ./gradlew javaDoc 
       - name: Deploy 🚀
