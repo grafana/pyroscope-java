@@ -52,6 +52,7 @@ import static io.pyroscope.Preconditions.checkNotNull;
 public final class ScopedContext implements AutoCloseable {
     public static final AtomicBoolean ENABLED = new AtomicBoolean(false);
     static final AtomicLong CONTEXT_COUNTER = new AtomicLong(0);
+    static ThreadLocal<Long> CURRENT_CONTEXT_ID = ThreadLocal.withInitial(() -> 0L);
     static final ConcurrentHashMap<Long, ScopedContext> CONTEXTS = new ConcurrentHashMap<>();
     static final ConcurrentHashMap<Long, LabelsSet> CONSTANT_CONTEXTS = new ConcurrentHashMap<>();
 
@@ -69,6 +70,10 @@ public final class ScopedContext implements AutoCloseable {
     final long contextId;
     final long prevContextId;
     final AtomicBoolean closed = new AtomicBoolean(false);
+
+    public static ScopedContext getCurrentContext() {
+        return CONTEXTS.get(CURRENT_CONTEXT_ID.get());
+    }
 
     /**
      * Creates a new ScopedContext with the given labels.
@@ -113,6 +118,7 @@ public final class ScopedContext implements AutoCloseable {
             this.prevContextId = prevContextId;
             CONTEXTS.put(contextId, this);
             getAsyncProfiler().setContextId(contextId);
+            CURRENT_CONTEXT_ID.set(contextId);
         } else {
             this.contextId = 0;
             this.prevContextId = 0;
@@ -133,6 +139,7 @@ public final class ScopedContext implements AutoCloseable {
         }
         if (ENABLED.get()) {
             getAsyncProfiler().setContextId(this.prevContextId);
+            CURRENT_CONTEXT_ID.set(this.prevContextId);
         }
     }
 
