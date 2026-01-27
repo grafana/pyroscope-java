@@ -1,4 +1,4 @@
-FROM openjdk:11.0.16-jdk
+FROM openjdk:25-jdk@sha256:d897c34b02fcd0b06525b58cf00e5d83b127d37891ba0ad18b2a762272d0bae6
 
 ADD https://download.jboss.org/optaplanner/release/8.6.0.Final/optaweb-employee-rostering-distribution-8.6.0.Final.zip /
 
