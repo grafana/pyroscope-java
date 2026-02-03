@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-x64
     steps:
       - name: Get secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@39e279fe6459506c696fa5887a0a6ea012b30727
+        uses: grafana/shared-workflows/actions/get-vault-secrets@ac5193564bb463032623a9a0ba23716f866f309c
         with:
           repo_secrets: |
             GITHUB_APP_ID=pyroscope-development-app:app-id
