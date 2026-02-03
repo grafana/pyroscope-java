@@ -35,9 +35,12 @@ func main() {
 			"alpine-3.18-8",
 			"alpine-3.18-11",
 			"alpine-3.18-17",
+			"alpine-3.18-21",
 			"alpine-3.19-8",
 			"alpine-3.19-11",
 			"alpine-3.19-17",
+			"alpine-3.19-21",
+			"alpine-3.19-25",
 			"ubuntu-18.04-8",
 			"ubuntu-18.04-11",
 			"ubuntu-18.04-17",
@@ -45,10 +48,12 @@ func main() {
 			"ubuntu-20.04-11",
 			"ubuntu-20.04-17",
 			"ubuntu-20.04-21",
+			"ubuntu-20.04-25",
 			"ubuntu-22.04-8",
 			"ubuntu-22.04-11",
 			"ubuntu-22.04-17",
 			"ubuntu-22.04-21",
+			"ubuntu-22.04-25",
 		}
 	}
 	url := "http://localhost:4040"
