@@ -35,10 +35,12 @@ jobs:
           - 'ubuntu-20.04-11'
           - 'ubuntu-20.04-17'
           - 'ubuntu-20.04-21'
+          - 'ubuntu-20.04-25'
           - 'ubuntu-22.04-8'
           - 'ubuntu-22.04-11'
           - 'ubuntu-22.04-17'
           - 'ubuntu-22.04-21'
+          - 'ubuntu-22.04-25'
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
