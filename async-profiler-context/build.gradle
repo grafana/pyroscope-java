@@ -1,12 +1,7 @@
-//import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
-import java.security.MessageDigest
-
 plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
-    id "de.undercouch.download" version "5.6.0"
     id "com.gradleup.shadow"  version '8.3.9'
 }
 
@@ -14,10 +9,10 @@ repositories {
     mavenCentral()
 }
 
-def asyncProfilerVersion = project.properties['async_profiler_version']
+def asyncProfilerDistDir = file("$rootDir/async-profiler-grafana-fork-dist/lib")
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
-    api files("$buildDir/async-profiler/async-profiler.jar")
+    api files("$asyncProfilerDistDir/async-profiler.jar")
     compileOnly 'org.jetbrains:annotations:24.1.0'
     implementation 'com.google.protobuf:protobuf-java:4.33.4'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.14.1'
@@ -27,7 +22,7 @@ dependencies {
 }
 
 jar {
-    from("$buildDir/async-profiler/native") {
+    from(asyncProfilerDistDir) {
         include "**.so"
         include "**.so.sha1"
     }
@@ -51,7 +46,7 @@ shadowJar {
     exclude 'META-INF/org/apache/logging/log4j/**'
     exclude 'META-INF/services/**'
 
-    from("$buildDir/async-profiler/native") {
+    from(asyncProfilerDistDir) {
         include "**.so"
         include "**.so.sha1"
     }
@@ -70,78 +65,6 @@ shadowJar {
     }
 }
 
-tasks.register('asyncProfilerLib') {
-    def useLocalArtifacts = project.findProperty('useLocalAsyncProfilerArtifacts') == 'true'
-
-    def suffixes = [
-        ['linux-arm64', 'tar.gz'],
-        ['linux-x64', 'tar.gz'],
-        ['macos', 'zip']
-    ]
-
-    def asyncProfilerDir = file("$buildDir/async-profiler")
-    outputs.file "$asyncProfilerDir/async-profiler.jar"
-    suffixes.forEach { suffix ->
-        outputs.file "$asyncProfilerDir/native/libasyncProfiler-${suffix}.so"
-    }
-
-    doLast {
-        suffixes.forEach { suffix, ext ->
-            if (!useLocalArtifacts) {
-                def repo = "https://github.com/grafana/async-profiler"
-                download.run {
-                    src "$repo/releases/download/v${asyncProfilerVersion}/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"
-                    dest new File(asyncProfilerDir, "async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
-                    overwrite true
-                }
-            } else {
-                copy {
-                    from file("../async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
-                    into asyncProfilerDir
-                }
-            }
-
-            // Extract the native library files.
-            copy {
-                if (ext == "zip") {
-                    from zipTree("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}")
-                } else {
-                    from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-${suffix}.${ext}"))
-                }
-                include '**/libasyncProfiler.*'
-                eachFile {
-                    it.relativePath = new RelativePath(true, "native/", "libasyncProfiler-${suffix}.so")
-                }
-                includeEmptyDirs false
-                into asyncProfilerDir
-            }
-
-            // Write checksums for the library files.
-            // They are used for the library deployment.
-            def sha1 = MessageDigest.getInstance('SHA1')
-            sha1.update(file("$asyncProfilerDir/native/libasyncProfiler-${suffix}.so").toPath().readBytes())
-            def hexString = new StringBuilder()
-            for (b in sha1.digest()) {
-                hexString.append(String.format('%01x', b & 0xFF))
-            }
-            new File("$asyncProfilerDir/native/libasyncProfiler-${suffix}.so.sha1").text = hexString
-        }
-
-        // Extract the Java library.
-        copy {
-            from tarTree(resources.gzip("$asyncProfilerDir/async-profiler-${asyncProfilerVersion}-linux-x64.tar.gz"))
-            include '**/async-profiler.jar'
-            eachFile {
-                it.relativePath = new RelativePath(true, it.relativePath.segments.drop(2))
-            }
-            includeEmptyDirs false
-            into asyncProfilerDir
-        }
-    }
-}
-
-clean.dependsOn 'cleanAsyncProfilerLib'
-compileJava.dependsOn 'asyncProfilerLib'
 
 publishing {
     publications {

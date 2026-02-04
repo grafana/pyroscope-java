@@ -1,3 +1,8 @@
+.PHONY: download-async-profiler
+download-async-profiler:
+	./scripts/download-async-profiler.sh -v 4.3.0.0 -r https://github.com/grafana/async-profiler -d async-profiler-grafana-fork-dist
+	#./scripts/download-async-profiler.sh -v 4.0 -r https://github.com/async-profiler/async-profiler -d async-profiler-genuine-dist
+
 .PHONY: clean
 clean:
 	rm -rf agent/build
