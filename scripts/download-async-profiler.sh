@@ -34,7 +34,7 @@ mv "$DIST_DIR/lib/libasyncProfiler.so" "$DIST_DIR/lib/libasyncProfiler-linux-x64
 # Download and extract linux-arm64
 echo "Downloading linux-arm64..."
 curl -sL "$REPO/releases/download/v$VERSION/async-profiler-$VERSION-linux-arm64.tar.gz" | \
-    tar -xzf - -O "*/lib/libasyncProfiler.so" > "$DIST_DIR/lib/libasyncProfiler-linux-arm64.so"
+    tar -xzf - -O --wildcards "*/lib/libasyncProfiler.so" > "$DIST_DIR/lib/libasyncProfiler-linux-arm64.so"
 
 # Download and extract macos
 echo "Downloading macos..."
