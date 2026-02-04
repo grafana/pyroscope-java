@@ -16,6 +16,7 @@ RUN if [ "${JAVA_VERSION}" -ge 25 ] 2>/dev/null; then ./gradlew --no-daemon wrap
 RUN ./gradlew --no-daemon --version
 ADD agent agent
 ADD async-profiler-context async-profiler-context
+ADD async-profiler-grafana-fork-dist async-profiler-grafana-fork-dist
 ADD demo/build.gradle demo/
 
 RUN ./gradlew --no-daemon shadowJar
