@@ -7,9 +7,6 @@ plugins {
     id "com.gradleup.shadow" version '8.3.9'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-
 repositories {
     mavenCentral()
 }
@@ -46,6 +43,8 @@ test {
 }
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
     withJavadocJar()
     withSourcesJar()
 }

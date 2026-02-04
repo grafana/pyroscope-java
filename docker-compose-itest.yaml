@@ -80,6 +80,15 @@ services:
       args:
         IMAGE_VERSION: 3.18
         JAVA_VERSION: 17
+  alpine-3.18-21:
+    build:
+      platforms:
+        - linux/amd64
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.18
+        JAVA_VERSION: 21
   alpine-3.19-8:
     build:
       platforms:
@@ -107,6 +116,24 @@ services:
       args:
         IMAGE_VERSION: 3.19
         JAVA_VERSION: 17
+  alpine-3.19-21:
+    build:
+      platforms:
+        - linux/amd64
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.19
+        JAVA_VERSION: 21
+  alpine-3.19-25:
+    build:
+      platforms:
+        - linux/amd64
+      context: .
+      dockerfile: alpine-test.Dockerfile
+      args:
+        IMAGE_VERSION: 3.19
+        JAVA_VERSION: 25
 
   ubuntu-18.04-8:
     build:
@@ -171,6 +198,15 @@ services:
       args:
         IMAGE_VERSION: 20.04
         JAVA_VERSION: 21
+  ubuntu-20.04-25:
+    build:
+      platforms:
+        - linux/amd64
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 20.04
+        JAVA_VERSION: 25
   ubuntu-22.04-8:
     build:
       platforms:
@@ -207,6 +243,15 @@ services:
       args:
         IMAGE_VERSION: 22.04
         JAVA_VERSION: 21
+  ubuntu-22.04-25:
+    build:
+      platforms:
+        - linux/amd64
+      context: .
+      dockerfile: ubuntu-test.Dockerfile
+      args:
+        IMAGE_VERSION: 22.04
+        JAVA_VERSION: 25
   pyroscope:
     image: 'grafana/pyroscope:1.17.0@sha256:f6e3caa6cade1dea53dd39db6117668e92cf9e43fbc097dda2096368b14f1cd1'
     ports:

@@ -2,11 +2,17 @@ ARG IMAGE_VERSION
 ARG JAVA_VERSION
 
 FROM alpine:3.23.2@sha256:865b95f46d98cf867a156fe4a135ad3fe50d2056aa3f25ed31662dff6da4eb62 AS builder
-RUN apk add openjdk11
+ARG JAVA_VERSION
+RUN if [ "${JAVA_VERSION}" -ge 25 ] 2>/dev/null; then \
+        apk add openjdk17; \
+    else \
+        apk add openjdk11; \
+    fi
 
 WORKDIR /app
 ADD gradlew build.gradle settings.gradle gradle.properties /app/
 ADD gradle gradle
+RUN if [ "${JAVA_VERSION}" -ge 25 ] 2>/dev/null; then ./gradlew --no-daemon wrapper --gradle-version=9.0; fi
 RUN ./gradlew --no-daemon --version
 ADD agent agent
 ADD async-profiler-context async-profiler-context
@@ -17,13 +23,15 @@ RUN ./gradlew --no-daemon shadowJar
 FROM alpine:${IMAGE_VERSION} AS runner
 ARG IMAGE_VERSION
 ARG JAVA_VERSION
-RUN apk add openjdk${JAVA_VERSION}
+RUN apk add --no-cache curl && \
+    curl -fsSL https://cdn.azul.com/public_keys/alpine-signing@azul.com-5d5dc44c.rsa.pub -o /etc/apk/keys/alpine-signing@azul.com-5d5dc44c.rsa.pub && \
+    echo "https://repos.azul.com/zulu/alpine" >> /etc/apk/repositories && \
+    apk update && \
+    apk add zulu${JAVA_VERSION}-jdk
 
 WORKDIR /app
 ADD demo demo
 COPY --from=builder /app/agent/build/libs/pyroscope.jar /app/agent/build/libs/pyroscope.jar
-
-ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/default-jvm/jre/bin
 
 RUN javac demo/src/main/java/Fib.java
 
