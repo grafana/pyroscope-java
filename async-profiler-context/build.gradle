@@ -32,6 +32,7 @@ test {
     useJUnitPlatform()
     maxHeapSize = "1g"
     jvmArgs '-XX:MaxMetaspaceSize=512m'
+    workingDir = rootDir
 }
 
 java {
