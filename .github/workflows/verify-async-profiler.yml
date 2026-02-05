@@ -1,0 +1,30 @@
+name: Verify async-profiler binaries
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Re-download async-profiler binaries
+        run: make download-async-profiler
+
+      - name: Verify binaries match committed files
+        run: |
+          if ! git diff --exit-code; then
+            echo "ERROR: async-profiler binaries do not match upstream releases."
+            echo "Run 'make download-async-profiler' locally and commit the updated files."
+            exit 1
+          fi
+          echo "async-profiler binaries are up to date."

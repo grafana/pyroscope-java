@@ -55,7 +55,7 @@ public class PyroscopeAsyncProfiler {
         if (res != null) {
             return res; // from shadowJar
         }
-        Path filePath = Paths.get("build", "async-profiler", "native", fileName);
+        Path filePath = Paths.get("async-profiler-grafana-fork-dist", "lib", fileName);
         return Files.newInputStream(filePath);
     }
 
