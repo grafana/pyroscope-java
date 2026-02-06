@@ -13,7 +13,7 @@ def asyncProfilerDistDir = file("$rootDir/async-profiler-grafana-fork-dist/lib")
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$asyncProfilerDistDir/async-profiler.jar")
-    compileOnly 'org.jetbrains:annotations:24.1.0'
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
     implementation 'com.google.protobuf:protobuf-java:4.33.5'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.14.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
