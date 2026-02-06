@@ -96,6 +96,14 @@ public class LabelsTest {
         }
     }
 
+    @Test
+    void testCaptureContext() {
+        try (ScopedContext s = new ScopedContext(new LabelsSet("k1", "v1"))) {
+            assertEquals(s.contextId, ScopedContext.CURRENT_CONTEXT_ID.get());
+        }
+        assertEquals(0, ScopedContext.CURRENT_CONTEXT_ID.get());
+    }
+
 
     @Test
     void exception() {
