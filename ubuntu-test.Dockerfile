@@ -1,7 +1,7 @@
 ARG IMAGE_VERSION
 ARG JAVA_VERSION
 
-FROM ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98 AS builder
+FROM ubuntu:24.04@sha256:cd1dba651b3080c3686ecf4e3c4220f026b521fb76978881737d24f200828b2b AS builder
 ARG JAVA_VERSION
 RUN apt-get update && \
     if [ "${JAVA_VERSION}" -ge 25 ] 2>/dev/null; then \
