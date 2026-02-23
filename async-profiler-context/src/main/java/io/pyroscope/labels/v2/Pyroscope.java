@@ -60,6 +60,11 @@ public final class Pyroscope {
             ScopedContext.CONTEXTS.clear();
         }
 
+        public static LabelsSet getCurrentLabels() {
+            ScopedContext context = ScopedContext.getCurrentContext();
+            return context != null ? context.labels : new LabelsSet();
+        }
+
         public static JfrLabels.LabelsSnapshot dump() {
             final JfrLabels.LabelsSnapshot.Builder sb = JfrLabels.LabelsSnapshot.newBuilder();
             final StringTableBuilder stb = new StringTableBuilder();
