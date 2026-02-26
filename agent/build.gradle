@@ -22,8 +22,8 @@ dependencies {
     api 'com.google.protobuf:protobuf-java:4.33.5'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.14.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.4'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.12.4'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.21.0'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.21.0'
 }
 
 javadoc{
