@@ -3,7 +3,7 @@ package io.pyroscope.javaagent;
 import java.util.EnumSet;
 import java.util.Optional;
 
-import one.profiler.Events;
+import io.pyroscope.vendor.one.profiler.Events;
 import io.pyroscope.http.Units;
 import io.pyroscope.http.AggregationType;
 
@@ -16,7 +16,7 @@ public enum EventType {
     ITIMER (Events.ITIMER, Units.SAMPLES, AggregationType.SUM);
 
     /**
-    * Event type id, as defined in one.profiler.Events.
+    * Event type id, as defined in io.pyroscope.vendor.one.profiler.Events.
     */
     public final String id;
 

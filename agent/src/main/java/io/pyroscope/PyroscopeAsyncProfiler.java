@@ -1,6 +1,6 @@
 package io.pyroscope;
 
-import one.profiler.AsyncProfiler;
+import io.pyroscope.vendor.one.profiler.AsyncProfiler;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

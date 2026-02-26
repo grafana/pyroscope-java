@@ -8,7 +8,7 @@ import io.pyroscope.javaagent.impl.ProfilerScopedContextWrapper;
 import io.pyroscope.labels.v2.LabelsSet;
 import io.pyroscope.labels.v2.Pyroscope;
 import io.pyroscope.labels.v2.ScopedContext;
-import one.profiler.AsyncProfiler;
+import io.pyroscope.vendor.one.profiler.AsyncProfiler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

@@ -1,7 +1,7 @@
 package io.pyroscope.labels.v2;
 
 import io.pyroscope.PyroscopeAsyncProfiler;
-import one.profiler.AsyncProfiler;
+import io.pyroscope.vendor.one.profiler.AsyncProfiler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ConcurrentHashMap;

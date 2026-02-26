@@ -1,7 +1,7 @@
 package io.pyroscope;
 
-import one.profiler.AsyncProfiler;
-import one.profiler.Counter;
+import io.pyroscope.vendor.one.profiler.AsyncProfiler;
+import io.pyroscope.vendor.one.profiler.Counter;
 
 import java.util.concurrent.TimeUnit;
 

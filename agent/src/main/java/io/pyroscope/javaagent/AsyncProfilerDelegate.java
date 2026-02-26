@@ -4,8 +4,8 @@ import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.labels.v2.Pyroscope;
-import one.profiler.AsyncProfiler;
-import one.profiler.Counter;
+import io.pyroscope.vendor.one.profiler.AsyncProfiler;
+import io.pyroscope.vendor.one.profiler.Counter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
