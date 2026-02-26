@@ -1,6 +1,9 @@
+io.pyroscope
 io.pyroscope.http
 io.pyroscope.javaagent
 io.pyroscope.javaagent.api
 io.pyroscope.javaagent.config
 io.pyroscope.javaagent.impl
 io.pyroscope.javaagent.util.zip
+io.pyroscope.labels.pb
+io.pyroscope.labels.v2

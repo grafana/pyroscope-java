@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":4,"i1":2,"i2":2,"i3":2,"i4":2,"i5":2,"i6":1,"i7":2,"i8":2,"i9":2,"i10":2,"i11":4,"i12":1,"i13":4,"i14":2,"i15":2,"i16":2,"i17":2,"i18":2,"i19":1,"i20":4,"i21":2,"i22":1,"i23":1,"i24":1,"i25":2,"i26":2,"i27":4,"i28":1,"i29":2,"i30":2,"i31":2,"i32":2,"i33":2,"i34":2,"i35":2,"i36":2,"i37":4,"i38":2};
+var data = {"i0":4,"i1":2,"i2":2,"i3":2,"i4":2,"i5":2,"i6":1,"i7":2,"i8":2,"i9":2,"i10":2,"i11":2,"i12":4,"i13":1,"i14":4,"i15":2,"i16":2,"i17":2,"i18":2,"i19":2,"i20":2,"i21":2,"i22":1,"i23":2,"i24":2,"i25":1,"i26":2,"i27":2,"i28":1,"i29":4,"i30":2,"i31":2,"i32":1,"i33":1,"i34":1,"i35":2,"i36":2,"i37":4,"i38":1,"i39":2,"i40":2,"i41":2,"i42":2,"i43":2,"i44":2,"i45":2,"i46":2,"i47":2,"i48":2,"i49":2,"i50":2,"i51":4,"i52":2};
 var tabs = {65535:["t0","All Classes"],1:["t1","Interface Summary"],2:["t2","Class Summary"],4:["t3","Enum Summary"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -142,10 +142,17 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
 <tr id="i7" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/labels/v2/ConstantContext.html" title="class in io.pyroscope.labels.v2">ConstantContext</a></td>
+<th class="colLast" scope="row">
+<div class="block">ConstantContext provides a way to define a set of labels that will be permanently stored
+ in memory for the life of the process.</div>
+</th>
+</tr>
+<tr id="i8" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/ContinuousProfilingScheduler.html" title="class in io.pyroscope.javaagent.impl">ContinuousProfilingScheduler</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/DefaultConfigurationProvider.html" title="class in io.pyroscope.javaagent.impl">DefaultConfigurationProvider</a></td>
 <th class="colLast" scope="row">
 <div class="block">Delegates configuration provision to multiple sources
@@ -155,103 +162,161 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  pyroscope.properties file can be overridden by PYROSCOPE_CONFIGURATION_FILE_CONFIG</div>
 </th>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/DefaultLogger.html" title="class in io.pyroscope.javaagent.impl">DefaultLogger</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/EnvConfigurationProvider.html" title="class in io.pyroscope.javaagent.impl">EnvConfigurationProvider</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/EventType.html" title="enum in io.pyroscope.javaagent">EventType</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/api/Exporter.html" title="interface in io.pyroscope.javaagent.api">Exporter</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/http/Format.html" title="enum in io.pyroscope.http">Format</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/util/zip/GzipSink.html" title="class in io.pyroscope.javaagent.util.zip">GzipSink</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/config/IntervalParser.html" title="class in io.pyroscope.javaagent.config">IntervalParser</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/JFRJCMDProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJCMDProfilerDelegate</a></td>
 <th class="colLast" scope="row">
 <div class="block">This implementation of JFR profiler, uses external <code>jcmd</code> command to manage JFR recordings.</div>
 </th>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/JFRJDKProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRJDKProfilerDelegate</a></td>
 <th class="colLast" scope="row">
 <div class="block">This implementation of JFR profiler, uses JDK JFR APi to manage JFR recordings.</div>
 </th>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/labels/pb/JfrLabels.html" title="class in io.pyroscope.labels.pb">JfrLabels</a></td>
+<th class="colLast" scope="row">&nbsp;</th>
+</tr>
+<tr id="i20" class="altColor">
+<td class="colFirst"><a href="io/pyroscope/labels/pb/JfrLabels.Context.html" title="class in io.pyroscope.labels.pb">JfrLabels.Context</a></td>
+<th class="colLast" scope="row">
+<div class="block">Protobuf type <code>io.pyroscope.labels.pb.Context</code></div>
+</th>
+</tr>
+<tr id="i21" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/labels/pb/JfrLabels.Context.Builder.html" title="class in io.pyroscope.labels.pb">JfrLabels.Context.Builder</a></td>
+<th class="colLast" scope="row">
+<div class="block">Protobuf type <code>io.pyroscope.labels.pb.Context</code></div>
+</th>
+</tr>
+<tr id="i22" class="altColor">
+<td class="colFirst"><a href="io/pyroscope/labels/pb/JfrLabels.ContextOrBuilder.html" title="interface in io.pyroscope.labels.pb">JfrLabels.ContextOrBuilder</a></td>
+<th class="colLast" scope="row">&nbsp;</th>
+</tr>
+<tr id="i23" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/labels/pb/JfrLabels.LabelsSnapshot.html" title="class in io.pyroscope.labels.pb">JfrLabels.LabelsSnapshot</a></td>
+<th class="colLast" scope="row">
+<div class="block">Protobuf type <code>io.pyroscope.labels.pb.LabelsSnapshot</code></div>
+</th>
+</tr>
+<tr id="i24" class="altColor">
+<td class="colFirst"><a href="io/pyroscope/labels/pb/JfrLabels.LabelsSnapshot.Builder.html" title="class in io.pyroscope.labels.pb">JfrLabels.LabelsSnapshot.Builder</a></td>
+<th class="colLast" scope="row">
+<div class="block">Protobuf type <code>io.pyroscope.labels.pb.LabelsSnapshot</code></div>
+</th>
+</tr>
+<tr id="i25" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/labels/pb/JfrLabels.LabelsSnapshotOrBuilder.html" title="interface in io.pyroscope.labels.pb">JfrLabels.LabelsSnapshotOrBuilder</a></td>
+<th class="colLast" scope="row">&nbsp;</th>
+</tr>
+<tr id="i26" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/JFRProfilerDelegate.html" title="class in io.pyroscope.javaagent">JFRProfilerDelegate</a></td>
 <th class="colLast" scope="row">
 <div class="block">This is a JFR profiler delegate, which checks JVM version and registers proper delegate implementation.</div>
 </th>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i27" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/labels/v2/LabelsSet.html" title="class in io.pyroscope.labels.v2">LabelsSet</a></td>
+<th class="colLast" scope="row">
+<div class="block">LabelsSet represents an immutable set of key-value pairs used for profiling labels.</div>
+</th>
+</tr>
+<tr id="i28" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/api/Logger.html" title="interface in io.pyroscope.javaagent.api">Logger</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i29" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/api/Logger.Level.html" title="enum in io.pyroscope.javaagent.api">Logger.Level</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i30" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/OverfillQueue.html" title="class in io.pyroscope.javaagent">OverfillQueue</a>&lt;<a href="io/pyroscope/javaagent/OverfillQueue.html" title="type parameter in OverfillQueue">E</a>&gt;</td>
 <th class="colLast" scope="row">
 <div class="block">A blocking queue with a limited capacity.</div>
 </th>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i31" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/Preconditions.html" title="class in io.pyroscope">Preconditions</a></td>
+<th class="colLast" scope="row">&nbsp;</th>
+</tr>
+<tr id="i32" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/api/ProfilerApi.html" title="interface in io.pyroscope.javaagent.api">ProfilerApi</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i33" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/ProfilerDelegate.html" title="interface in io.pyroscope.javaagent">ProfilerDelegate</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i34" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i35" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/ProfilerScopedContextWrapper.html" title="class in io.pyroscope.javaagent.impl">ProfilerScopedContextWrapper</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i36" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/ProfilerSdk.html" title="class in io.pyroscope.javaagent">ProfilerSdk</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i37" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/config/ProfilerType.html" title="enum in io.pyroscope.javaagent.config">ProfilerType</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i28" class="altColor">
+<tr id="i38" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/api/ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i29" class="rowColor">
+<tr id="i39" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/PropertiesConfigurationProvider.html" title="class in io.pyroscope.javaagent.impl">PropertiesConfigurationProvider</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i30" class="altColor">
+<tr id="i40" class="altColor">
+<td class="colFirst"><a href="io/pyroscope/labels/v2/Pyroscope.html" title="class in io.pyroscope.labels.v2">Pyroscope</a></td>
+<th class="colLast" scope="row">&nbsp;</th>
+</tr>
+<tr id="i41" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/labels/v2/Pyroscope.LabelsWrapper.html" title="class in io.pyroscope.labels.v2">Pyroscope.LabelsWrapper</a></td>
+<th class="colLast" scope="row">
+<div class="block">LabelsWrapper accumulates dynamic labels and corelates them with async-profiler's contextId
+ You are expected to call <a href="io/pyroscope/labels/v2/Pyroscope.LabelsWrapper.html#dump()"><code>Pyroscope.LabelsWrapper.dump()</code></a> periodically, io.pyroscope.javaagent.Profiler
+ does that.</div>
+</th>
+</tr>
+<tr id="i42" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/PyroscopeAgent.html" title="class in io.pyroscope.javaagent">PyroscopeAgent</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i31" class="rowColor">
+<tr id="i43" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/PyroscopeAgent.Options.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options</a></td>
 <th class="colLast" scope="row">
 <div class="block">Options allow to swap pyroscope components:
@@ -260,33 +325,43 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  - io.pyroscope.javaagent.api.Exporter for io.pyroscope.javaagent.impl.ContinuousProfilingScheduler</div>
 </th>
 </tr>
-<tr id="i32" class="altColor">
+<tr id="i44" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/PyroscopeAgent.Options.Builder.html" title="class in io.pyroscope.javaagent">PyroscopeAgent.Options.Builder</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i33" class="rowColor">
+<tr id="i45" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/PyroscopeAsyncProfiler.html" title="class in io.pyroscope">PyroscopeAsyncProfiler</a></td>
+<th class="colLast" scope="row">&nbsp;</th>
+</tr>
+<tr id="i46" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/PyroscopeExporter.html" title="class in io.pyroscope.javaagent.impl">PyroscopeExporter</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i34" class="altColor">
+<tr id="i47" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/QueuedExporter.html" title="class in io.pyroscope.javaagent.impl">QueuedExporter</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i35" class="rowColor">
+<tr id="i48" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/impl/SamplingProfilingScheduler.html" title="class in io.pyroscope.javaagent.impl">SamplingProfilingScheduler</a></td>
 <th class="colLast" scope="row">
 <div class="block">Schedule profiling in sampling mode.</div>
 </th>
 </tr>
-<tr id="i36" class="altColor">
+<tr id="i49" class="rowColor">
+<td class="colFirst"><a href="io/pyroscope/labels/v2/ScopedContext.html" title="class in io.pyroscope.labels.v2">ScopedContext</a></td>
+<th class="colLast" scope="row">
+<div class="block">ScopedContext associates profiling data with a set of labels for the current execution scope.</div>
+</th>
+</tr>
+<tr id="i50" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/Snapshot.html" title="class in io.pyroscope.javaagent">Snapshot</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i37" class="rowColor">
+<tr id="i51" class="rowColor">
 <td class="colFirst"><a href="io/pyroscope/http/Units.html" title="enum in io.pyroscope.http">Units</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
-<tr id="i38" class="altColor">
+<tr id="i52" class="altColor">
 <td class="colFirst"><a href="io/pyroscope/javaagent/util/zip/Util.html" title="class in io.pyroscope.javaagent.util.zip">Util</a></td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
