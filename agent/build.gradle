@@ -20,7 +20,7 @@ dependencies {
     implementation("com.squareup.moshi:moshi:1.15.2")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0")
     api 'com.google.protobuf:protobuf-java:4.33.5'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.4'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.12.4'
