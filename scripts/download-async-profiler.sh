@@ -61,3 +61,8 @@ rm -rf "$DIST_DIR/bin" "$DIST_DIR/jar" "$DIST_DIR/include" "$DIST_DIR/licenses" 
 
 echo "Done. Files in $DIST_DIR/lib:"
 ls -la "$DIST_DIR/lib/"
+
+# Generate the pre-relocated async-profiler jar
+echo "Generating async-profiler-relocated.jar..."
+"$(dirname "$0")/../gradlew" :agent:relocateAsyncProfiler
+echo "async-profiler-relocated.jar generated."

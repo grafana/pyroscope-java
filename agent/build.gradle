@@ -13,8 +13,19 @@ repositories {
 
 def asyncProfilerDistDir = file("$rootDir/async-profiler-grafana-fork-dist/lib")
 def pyroscopeVersion = project.properties['pyroscope_version']
+
+task relocateAsyncProfiler(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    archiveFileName = "async-profiler-relocated.jar"
+    destinationDirectory = asyncProfilerDistDir
+    from(zipTree("$asyncProfilerDistDir/async-profiler.jar"))
+    relocate("one.profiler", "io.pyroscope.vendor.one.profiler")
+    configurations = []
+}
+
 dependencies {
-    api files("$asyncProfilerDistDir/async-profiler.jar")
+    // async-profiler.jar is used for compilation only; the pre-relocated version is bundled in the shadow jar
+    compileOnly files("$asyncProfilerDistDir/async-profiler.jar")
+    testImplementation files("$asyncProfilerDistDir/async-profiler.jar")
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
     implementation('com.squareup.okhttp3:okhttp:4.12.0')
     implementation("com.squareup.moshi:moshi:1.15.2")
@@ -67,11 +78,16 @@ shadowJar {
         include "**.so.sha1"
     }
 
+    // Use the pre-relocated async-profiler jar instead of relocating at build time.
+    // The relocated jar has one.profiler classes already moved to io.pyroscope.vendor.one.profiler.
+    from(zipTree("$asyncProfilerDistDir/async-profiler-relocated.jar"))
+
     archiveFileName = "pyroscope.jar"
 
     minimize()
     archiveClassifier.set('')
     relocate("com.google",    "io.pyroscope.vendor.com.google")
+    // one.profiler relocation rewrites bytecode references in the agent's own compiled classes
     relocate("one.profiler",  "io.pyroscope.vendor.one.profiler")
     relocate("okio",  "io.pyroscope.vendor.okio")
     relocate("okhttp3",  "io.pyroscope.vendor.okhttp3")
