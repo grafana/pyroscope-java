@@ -47,13 +47,7 @@ public class ShadowJarContentsTest {
 
                 // Multi-release JARs store versioned classes under META-INF/versions/<N>/
                 // Strip that prefix before checking the package
-                String effectiveName = name;
-                if (effectiveName.startsWith("META-INF/versions/")) {
-                    int afterVersion = effectiveName.indexOf('/', "META-INF/versions/".length());
-                    if (afterVersion >= 0) {
-                        effectiveName = effectiveName.substring(afterVersion + 1);
-                    }
-                }
+                String effectiveName = name.replaceFirst("^META-INF/versions/\\d+/", "");
 
                 // All class files must be under io/pyroscope/
                 if (!effectiveName.startsWith("io/pyroscope/")) {
