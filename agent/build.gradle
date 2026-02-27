@@ -48,6 +48,10 @@ test {
     maxHeapSize = "1g"
     jvmArgs '-XX:MaxMetaspaceSize=512m'
     workingDir = rootDir
+    dependsOn shadowJar
+    doFirst {
+        systemProperty 'shadowJar.path', shadowJar.archiveFile.get().asFile.absolutePath
+    }
 }
 
 java {
