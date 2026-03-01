@@ -22,12 +22,8 @@ class ProfilerSdk implements ProfilerApi {
     }
 
     @Override
-    public void setTracingContext(long spanId, long spanName) {
-        asprof.setTracingContext(spanId, spanName);
-    }
-
-    @Override
-    public long registerConstant(String constant) {
-        return Pyroscope.LabelsWrapper.registerConstant(constant);
+    public void setTracingContext(long spanId, String spanName) {
+        long spanNameId = spanName != null ? Pyroscope.LabelsWrapper.registerConstant(spanName) : 0;
+        asprof.setTracingContext(spanId, spanNameId);
     }
 }

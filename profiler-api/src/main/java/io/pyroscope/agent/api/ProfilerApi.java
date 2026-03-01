@@ -5,9 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface ProfilerApi {
     void startProfiling();
 
-    void setTracingContext(long spanId, long spanName);
-
-    long registerConstant(String constant);
+    void setTracingContext(long spanId, String spanName);
 
     /**
      * Cross-classloader communication channel.
