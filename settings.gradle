@@ -1,4 +1,3 @@
 rootProject.name = 'pyroscope-java'
-include('profiler-api')
 include('agent')
 include('demo')
