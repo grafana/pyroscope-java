@@ -20,12 +20,9 @@ public class ProfilerSdk implements ProfilerApi {
     public ProfilerSdk() {
         this.asprof = PyroscopeAsyncProfiler.getAsyncProfiler();
     }
-
     @Override
     public void startProfiling() {
-        if (!PyroscopeAgent.isStarted()) {
-            PyroscopeAgent.start(Config.build());
-        }
+        PyroscopeAgent.start(Config.build());
     }
 
     @Override
