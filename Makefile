@@ -28,6 +28,18 @@ publish:
 test:
 	./gradlew test
 
+.PHONY: publish-maven-repo
+publish-maven-repo:
+	@echo "Publishing agent and bootstrap-api to maven-repo/ directory..."
+	./gradlew :agent:publishShadowPublicationToMavenLocal :bootstrap-api:publishMavenPublicationToMavenLocal \
+		-Dmaven.repo.local=$$(pwd)/maven-repo --no-daemon
+	@echo ""
+	@echo "Artifacts published to maven-repo/"
+	@echo "To commit and push:"
+	@echo "  git add maven-repo/ .gitignore"
+	@echo "  git commit -m 'Update maven-repo artifacts to version \$$(grep pyroscope_version gradle.properties | cut -d= -f2)'"
+	@echo "  git push"
+
 .PHONY: docker-example-base
 docker-example-base: build
 	cp agent/build/libs/pyroscope.jar examples
