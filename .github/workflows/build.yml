@@ -36,3 +36,12 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
       - run: ./gradlew shadowJar
+      - name: Verify shadow jar contents
+        run: |
+          jar tf agent/build/libs/pyroscope.jar > /tmp/jar-contents.txt
+          # ProfilerSdk must be present
+          grep -q 'io/pyroscope/javaagent/ProfilerSdk.class' /tmp/jar-contents.txt
+          # bootstrap-api classes must NOT be present (provided via bootstrap classloader at runtime)
+          ! grep -q 'io/pyroscope/javaagent/api/ProfilerApi.class' /tmp/jar-contents.txt
+          ! grep -q 'io/pyroscope/javaagent/api/ProfilerApiHolder.class' /tmp/jar-contents.txt
+          ! grep -q 'io/pyroscope/javaagent/api/ProfilerScopedContext.class' /tmp/jar-contents.txt
