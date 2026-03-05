@@ -61,7 +61,7 @@ public class PyroscopeAgent {
             try {
                 options.scheduler.start(options.profiler);
                 ScopedContext.ENABLED.set(true);
-                logger.log(Logger.Level.INFO, "Profiling started <<<<<<<<<<<<<<<< ");
+                logger.log(Logger.Level.INFO, "Profiling started");
                 publishProfilerApi();
             } catch (final Throwable e) {
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
