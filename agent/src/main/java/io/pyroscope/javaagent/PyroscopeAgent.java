@@ -61,7 +61,7 @@ public class PyroscopeAgent {
             try {
                 options.scheduler.start(options.profiler);
                 ScopedContext.ENABLED.set(true);
-                logger.log(Logger.Level.INFO, "Profiling started");
+                logger.log(Logger.Level.INFO, "Profiling started <<<<<<<<<<<<<<<< ");
                 publishProfilerApi();
             } catch (final Throwable e) {
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
@@ -71,13 +71,20 @@ public class PyroscopeAgent {
     }
 
     private static void publishProfilerApi() {
-        final boolean DEBUG = Boolean.getBoolean("pyroscope.otel.debug"); // do nott use PyroscopeOtelDebug
+                sOptions.logger.log(Logger.Level.INFO, "Profiling started <<<<<<<<<<<<<<<< 1");
+
+        // final boolean DEBUG = Boolean.getBoolean("pyroscope.otel.debug"); // do nott use PyroscopeOtelDebug
+        final boolean DEBUG = true;
         try {
             ProfilerApi api = new ProfilerSdk();
             ProfilerApiHolder.INSTANCE.set(api);
             if (DEBUG) System.out.println("published profiler sdk");
+                sOptions.logger.log(Logger.Level.INFO, "Profiling started <<<<<<<<<<<<<<<< 2");
+
         } catch (Throwable th) {
             if (DEBUG) th.printStackTrace(System.out);
+                sOptions.logger.log(Logger.Level.INFO, "Profiling started <<<<<<<<<<<<<<<< 3");
+
         }
     }
 
