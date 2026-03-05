@@ -97,12 +97,6 @@ shadowJar {
     exclude 'META-INF/org/apache/logging/log4j/**'
     exclude 'META-INF/services/**'
 
-    // Exclude bootstrap-api classes — they are injected into the bootstrap classloader
-    // at startup from the embedded pyroscope-bootstrap.jar.bin resource.
-    exclude 'io/pyroscope/javaagent/api/ProfilerApi.class'
-    exclude 'io/pyroscope/javaagent/api/ProfilerApiHolder.class'
-    exclude 'io/pyroscope/javaagent/api/ProfilerScopedContext.class'
-
     from(asyncProfilerDistDir) {
         include "**.so"
         include "**.so.sha1"

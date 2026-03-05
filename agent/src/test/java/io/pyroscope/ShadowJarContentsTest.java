@@ -86,7 +86,7 @@ public class ShadowJarContentsTest {
     }
 
     @Test
-    void bootstrapApiClassesNotInShadowJar() throws Exception {
+    void bootstrapApiClassesInShadowJar() throws Exception {
         String jarPath = System.getProperty("shadowJar.path");
         if (jarPath == null || jarPath.isEmpty()) {
             fail("System property 'shadowJar.path' is not set. Run this test via Gradle.");
@@ -103,8 +103,8 @@ public class ShadowJarContentsTest {
 
         try (JarFile jar = new JarFile(jarFile)) {
             for (String className : bootstrapClasses) {
-                assertNull(jar.getJarEntry(className),
-                    "Bootstrap-api class should not be in shadow jar: " + className);
+                assertNotNull(jar.getJarEntry(className),
+                    "Bootstrap-api class should be in shadow jar: " + className);
             }
         }
     }
