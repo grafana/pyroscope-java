@@ -71,20 +71,13 @@ public class PyroscopeAgent {
     }
 
     private static void publishProfilerApi() {
-                sOptions.logger.log(Logger.Level.INFO, "Profiling started <<<<<<<<<<<<<<<< 1");
-
-        // final boolean DEBUG = Boolean.getBoolean("pyroscope.otel.debug"); // do nott use PyroscopeOtelDebug
-        final boolean DEBUG = true;
+        final boolean DEBUG = Boolean.getBoolean("pyroscope.otel.debug"); // do nott use PyroscopeOtelDebug
         try {
             ProfilerApi api = new ProfilerSdk();
             ProfilerApiHolder.INSTANCE.set(api);
             if (DEBUG) System.out.println("published profiler sdk");
-                sOptions.logger.log(Logger.Level.INFO, "Profiling started <<<<<<<<<<<<<<<< 2");
-
         } catch (Throwable th) {
             if (DEBUG) th.printStackTrace(System.out);
-                sOptions.logger.log(Logger.Level.INFO, "Profiling started <<<<<<<<<<<<<<<< 3");
-
         }
     }
 
