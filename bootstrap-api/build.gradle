@@ -1,24 +1,81 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
     mavenCentral()
 }
 
+def pyroscopeVersion = project.properties['pyroscope_version']
+
 dependencies {
     compileOnly 'org.jetbrains:annotations:26.0.2'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
             from components.java
+            groupId = 'io.pyroscope'
             artifactId = 'bootstrap-api'
+            version = pyroscopeVersion
+            pom {
+                name = 'Pyroscope Bootstrap API'
+                description = 'Bootstrap classloader API for cross-classloader communication in Pyroscope Java integrations'
+                url = 'https://pyroscope.io'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'pyroscope'
+                        name = 'Pyroscope'
+                        email = 'anatoly@pyroscope.io'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/pyroscope-io/pyroscope-java.git'
+                    developerConnection = 'scm:git:ssh://github.com/pyroscope-io/pyroscope-java.git'
+                    url = 'https://github.com/pyroscope-io/pyroscope-java'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username project.hasProperty('nexusUsername') ? project.nexusUsername : ''
+                password project.hasProperty('nexusPassword') ? project.nexusPassword : ''
+            }
+            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
         }
     }
 }
+
+signing {
+    sign publishing.publications.maven
+}
+
+afterEvaluate {
+    if (project.tasks.findByName('signMavenPublication')) {
+        project.tasks.named('signMavenPublication').configure {
+            dependsOn 'jar'
+            dependsOn 'sourcesJar'
+            dependsOn 'javadocJar'
+        }
+    }
+}
+
+generateMetadataFileForMavenPublication.dependsOn 'jar'

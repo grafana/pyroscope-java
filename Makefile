@@ -15,8 +15,8 @@ build:
 
 .PHONY: publish
 publish:
-	@echo "./gradlew clean :agent:shadowJar publishToSonatype closeAndReleaseSonatypeStagingRepository"
-	@./gradlew clean :agent:shadowJar publishToSonatype closeAndReleaseSonatypeStagingRepository \
+	@echo "./gradlew clean :agent:shadowJar :bootstrap-api:jar publishToSonatype closeAndReleaseSonatypeStagingRepository"
+	@./gradlew clean :agent:shadowJar :bootstrap-api:jar publishToSonatype closeAndReleaseSonatypeStagingRepository \
 		-PsonatypeUsername="$(NEXUS_USERNAME)" \
 		-PsonatypePassword="$(NEXUS_PASSWORD)" \
 		-Psigning.secretKeyRingFile="$(NEXUS_GPG_SECRING_FILE)" \
