@@ -1,4 +1,3 @@
 rootProject.name = 'pyroscope-java'
 include('agent')
 include('demo')
-include('bootstrap-api')

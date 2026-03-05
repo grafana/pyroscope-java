@@ -15,7 +15,6 @@ def asyncProfilerDistDir = file("$rootDir/async-profiler-grafana-fork-dist/lib")
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$asyncProfilerDistDir/async-profiler.jar")
-    compileOnly project(':bootstrap-api')
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
     implementation('com.squareup.okhttp3:okhttp:4.12.0')
     implementation("com.squareup.moshi:moshi:1.15.2")
@@ -27,25 +26,34 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.12.4'
 }
 
-// Resolve the bootstrap-api jar and copy it into the compiled resources directory
-// so it ends up in the shadow jar as a resource file. BootstrapApiInjector reads it via
-// getResourceAsStream() and injects it into the bootstrap classloader.
-// Renamed to .bin to prevent the shadow jar plugin from merging/processing it.
-configurations {
-    bootstrapApi
+// Create a JAR containing ONLY the 3 bootstrap-api classes
+// This JAR will be embedded as a resource for bootstrap classloader injection
+task bootstrapApiJar(type: Jar) {
+    dependsOn compileJava
+    archiveBaseName.set('pyroscope-bootstrap')
+    archiveVersion.set('')
+    archiveClassifier.set('')
+
+    // Include only the 3 bootstrap-api classes from compiled output
+    from(sourceSets.main.java.classesDirectory) {
+        include 'io/pyroscope/javaagent/api/ProfilerApi.class'
+        include 'io/pyroscope/javaagent/api/ProfilerApiHolder.class'
+        include 'io/pyroscope/javaagent/api/ProfilerScopedContext.class'
+    }
+
+    destinationDirectory.set(file("$buildDir/libs"))
 }
 
-dependencies {
-    bootstrapApi project(':bootstrap-api')
-}
-
+// Copy the bootstrap JAR into resources as .bin file
+// BootstrapApiInjector reads this resource at runtime
 task copyBootstrapToResources(type: Copy) {
-    from configurations.bootstrapApi
+    dependsOn bootstrapApiJar
+    from(bootstrapApiJar.archiveFile)
     into(sourceSets.main.output.resourcesDir)
-    rename '(.*)\\.jar', 'pyroscope-bootstrap.jar.bin'
+    rename { 'pyroscope-bootstrap.jar.bin' }
 }
 
-classes.dependsOn copyBootstrapToResources
+processResources.dependsOn copyBootstrapToResources
 
 javadoc{
     // excluded as javadoc generation fails on inaccessible sun.management.VMManagement class
