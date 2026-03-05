@@ -3,8 +3,8 @@ package io.pyroscope.javaagent.api;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Cross-classloader rendezvous point for the Pyroscope profiling API. The bootstrap-api jar
- * is injected into the bootstrap classloader by the OTel extension at startup
+ * Cross-classloader rendezvous point for the Pyroscope profiling API. These classes
+ * are injected into the bootstrap classloader by the OTel extension at startup
  * (via {@link java.lang.instrument.Instrumentation#appendToBootstrapClassLoaderSearch}),
  * making this holder visible to both the extension and application classloaders.
  *
