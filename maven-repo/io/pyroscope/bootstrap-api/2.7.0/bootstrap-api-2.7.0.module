@@ -68,11 +68,11 @@
         {
           "name": "bootstrap-api-2.7.0-javadoc.jar",
           "url": "bootstrap-api-2.7.0-javadoc.jar",
-          "size": 79724,
-          "sha512": "02b450d825b0282b1422e9d6dc9608372ac0055c8cc93341bcfac809ee666b50f73a83b711bb3860037ec3ab0ad07ba5d2c31acc55853db43181662403e4a545",
-          "sha256": "91d0d2daee812c0555676f590110c9079b4fa3f09692855949db885b99d1f1d2",
-          "sha1": "4eaec7388434b480b5e6de519239114a7d4c6cb8",
-          "md5": "3ad1f41f630def22927d37cac6a4f410"
+          "size": 91246,
+          "sha512": "a9c182661a4fdfaa1c3c4f636fa968cfc8fce86651d1527eb66138c13612b63c457b41c1951cd7a2ce246beb45801c5177bfe84ed6acb807fae0497f58489a49",
+          "sha256": "667a54e42f1ff4a04a69ba77868f9523652143d12819a6426dbd2da7ed6a12ba",
+          "sha1": "c6d6b3a640dde0e2b284ddaa66f40b514d65b860",
+          "md5": "87370422c096b6c6072b1e13412d19a9"
         }
       ]
     },
