@@ -129,3 +129,40 @@ The flow at runtime:
    `ProfilerSdk` into `ProfilerApiHolder.INSTANCE`, replacing the fallback.
 4. On every span start, `PyroscopeOtelSpanProcessor` reads `ProfilerApiHolder.INSTANCE`
    and calls `setTracingContext(spanId, spanName)` to correlate profiles with traces.
+
+## Agent loading order
+
+The recommended configuration is to load the OTel Java agent first, with pyroscope.jar
+either on the classpath or started programmatically by the application:
+
+```
+java -javaagent:opentelemetry-javaagent.jar \
+     -Dotel.javaagent.extensions=pyroscope-otel-javaagent-extension.jar \
+     -jar app.jar
+```
+
+However, loading pyroscope.jar as a `-javaagent` **before** the OTel agent also works:
+
+```
+java -javaagent:pyroscope.jar \
+     -javaagent:opentelemetry-javaagent.jar \
+     -Dotel.javaagent.extensions=pyroscope-otel-javaagent-extension.jar \
+     -jar app.jar
+```
+
+In this case the startup sequence is:
+
+1. `PyroscopeAgent.premain()` runs first — starts profiling immediately.
+2. The OTel agent starts second and loads the pyroscope-otel extension.
+3. `BootstrapApiInjector` injects bootstrap-api into the bootstrap classloader.
+4. `tryLoadFromSystemClassLoader()` loads `ProfilerSdk` from the system classloader
+   and sets `ProfilerApiHolder.INSTANCE`. The cast to `ProfilerApi` succeeds because
+   bootstrap-api is already on the bootstrap classloader from step 3.
+5. The extension calls `startProfiling()` which logs a harmless "already started" error.
+6. The ByteBuddy hook on `PyroscopeAgent.start()` never fires (it was already called
+   in premain), but this is fine because step 4 already set `ProfilerApiHolder.INSTANCE`.
+
+Span-profile correlation works correctly in both configurations. The only difference is
+a harmless `"Failed to start profiling - already started"` log message, and the fact that
+`OTEL_PYROSCOPE_START_PROFILING=false` has no effect (premain starts profiling
+unconditionally before the extension loads).
