@@ -8,21 +8,46 @@ Published to Maven Central as `io.pyroscope:bootstrap-api`.
 
 ## Problem
 
-The OTel Java agent uses a hierarchical classloader layout:
+The OTel Java agent uses a hierarchical classloader layout. The exact hierarchy
+depends on how the application is launched:
+
+**Standard `-classpath` application** (no nested classloaders):
 
 ```
 Bootstrap CL
-  └── AgentClassLoader
-        └── ExtensionClassLoader   ← OTel extension (pyroscope-otel-javaagent-extension.jar)
-
-App CL (e.g. Spring Boot LaunchedURLClassLoader)
-  └── Pyroscope agent (pyroscope.jar)
+  ├── AgentClassLoader
+  │     └── ExtensionClassLoader   ← OTel extension
+  └── System/App CL               ← application classes + pyroscope.jar
 ```
 
-The OTel extension and the Pyroscope agent run in **different classloaders** that have
-no parent-child relationship. Even if both classloaders contain a class with the same
-fully-qualified name (e.g. `io.pyroscope.javaagent.api.ProfilerApi`), the JVM treats
-them as **different types** — a cross-classloader cast will fail with `ClassCastException`.
+**Spring Boot** (nested classloader for the fat jar):
+
+```
+Bootstrap CL
+  ├── AgentClassLoader
+  │     └── ExtensionClassLoader   ← OTel extension
+  └── System/App CL
+        └── LaunchedURLClassLoader ← Spring Boot fat jar classes + pyroscope.jar
+```
+
+**Application server** (e.g. Tomcat, with per-webapp classloaders):
+
+```
+Bootstrap CL
+  ├── AgentClassLoader
+  │     └── ExtensionClassLoader   ← OTel extension
+  └── System/App CL
+        └── WebappClassLoader      ← webapp classes + pyroscope.jar
+```
+
+In all cases, the `ExtensionClassLoader` and the classloader that loads pyroscope.jar
+have **no parent-child relationship** — they are in separate branches of the tree.
+Even if both classloaders contain a class with the same fully-qualified name
+(e.g. `io.pyroscope.javaagent.api.ProfilerApi`), the JVM treats them as
+**different types** — a cross-classloader cast will fail with `ClassCastException`.
+
+However, all classloaders delegate to the **bootstrap classloader** first. This is
+the one classloader visible to every branch of the hierarchy.
 
 For span-profile correlation, the extension needs to call `setTracingContext()` on
 the profiling agent's `ProfilerSdk` instance. This requires a shared type that both
