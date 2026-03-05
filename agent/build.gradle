@@ -45,7 +45,7 @@ task copyBootstrapToResources(type: Copy) {
     rename '(.*)\\.jar', 'pyroscope-bootstrap.jar.bin'
 }
 
-compileTestJava.dependsOn copyBootstrapToResources
+classes.dependsOn copyBootstrapToResources
 
 javadoc{
     // excluded as javadoc generation fails on inaccessible sun.management.VMManagement class
