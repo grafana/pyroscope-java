@@ -15,8 +15,8 @@ build:
 
 .PHONY: publish
 publish:
-	@echo "./gradlew clean :agent:shadowJar :bootstrap-api:jar publishToSonatype closeAndReleaseSonatypeStagingRepository"
-	@./gradlew clean :agent:shadowJar :bootstrap-api:jar publishToSonatype closeAndReleaseSonatypeStagingRepository \
+	@echo "./gradlew clean :agent:shadowJar publishToSonatype closeAndReleaseSonatypeStagingRepository"
+	@./gradlew clean :agent:shadowJar publishToSonatype closeAndReleaseSonatypeStagingRepository \
 		-PsonatypeUsername="$(NEXUS_USERNAME)" \
 		-PsonatypePassword="$(NEXUS_PASSWORD)" \
 		-Psigning.secretKeyRingFile="$(NEXUS_GPG_SECRING_FILE)" \
@@ -30,8 +30,8 @@ test:
 
 .PHONY: publish-maven-repo
 publish-maven-repo:
-	@echo "Publishing agent and bootstrap-api to maven-repo/ directory..."
-	./gradlew :agent:publishShadowPublicationToMavenLocal :bootstrap-api:publishMavenPublicationToMavenLocal \
+	@echo "Publishing agent to maven-repo/ directory..."
+	./gradlew :agent:publishShadowPublicationToMavenLocal \
 		-Dmaven.repo.local=$$(pwd)/maven-repo --no-daemon
 	@echo ""
 	@echo "Artifacts published to maven-repo/"

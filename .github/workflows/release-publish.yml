@@ -113,6 +113,5 @@ jobs:
         run: |
           gh release create "v${VERSION}" \
             agent/build/libs/pyroscope.jar \
-            bootstrap-api/build/libs/bootstrap-api-${VERSION}.jar \
             --title "Release v${VERSION}" \
             --notes "Automated release"
