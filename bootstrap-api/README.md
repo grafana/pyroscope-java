@@ -112,8 +112,9 @@ release of both `pyroscope-java` and `otel-profiling-java`.
 
 ## How the OTel extension works
 
-For a complete example of building a custom OTel Java agent extension, see the
-[opentelemetry-java-instrumentation distro example](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/examples/distro).
+The bootstrap classloader injection approach used here is inspired by the
+[opentelemetry-java-instrumentation distro example](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/examples/distro),
+which demonstrates the same pattern for cross-classloader communication in OTel extensions.
 
 The flow at runtime:
 
