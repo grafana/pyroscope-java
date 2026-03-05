@@ -21,6 +21,10 @@ public class PyroscopeAgent {
 
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
+        // Inject bootstrap-api classes into the bootstrap classloader BEFORE any code
+        // references ProfilerApiHolder. This ensures cross-classloader visibility.
+        BootstrapApiInjector.inject(inst);
+
         final Config config;
         try {
             config = Config.build(DefaultConfigurationProvider.INSTANCE);

@@ -27,6 +27,26 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.12.4'
 }
 
+// Resolve the bootstrap-api jar and copy it into the compiled resources directory
+// so it ends up in the shadow jar as a resource file. BootstrapApiInjector reads it via
+// getResourceAsStream() and injects it into the bootstrap classloader.
+// Renamed to .bin to prevent the shadow jar plugin from merging/processing it.
+configurations {
+    bootstrapApi
+}
+
+dependencies {
+    bootstrapApi project(':bootstrap-api')
+}
+
+task copyBootstrapToResources(type: Copy) {
+    from configurations.bootstrapApi
+    into(sourceSets.main.output.resourcesDir)
+    rename '(.*)\\.jar', 'pyroscope-bootstrap.jar.bin'
+}
+
+compileTestJava.dependsOn copyBootstrapToResources
+
 javadoc{
     // excluded as javadoc generation fails on inaccessible sun.management.VMManagement class
     exclude("io/pyroscope/javaagent/CurrentPidProvider.java")
@@ -63,9 +83,17 @@ java {
 }
 
 shadowJar {
+    dependsOn copyBootstrapToResources
+
     exclude 'Log4j-*'
     exclude 'META-INF/org/apache/logging/log4j/**'
     exclude 'META-INF/services/**'
+
+    // Exclude bootstrap-api classes — they are injected into the bootstrap classloader
+    // at startup from the embedded pyroscope-bootstrap.jar.bin resource.
+    exclude 'io/pyroscope/javaagent/api/ProfilerApi.class'
+    exclude 'io/pyroscope/javaagent/api/ProfilerApiHolder.class'
+    exclude 'io/pyroscope/javaagent/api/ProfilerScopedContext.class'
 
     from(asyncProfilerDistDir) {
         include "**.so"
