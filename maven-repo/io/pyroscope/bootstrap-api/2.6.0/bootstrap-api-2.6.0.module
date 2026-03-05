@@ -1,0 +1,100 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.pyroscope",
+    "module": "bootstrap-api",
+    "version": "2.6.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.3"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "bootstrap-api-2.6.0.jar",
+          "url": "bootstrap-api-2.6.0.jar",
+          "size": 2289,
+          "sha512": "7f7ae4311c5246f5fb4b92a58e8e21b0248329d3318188ec26b4af1c0d4f3cf0e966c2178725a4e3fe60022380a0908876a0517a5f221a2ad709c3a96c4f4913",
+          "sha256": "7f579c1eb952abbe8b7e7381f89116ac1bf309628b35f875cc3da63f6894199e",
+          "sha1": "f332ffd867cda974361e65725789e01115b5c65c",
+          "md5": "cbe95a9830cd2d5fc90c9a774de30b41"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "bootstrap-api-2.6.0.jar",
+          "url": "bootstrap-api-2.6.0.jar",
+          "size": 2289,
+          "sha512": "7f7ae4311c5246f5fb4b92a58e8e21b0248329d3318188ec26b4af1c0d4f3cf0e966c2178725a4e3fe60022380a0908876a0517a5f221a2ad709c3a96c4f4913",
+          "sha256": "7f579c1eb952abbe8b7e7381f89116ac1bf309628b35f875cc3da63f6894199e",
+          "sha1": "f332ffd867cda974361e65725789e01115b5c65c",
+          "md5": "cbe95a9830cd2d5fc90c9a774de30b41"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "bootstrap-api-2.6.0-javadoc.jar",
+          "url": "bootstrap-api-2.6.0-javadoc.jar",
+          "size": 79737,
+          "sha512": "527d9922738eacd447e2aa91fdb9086f1bc27233d25ab468eef64395957a5ec75ca9d67e7170d800db06d850f5eff1c25435fa4beac228925e01cda7721824a5",
+          "sha256": "42ae22f11f7b5408c659c7cfeab9fa94c79aaefe17d60c68adb1b2a7dd0b6e4f",
+          "sha1": "deb3368df76f97fc24a78998c2fddf4996e5445c",
+          "md5": "8825dddd3ac1581539cfa852c84db95f"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "bootstrap-api-2.6.0-sources.jar",
+          "url": "bootstrap-api-2.6.0-sources.jar",
+          "size": 2533,
+          "sha512": "b9479a53b1f9173fe1cd2fe0dde16554baeff8e46704882fe15eb9b79789834ffd59237d507f074f6e4eaf68c637d1171d763c7a2e569aac4f170a8ec9a2b43e",
+          "sha256": "ef089bd202d021bd703e17cee01228f5a6f7ab6784bfbe720dabfe39b0c4bb42",
+          "sha1": "5b3d57d3b440c66957ca780210bc2a3ad978223e",
+          "md5": "e1742c657c31484e5ae948b08073ba15"
+        }
+      ]
+    }
+  ]
+}
