@@ -1,0 +1,38 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.pyroscope",
+    "module": "agent",
+    "version": "2.9.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.3"
+    }
+  },
+  "variants": [
+    {
+      "name": "shadowRuntimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "shadowed",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "agent-2.9.0.jar",
+          "url": "agent-2.9.0.jar",
+          "size": 5725505,
+          "sha512": "9f2f5893d404f564a3cb4087eefb88721ddd09adacdebef7268ad56910bc3247d0353a14d4bace04117d89158705251cfcee51d4a0be835d9d963e516c6e9e2d",
+          "sha256": "e162a7f7e5deaf8d2c773fef3581fba3890afaab2f2cd4ad8ee9845ba07de37c",
+          "sha1": "5931c79e0a7b0d0ea69942c9644f2cdfb1c7ef31",
+          "md5": "a44e61865aed51addea11b9649604754"
+        }
+      ]
+    }
+  ]
+}
