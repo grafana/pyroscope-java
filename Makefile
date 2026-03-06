@@ -39,7 +39,7 @@ publish-maven-repo:
 	@echo "Artifacts published to maven-repo/"
 	@echo "To commit and push:"
 	@echo "  git add maven-repo/ .gitignore"
-	@echo "  git commit -m 'Update maven-repo artifacts to version \$$(grep pyroscope_version gradle.properties | cut -d= -f2)'"
+	@echo "  git commit -m \"Update maven-repo artifacts to version \$$(grep pyroscope_version gradle.properties | cut -d= -f2)\""
 	@echo "  git push"
 
 .PHONY: docker-example-base
