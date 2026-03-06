@@ -79,7 +79,10 @@ public class PyroscopeAgent {
             ProfilerApi api = new ProfilerSdk();
             ProfilerApiHolder.INSTANCE.compareAndSet(null, api);
             logger.log(Logger.Level.DEBUG, "published profiler sdk");
+            System.out.println("hui1");
         } catch (Throwable th) {
+            th.printStackTrace();
+            System.out.println("hui2");
             logger.log(Logger.Level.DEBUG, "publish profiler failed %s", th);
         }
     }
