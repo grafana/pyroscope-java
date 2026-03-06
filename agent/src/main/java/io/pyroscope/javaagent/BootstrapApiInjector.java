@@ -22,6 +22,14 @@ import java.util.jar.JarFile;
  * <p>The bootstrap-api JAR is embedded as a resource ({@code pyroscope-bootstrap.jar.bin}) inside
  * pyroscope.jar. It uses a {@code .bin} extension to prevent the shadow jar plugin from
  * merging or relocating its contents.
+ *
+ * <p>There are two places that perform this injection:
+ * <ul>
+ *   <li>Here, in the agent premain ({@code PyroscopeAgent.premain})</li>
+ *   <li>In the otel-profiling-java extension ({@code io.otel.pyroscope.BootstrapApiInjector})</li>
+ * </ul>
+ * Whichever runs first injects the classes; the second call is a no-op since the classes
+ * are already on the bootstrap classloader.
  */
 class BootstrapApiInjector {
 
