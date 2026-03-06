@@ -66,7 +66,7 @@ public class PyroscopeAgent {
                 options.scheduler.start(options.profiler);
                 ScopedContext.ENABLED.set(true);
                 logger.log(Logger.Level.INFO, "Profiling started");
-                publishProfilerApi();
+                publishProfilerApi(logger);
             } catch (final Throwable e) {
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
                 sOptions = null;
@@ -74,14 +74,13 @@ public class PyroscopeAgent {
         }
     }
 
-    private static void publishProfilerApi() {
-        final boolean DEBUG = Boolean.getBoolean("pyroscope.otel.debug"); // do nott use PyroscopeOtelDebug
+    private static void publishProfilerApi(logger Logger) {
         try {
             ProfilerApi api = new ProfilerSdk();
             ProfilerApiHolder.INSTANCE.compareAndSet(null, api);
-            if (DEBUG) System.out.println("published profiler sdk");
+            logger.log(Logger.Level.DEBUG, "published profiler sdk");
         } catch (Throwable th) {
-            if (DEBUG) th.printStackTrace(System.out);
+            logger.log(Logger.Level.DEBUG, "publish profiler failed", e);
         }
     }
 
