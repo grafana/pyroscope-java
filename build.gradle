@@ -13,3 +13,8 @@ nexusPublishing {
         }
     }
 }
+
+subprojects {
+    group = "io.pyroscope"
+    version = rootProject.version
+}
