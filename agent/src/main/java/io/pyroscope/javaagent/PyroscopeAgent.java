@@ -74,13 +74,13 @@ public class PyroscopeAgent {
         }
     }
 
-    private static void publishProfilerApi(logger Logger) {
+    private static void publishProfilerApi(Logger logger) {
         try {
             ProfilerApi api = new ProfilerSdk();
             ProfilerApiHolder.INSTANCE.compareAndSet(null, api);
             logger.log(Logger.Level.DEBUG, "published profiler sdk");
         } catch (Throwable th) {
-            logger.log(Logger.Level.DEBUG, "publish profiler failed", e);
+            logger.log(Logger.Level.DEBUG, "publish profiler failed %s", th);
         }
     }
 

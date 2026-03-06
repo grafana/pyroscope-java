@@ -28,6 +28,8 @@ publish:
 test:
 	./gradlew test
 
+# TODO: Remove publish-maven-repo target and maven-repo/ directory before merging.
+#       This is only used during development to serve artifacts to the otel-profiling-java build.
 .PHONY: publish-maven-repo
 publish-maven-repo:
 	@echo "Publishing agent to maven-repo/ directory..."
