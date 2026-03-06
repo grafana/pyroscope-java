@@ -26,11 +26,11 @@
         {
           "name": "agent-2.7.0.jar",
           "url": "agent-2.7.0.jar",
-          "size": 5725049,
-          "sha512": "1d79c9f5e29ff43a182fc771e623e9fc9e28a9df71a8b99386650c49c7da3c4461af0621ad5852a1f281fab87900aa96737fbafd013755358981dce0dec3079e",
-          "sha256": "664cdaf0c87d29cde09ddabc1e079d611a9cb20dab8c54e48e9d72359fbbd614",
-          "sha1": "f7579c8fca0cd3bda2dfe55d0e184323107a052b",
-          "md5": "512cd2938bf802391b90317c4159b477"
+          "size": 5725179,
+          "sha512": "95d46ad78b17a0cb3cb0158a45aba980ec2f220de5a920a60f8151a99a737bd07eeacba602a9bae4d842c957d198b0093ed09a2fcc47682430a4b8eac3765d9d",
+          "sha256": "b04bc1f5627cc8596e2a814d5cd640b8fa6f10fcd58c9bb3e155b248c2fddf43",
+          "sha1": "20318ad424397b088d131e9a80f571ad152e75b2",
+          "md5": "666a8c3d45d97c966401760997b1b891"
         }
       ]
     }
