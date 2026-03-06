@@ -78,7 +78,7 @@ public class PyroscopeAgent {
         final boolean DEBUG = Boolean.getBoolean("pyroscope.otel.debug"); // do nott use PyroscopeOtelDebug
         try {
             ProfilerApi api = new ProfilerSdk();
-            ProfilerApiHolder.INSTANCE.set(api);
+            ProfilerApiHolder.INSTANCE.compareAndSet(null, api);
             if (DEBUG) System.out.println("published profiler sdk");
         } catch (Throwable th) {
             if (DEBUG) th.printStackTrace(System.out);
