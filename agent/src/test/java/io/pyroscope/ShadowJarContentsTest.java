@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -63,6 +65,47 @@ public class ShadowJarContentsTest {
                 sb.append("  ").append(v).append("\n");
             }
             fail(sb.toString());
+        }
+    }
+
+    @Test
+    void containsBootstrapApiResource() throws Exception {
+        String jarPath = System.getProperty("shadowJar.path");
+        if (jarPath == null || jarPath.isEmpty()) {
+            fail("System property 'shadowJar.path' is not set. Run this test via Gradle.");
+        }
+
+        File jarFile = new File(jarPath);
+        assertTrue(jarFile.exists(), "shadowJar not found at: " + jarPath);
+
+        try (JarFile jar = new JarFile(jarFile)) {
+            JarEntry entry = jar.getJarEntry("pyroscope-bootstrap.jar.bin");
+            assertNotNull(entry, "pyroscope-bootstrap.jar.bin resource not found in shadow jar");
+            assertTrue(entry.getSize() > 0, "pyroscope-bootstrap.jar.bin is empty");
+        }
+    }
+
+    @Test
+    void bootstrapApiClassesInShadowJar() throws Exception {
+        String jarPath = System.getProperty("shadowJar.path");
+        if (jarPath == null || jarPath.isEmpty()) {
+            fail("System property 'shadowJar.path' is not set. Run this test via Gradle.");
+        }
+
+        File jarFile = new File(jarPath);
+        assertTrue(jarFile.exists(), "shadowJar not found at: " + jarPath);
+
+        String[] bootstrapClasses = {
+            "io/pyroscope/javaagent/api/ProfilerApi.class",
+            "io/pyroscope/javaagent/api/ProfilerApiHolder.class",
+            "io/pyroscope/javaagent/api/ProfilerScopedContext.class"
+        };
+
+        try (JarFile jar = new JarFile(jarFile)) {
+            for (String className : bootstrapClasses) {
+                assertNotNull(jar.getJarEntry(className),
+                    "Bootstrap-api class should be in shadow jar: " + className);
+            }
         }
     }
 }

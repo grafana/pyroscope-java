@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.BiConsumer;
 
 /**
- * Injected into the app classloader by the OTel extension's InstrumentationModule.
- * This interface MUST be kept in sync with the copy in otel-profiling-java (same package, same
+ * Injected into the bootstrap classloader by the OTel extension at startup.
+ * This interface MUST be kept in sync with the copy in pyroscope-java (same package, same
  * method signatures) — do not modify without updating both repos.
  *
  * <p>Any modification to this interface is a <b>breaking change</b> that requires a major release

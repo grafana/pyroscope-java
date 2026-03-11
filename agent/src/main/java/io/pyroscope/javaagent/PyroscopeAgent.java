@@ -1,7 +1,10 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.javaagent.api.ProfilerApi;
+import io.pyroscope.javaagent.api.ProfilerApiHolder;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
+import io.pyroscope.javaagent.ProfilerSdk;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.*;
@@ -18,6 +21,10 @@ public class PyroscopeAgent {
 
     public static void premain(final String agentArgs,
                                final Instrumentation inst) {
+        // Inject bootstrap-api classes into the bootstrap classloader BEFORE any code
+        // references ProfilerApiHolder. This ensures cross-classloader visibility.
+        BootstrapApiInjector.inject(inst);
+
         final Config config;
         try {
             config = Config.build(DefaultConfigurationProvider.INSTANCE);
@@ -59,10 +66,21 @@ public class PyroscopeAgent {
                 options.scheduler.start(options.profiler);
                 ScopedContext.ENABLED.set(true);
                 logger.log(Logger.Level.INFO, "Profiling started");
+                publishProfilerApi(logger);
             } catch (final Throwable e) {
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
                 sOptions = null;
             }
+        }
+    }
+
+    private static void publishProfilerApi(Logger logger) {
+        try {
+            ProfilerApi api = new ProfilerSdk();
+            ProfilerApiHolder.INSTANCE.set(api);
+            logger.log(Logger.Level.DEBUG, "published profiler sdk");
+        } catch (Throwable th) {
+            logger.log(Logger.Level.DEBUG, "publish profiler failed %s", th);
         }
     }
 

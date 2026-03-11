@@ -26,6 +26,35 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.12.4'
 }
 
+// Create a JAR containing ONLY the 3 bootstrap-api classes
+// This JAR will be embedded as a resource for bootstrap classloader injection
+task bootstrapApiJar(type: Jar) {
+    dependsOn compileJava
+    archiveBaseName.set('pyroscope-bootstrap')
+    archiveVersion.set('')
+    archiveClassifier.set('')
+
+    // Include only the 3 bootstrap-api classes from compiled output
+    from(sourceSets.main.java.classesDirectory) {
+        include 'io/pyroscope/javaagent/api/ProfilerApi.class'
+        include 'io/pyroscope/javaagent/api/ProfilerApiHolder.class'
+        include 'io/pyroscope/javaagent/api/ProfilerScopedContext.class'
+    }
+
+    destinationDirectory.set(file("$buildDir/libs"))
+}
+
+// Copy the bootstrap JAR into resources as .bin file
+// BootstrapApiInjector reads this resource at runtime
+task copyBootstrapToResources(type: Copy) {
+    dependsOn bootstrapApiJar
+    from(bootstrapApiJar.archiveFile)
+    into(sourceSets.main.output.resourcesDir)
+    rename { 'pyroscope-bootstrap.jar.bin' }
+}
+
+processResources.dependsOn copyBootstrapToResources
+
 javadoc{
     // excluded as javadoc generation fails on inaccessible sun.management.VMManagement class
     exclude("io/pyroscope/javaagent/CurrentPidProvider.java")
@@ -62,6 +91,8 @@ java {
 }
 
 shadowJar {
+    dependsOn copyBootstrapToResources
+
     exclude 'Log4j-*'
     exclude 'META-INF/org/apache/logging/log4j/**'
     exclude 'META-INF/services/**'
