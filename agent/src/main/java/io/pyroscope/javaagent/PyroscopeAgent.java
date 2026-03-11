@@ -77,6 +77,14 @@ public class PyroscopeAgent {
     private static void publishProfilerApi(Logger logger) {
         try {
             ProfilerApi api = new ProfilerSdk();
+            ProfilerApi existing = ProfilerApiHolder.INSTANCE.get();
+            if (existing != null && existing.isProfilingStarted()
+                    && existing.getClass().getClassLoader() != api.getClass().getClassLoader()) {
+                logger.log(Logger.Level.WARN,
+                        "Another ProfilerApi instance is already active from a different classloader. " +
+                        "Starting profiling from multiple classloaders is not supported and may produce incorrect results. " +
+                        "See https://github.com/grafana/otel-profiling-java/issues/76");
+            }
             ProfilerApiHolder.INSTANCE.set(api);
             logger.log(Logger.Level.DEBUG, "published profiler sdk");
         } catch (Throwable th) {
