@@ -80,7 +80,6 @@ public class PyroscopeAgent {
             ProfilerApiHolder.INSTANCE.set(api);
             logger.log(Logger.Level.DEBUG, "published profiler sdk");
         } catch (Throwable th) {
-            // th.printStackTrace();
             logger.log(Logger.Level.DEBUG, "publish profiler failed %s", th);
         }
     }

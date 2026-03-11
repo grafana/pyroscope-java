@@ -12,9 +12,5 @@ import java.util.concurrent.atomic.AtomicReference;
  * release of both pyroscope-java and otel-profiling-java.
  */
 public class ProfilerApiHolder {
-    static {
-        System.out.println("ProfilerApiHolder.clinit " + ProfilerApiHolder.class);
-        new Exception().printStackTrace();
-    }
     public static final AtomicReference<ProfilerApi> INSTANCE = new AtomicReference<>();
 }

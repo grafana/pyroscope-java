@@ -28,20 +28,6 @@ publish:
 test:
 	./gradlew test
 
-# TODO: Remove publish-maven-repo target and maven-repo/ directory before merging.
-#       This is only used during development to serve artifacts to the otel-profiling-java build.
-.PHONY: publish-maven-repo
-publish-maven-repo:
-	@echo "Publishing agent to maven-repo/ directory..."
-	./gradlew :agent:publishShadowPublicationToMavenLocal \
-		-Dmaven.repo.local=$$(pwd)/maven-repo --no-daemon
-	@echo ""
-	@echo "Artifacts published to maven-repo/"
-	@echo "To commit and push:"
-	@echo "  git add maven-repo/ .gitignore"
-	@echo "  git commit -m \"Update maven-repo artifacts to version \$$(grep pyroscope_version gradle.properties | cut -d= -f2)\""
-	@echo "  git push"
-
 .PHONY: docker-example-base
 docker-example-base: build
 	cp agent/build/libs/pyroscope.jar examples
