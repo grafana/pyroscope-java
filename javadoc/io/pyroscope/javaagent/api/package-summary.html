@@ -120,19 +120,36 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tr class="rowColor">
 <th class="colFirst" scope="row"><a href="ProfilerApi.html" title="interface in io.pyroscope.javaagent.api">ProfilerApi</a></th>
 <td class="colLast">
-<div class="block">Shared profiling interface injected into the app classloader by the OTel extension's
- InstrumentationModule.</div>
+<div class="block">Shared profiling interface for cross-classloader communication between the Pyroscope agent
+ and the OTel extension.</div>
 </td>
 </tr>
 <tr class="altColor">
 <th class="colFirst" scope="row"><a href="ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api">ProfilerScopedContext</a></th>
 <td class="colLast">
-<div class="block">Injected into the app classloader by the OTel extension's InstrumentationModule.</div>
+<div class="block">Injected into the bootstrap classloader by the OTel extension at startup.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <th class="colFirst" scope="row"><a href="ProfilingScheduler.html" title="interface in io.pyroscope.javaagent.api">ProfilingScheduler</a></th>
 <td class="colLast">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li class="blockList">
+<table class="typeSummary">
+<caption><span>Class Summary</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Class</th>
+<th class="colLast" scope="col">Description</th>
+</tr>
+<tbody>
+<tr class="altColor">
+<th class="colFirst" scope="row"><a href="ProfilerApiHolder.html" title="class in io.pyroscope.javaagent.api">ProfilerApiHolder</a></th>
+<td class="colLast">
+<div class="block">Cross-classloader rendezvous point for the Pyroscope profiling API.</div>
+</td>
 </tr>
 </tbody>
 </table>

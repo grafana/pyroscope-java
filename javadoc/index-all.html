@@ -687,6 +687,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/config/Config.html#ingestMaxTries">ingestMaxTries</a></span> - Variable in class io.pyroscope.javaagent.config.<a href="io/pyroscope/javaagent/config/Config.html" title="class in io.pyroscope.javaagent.config">Config</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/api/ProfilerApiHolder.html#INSTANCE">INSTANCE</a></span> - Static variable in class io.pyroscope.javaagent.api.<a href="io/pyroscope/javaagent/api/ProfilerApiHolder.html" title="class in io.pyroscope.javaagent.api">ProfilerApiHolder</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/impl/DefaultConfigurationProvider.html#INSTANCE">INSTANCE</a></span> - Static variable in class io.pyroscope.javaagent.impl.<a href="io/pyroscope/javaagent/impl/DefaultConfigurationProvider.html" title="class in io.pyroscope.javaagent.impl">DefaultConfigurationProvider</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="io/pyroscope/labels/pb/JfrLabels.Context.Builder.html#internalGetFieldAccessorTable()">internalGetFieldAccessorTable()</a></span> - Method in class io.pyroscope.labels.pb.<a href="io/pyroscope/labels/pb/JfrLabels.Context.Builder.html" title="class in io.pyroscope.labels.pb">JfrLabels.Context.Builder</a></dt>
@@ -985,14 +987,20 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><a href="io/pyroscope/javaagent/api/ProfilerApi.html" title="interface in io.pyroscope.javaagent.api"><span class="typeNameLink">ProfilerApi</span></a> - Interface in <a href="io/pyroscope/javaagent/api/package-summary.html">io.pyroscope.javaagent.api</a></dt>
 <dd>
-<div class="block">Shared profiling interface injected into the app classloader by the OTel extension's
- InstrumentationModule.</div>
+<div class="block">Shared profiling interface for cross-classloader communication between the Pyroscope agent
+ and the OTel extension.</div>
 </dd>
+<dt><a href="io/pyroscope/javaagent/api/ProfilerApiHolder.html" title="class in io.pyroscope.javaagent.api"><span class="typeNameLink">ProfilerApiHolder</span></a> - Class in <a href="io/pyroscope/javaagent/api/package-summary.html">io.pyroscope.javaagent.api</a></dt>
+<dd>
+<div class="block">Cross-classloader rendezvous point for the Pyroscope profiling API.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="io/pyroscope/javaagent/api/ProfilerApiHolder.html#%3Cinit%3E()">ProfilerApiHolder()</a></span> - Constructor for class io.pyroscope.javaagent.api.<a href="io/pyroscope/javaagent/api/ProfilerApiHolder.html" title="class in io.pyroscope.javaagent.api">ProfilerApiHolder</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/pyroscope/javaagent/ProfilerDelegate.html" title="interface in io.pyroscope.javaagent"><span class="typeNameLink">ProfilerDelegate</span></a> - Interface in <a href="io/pyroscope/javaagent/package-summary.html">io.pyroscope.javaagent</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/pyroscope/javaagent/api/ProfilerScopedContext.html" title="interface in io.pyroscope.javaagent.api"><span class="typeNameLink">ProfilerScopedContext</span></a> - Interface in <a href="io/pyroscope/javaagent/api/package-summary.html">io.pyroscope.javaagent.api</a></dt>
 <dd>
-<div class="block">Injected into the app classloader by the OTel extension's InstrumentationModule.</div>
+<div class="block">Injected into the bootstrap classloader by the OTel extension at startup.</div>
 </dd>
 <dt><a href="io/pyroscope/javaagent/impl/ProfilerScopedContextWrapper.html" title="class in io.pyroscope.javaagent.impl"><span class="typeNameLink">ProfilerScopedContextWrapper</span></a> - Class in <a href="io/pyroscope/javaagent/impl/package-summary.html">io.pyroscope.javaagent.impl</a></dt>
 <dd>&nbsp;</dd>
