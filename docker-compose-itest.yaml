@@ -253,7 +253,7 @@ services:
         IMAGE_VERSION: 22.04
         JAVA_VERSION: 25
   pyroscope:
-    image: 'grafana/pyroscope:1.18.0@sha256:e7edae4fd99dbb8695a1e03d7db96ab247630cf83842407908922b2f66aafc6a'
+    image: 'grafana/pyroscope:1.19.1@sha256:d5d38187f7593fdf5643ba29e67099206e8d4dee6207f78d028ea3fe621cc04d'
     ports:
       - 4040:4040
 
