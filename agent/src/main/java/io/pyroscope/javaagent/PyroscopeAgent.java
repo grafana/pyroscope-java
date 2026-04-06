@@ -1,7 +1,10 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.javaagent.api.ProfilerApi;
+import io.pyroscope.javaagent.api.ProfilerApiHolder;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
+import io.pyroscope.javaagent.ProfilerSdk;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.impl.*;
@@ -63,11 +66,29 @@ public class PyroscopeAgent {
                 options.scheduler.start(options.profiler);
                 ScopedContext.ENABLED.set(true);
                 logger.log(Logger.Level.INFO, "Profiling started");
-                ProfilerApiPublisher.publish(logger);
+                publishProfilerApi(logger);
             } catch (final Throwable e) {
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
                 sOptions = null;
             }
+        }
+    }
+
+    private static void publishProfilerApi(Logger logger) {
+        try {
+            ProfilerApi api = new ProfilerSdk();
+            ProfilerApi existing = ProfilerApiHolder.INSTANCE.get();
+            if (existing != null && existing.isProfilingStarted()
+                    && existing.getClass().getClassLoader() != api.getClass().getClassLoader()) {
+                logger.log(Logger.Level.ERROR,
+                        "Another ProfilerApi instance is already active from a different classloader. " +
+                        "Starting profiling from multiple classloaders is not supported and may produce incorrect results. " +
+                        "See https://github.com/grafana/otel-profiling-java/issues/76");
+            }
+            ProfilerApiHolder.INSTANCE.set(api);
+            logger.log(Logger.Level.DEBUG, "published profiler sdk");
+        } catch (Throwable th) {
+            logger.log(Logger.Level.DEBUG, "publish profiler failed %s", th);
         }
     }
 
