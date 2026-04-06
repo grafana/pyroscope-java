@@ -16,8 +16,6 @@ import (
 
 func repoRoot() string {
 	_, filename, _, _ := runtime.Caller(0)
-	// integration_test.go is at itest/bootstrap/integration_test.go
-	// repo root is two levels up
 	return filepath.Dir(filepath.Dir(filepath.Dir(filename)))
 }
 
@@ -32,7 +30,7 @@ func TestBootstrapClassloader(t *testing.T) {
 				Dockerfile: "itest/bootstrap/Dockerfile",
 				KeepImage:  true,
 			},
-			WaitingFor: wait.ForLog("BOOTSTRAP_CHECK:").WithStartupTimeout(10 * time.Minute),
+			WaitingFor: wait.ForLog("BOOTSTRAP_CHECK").WithStartupTimeout(10 * time.Minute),
 		},
 		Started: true,
 	}
@@ -40,7 +38,7 @@ func TestBootstrapClassloader(t *testing.T) {
 	c, err := testcontainers.GenericContainer(ctx, req)
 	require.NoError(t, err, "failed to start bootstrap-check container")
 	defer func() {
-		require.NoError(t, c.Terminate(ctx))
+		_ = c.Terminate(ctx)
 	}()
 
 	reader, err := c.Logs(ctx)
@@ -51,8 +49,12 @@ func TestBootstrapClassloader(t *testing.T) {
 	require.NoError(t, err)
 	logs := string(data)
 
-	require.True(t, strings.Contains(logs, "BOOTSTRAP_CHECK: PASS"),
-		"ProfilerApiHolder was NOT loaded by the bootstrap classloader.\n"+
-			"This indicates BootstrapApiInjector.inject() did not run before "+
-			"ProfilerApiHolder was first resolved.\nContainer logs:\n%s", logs)
+	require.False(t, strings.Contains(logs, "FAIL"),
+		"Bootstrap classloader injection failed. ProfilerApi/ProfilerApiHolder were loaded "+
+			"from the system classloader before BootstrapApiInjector.inject() ran.\n"+
+			"Container output:\n%s", logs)
+	require.True(t, strings.Contains(logs, "BOOTSTRAP_CHECK ProfilerApiHolder: PASS"),
+		"Missing ProfilerApiHolder check in output.\nContainer output:\n%s", logs)
+	require.True(t, strings.Contains(logs, "BOOTSTRAP_CHECK ProfilerApi: PASS"),
+		"Missing ProfilerApi check in output.\nContainer output:\n%s", logs)
 }
