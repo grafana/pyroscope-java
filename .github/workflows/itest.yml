@@ -10,40 +10,10 @@ permissions:
   contents: read
 
 jobs:
-  integration-smoke-test:
+  discover-tests:
     runs-on: ubuntu-x64
-    strategy:
-      fail-fast: false
-      matrix:
-        svc:
-          - 'alpine-3.16-8'
-          - 'alpine-3.16-11'
-          - 'alpine-3.16-17'
-          - 'alpine-3.17-8'
-          - 'alpine-3.17-11'
-          - 'alpine-3.17-17'
-          - 'alpine-3.18-8'
-          - 'alpine-3.18-11'
-          - 'alpine-3.18-17'
-          - 'alpine-3.18-21'
-          - 'alpine-3.19-8'
-          - 'alpine-3.19-11'
-          - 'alpine-3.19-17'
-          - 'alpine-3.19-21'
-          - 'alpine-3.19-25'
-          - 'ubuntu-18.04-8'
-          - 'ubuntu-18.04-11'
-          - 'ubuntu-18.04-17'
-          - 'ubuntu-20.04-8'
-          - 'ubuntu-20.04-11'
-          - 'ubuntu-20.04-17'
-          - 'ubuntu-20.04-21'
-          - 'ubuntu-20.04-25'
-          - 'ubuntu-22.04-8'
-          - 'ubuntu-22.04-11'
-          - 'ubuntu-22.04-17'
-          - 'ubuntu-22.04-21'
-          - 'ubuntu-22.04-25'
+    outputs:
+      tests: ${{ steps.list.outputs.tests }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -51,8 +21,29 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4 # v4
         with:
-          go-version: 1.23.1
-      - run: make itest
-        shell: bash
-        env:
-          ITEST_SERVICE: ${{ matrix.svc }}
+          go-version: stable
+          cache-dependency-path: itest/go.sum
+      - name: List test functions
+        id: list
+        run: |
+          tests=$(cd itest && go test -list . ./... 2>/dev/null | grep '^Test' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "tests=$tests" >> "$GITHUB_OUTPUT"
+
+  integration-smoke-test:
+    needs: discover-tests
+    runs-on: ubuntu-x64
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJson(needs.discover-tests.outputs.tests) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Install Go
+        uses: actions/setup-go@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4 # v4
+        with:
+          go-version: stable
+          cache-dependency-path: itest/go.sum
+      - name: Run ${{ matrix.test }}
+        run: cd itest && go test -v -timeout 15m -count=1 -run '^${{ matrix.test }}$$' ./...
