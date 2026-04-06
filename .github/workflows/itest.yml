@@ -10,6 +10,19 @@ permissions:
   contents: read
 
 jobs:
+  bootstrap-classloader-test:
+    runs-on: ubuntu-x64
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Install Go
+        uses: actions/setup-go@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4 # v4
+        with:
+          go-version: 1.25.6
+      - run: make itest-bootstrap
+        shell: bash
+
   integration-smoke-test:
     runs-on: ubuntu-x64
     strategy:
