@@ -53,8 +53,8 @@ func TestBootstrapClassloader(t *testing.T) {
 		"Bootstrap classloader injection failed. ProfilerApi/ProfilerApiHolder were loaded "+
 			"from the system classloader before BootstrapApiInjector.inject() ran.\n"+
 			"Container output:\n%s", logs)
-	require.True(t, strings.Contains(logs, "BOOTSTRAP_CHECK ProfilerApiHolder: PASS"),
+	require.True(t, strings.Contains(logs, "BOOTSTRAP_CHECK io.pyroscope.javaagent.api.ProfilerApiHolder: PASS"),
 		"Missing ProfilerApiHolder check in output.\nContainer output:\n%s", logs)
-	require.True(t, strings.Contains(logs, "BOOTSTRAP_CHECK ProfilerApi: PASS"),
+	require.True(t, strings.Contains(logs, "BOOTSTRAP_CHECK io.pyroscope.javaagent.api.ProfilerApi: PASS"),
 		"Missing ProfilerApi check in output.\nContainer output:\n%s", logs)
 }

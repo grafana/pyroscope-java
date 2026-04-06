@@ -8,11 +8,10 @@ public class BootstrapCheck {
         for (String name : classes) {
             Class<?> cls = Class.forName(name);
             ClassLoader cl = cls.getClassLoader();
-            String shortName = name.substring(name.lastIndexOf('.') + 1);
             if (cl == null) {
-                System.out.println("BOOTSTRAP_CHECK " + shortName + ": PASS classloader=null (bootstrap)");
+                System.out.println("BOOTSTRAP_CHECK " + name + ": PASS classloader=null (bootstrap)");
             } else {
-                System.out.println("BOOTSTRAP_CHECK " + shortName + ": FAIL classloader=" + cl);
+                System.out.println("BOOTSTRAP_CHECK " + name + ": FAIL classloader=" + cl);
                 allPassed = false;
             }
         }
