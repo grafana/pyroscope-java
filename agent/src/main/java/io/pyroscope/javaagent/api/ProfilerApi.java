@@ -23,4 +23,14 @@ public interface ProfilerApi {
     void setTracingContext(long spanId, long spanName);
 
     long registerConstant(String constant);
+
+    /**
+     * Attaches a {@code trace_id} label to samples produced by the current thread.
+     * Thread local; pair with {@link #clearTraceId()}.
+     */
+    // Empty default body so a newer caller against an older impl degrades to no label
+    // rather than NoSuchMethodError. Real impl is in ProfilerSdk.
+    default void setTraceId(@NotNull String traceId) {}
+
+    default void clearTraceId() {}
 }

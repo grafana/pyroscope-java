@@ -15,7 +15,10 @@ import java.util.Map;
 
 public class ProfilerSdk implements ProfilerApi {
 
+    private static final String TRACE_ID_LABEL_KEY = "trace_id";
+
     private final AsyncProfiler asprof;
+    private final ThreadLocal<ScopedContext> traceIdContext = new ThreadLocal<>();
 
     public ProfilerSdk() {
         this.asprof = PyroscopeAsyncProfiler.getAsyncProfiler();
@@ -45,5 +48,23 @@ public class ProfilerSdk implements ProfilerApi {
     @Override
     public long registerConstant(String constant) {
         return Pyroscope.LabelsWrapper.registerConstant(constant);
+    }
+
+    @Override
+    public void setTraceId(@NotNull String traceId) {
+        ScopedContext existing = traceIdContext.get();
+        if (existing != null) {
+            existing.close();
+        }
+        traceIdContext.set(new ScopedContext(new LabelsSet(TRACE_ID_LABEL_KEY, traceId)));
+    }
+
+    @Override
+    public void clearTraceId() {
+        ScopedContext ctx = traceIdContext.get();
+        if (ctx != null) {
+            ctx.close();
+            traceIdContext.remove();
+        }
     }
 }
