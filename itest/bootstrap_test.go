@@ -1,46 +1,28 @@
 package itest
 
 import (
-	"context"
-	"io"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
+	"pyroscope-java-itest/dockertest"
+	"pyroscope-java-itest/require"
 )
 
 func TestBootstrapClassloader(t *testing.T) {
-	ctx := context.Background()
-	root := repoRoot()
+	tag := dockertest.BuildImage(t, dockertest.BuildRequest{
+		Context:    repoRoot(),
+		Dockerfile: filepath.Join(repoRoot(), "itest/bootstrap/Dockerfile"),
+		Tag:        "java-bootstrap-check:latest",
+	})
 
-	req := testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			FromDockerfile: testcontainers.FromDockerfile{
-				Context:    root,
-				Dockerfile: "itest/bootstrap/Dockerfile",
-				KeepImage:  true,
-			},
-			WaitingFor: wait.ForLog("BOOTSTRAP_CHECK").WithStartupTimeout(10 * time.Minute),
-		},
-		Started: true,
-	}
+	c := dockertest.StartContainer(t, dockertest.ContainerRequest{
+		Image:   tag,
+		WaitFor: dockertest.WaitForLog("BOOTSTRAP_CHECK", 10*time.Minute),
+	})
 
-	c, err := testcontainers.GenericContainer(ctx, req)
-	require.NoError(t, err, "failed to start bootstrap-check container")
-	defer func() {
-		_ = c.Terminate(ctx)
-	}()
-
-	reader, err := c.Logs(ctx)
-	require.NoError(t, err)
-	defer reader.Close()
-
-	data, err := io.ReadAll(reader)
-	require.NoError(t, err)
-	logs := string(data)
+	logs := c.Logs(t)
 
 	require.False(t, strings.Contains(logs, "FAIL"),
 		"Bootstrap classloader injection failed. ProfilerApi/ProfilerApiHolder were loaded "+

@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version: stable
-          cache-dependency-path: itest/go.sum
+          cache-dependency-path: itest/go.mod
       - name: Generate test matrix
         id: tests
         run: echo "tests=$(make ci-matrix)" >> "$GITHUB_OUTPUT"
@@ -92,7 +92,7 @@ jobs:
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version: stable
-          cache-dependency-path: itest/go.sum
+          cache-dependency-path: itest/go.mod
       - name: Run integration test
         run: go test -v -timeout 15m -count=1 -run '^${{ matrix.test }}$$' .
         working-directory: itest
