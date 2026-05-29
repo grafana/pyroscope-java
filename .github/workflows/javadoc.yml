@@ -6,10 +6,16 @@ on:
       - main
 
 permissions:
-  contents: write # pushes to the gh-pages branch
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-x64
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -21,12 +27,23 @@ jobs:
           java-version: 11
           distribution: 'temurin'
       - name: Generate Javadoc
-        run: ./gradlew javaDoc 
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        run: ./gradlew javaDoc
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p pages-artifact/javadoc
+          cp -r agent/build/docs/javadoc/. pages-artifact/javadoc/
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-          clean: true
-          folder: agent/build/docs/javadoc
-          target-folder: javadoc
+          path: pages-artifact
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-x64
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
