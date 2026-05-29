@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "05702d912d8003e612e592e6e0cb891a1f9f1f0e",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "draft": true,
+  "skip-changelog": true,
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "pyroscope-java",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "gradle.properties"
+        }
+      ],
+      "changelog-sections": [
+        {"type": "feat", "section": "Features"},
+        {"type": "fix", "section": "Bug Fixes"},
+        {"type": "perf", "section": "Performance Improvements"},
+        {"type": "chore", "section": "Miscellaneous Chores"},
+        {"type": "revert", "section": "Reverts"},
+        {"type": "docs", "section": "Documentation"},
+        {"type": "refactor", "section": "Code Refactoring"},
+        {"type": "build", "section": "Build System"},
+        {"type": "ci", "section": "Continuous Integration"}
+      ]
+    }
+  }
+}
