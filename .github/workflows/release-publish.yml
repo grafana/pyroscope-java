@@ -40,22 +40,18 @@ jobs:
             NEXUS_GPG_KEY_ID=publishing:nexus_gpg_key_id
             NEXUS_GPG_PASSWORD=publishing:nexus_gpg_password
             NEXUS_GPG_SECRING_FILE_BASE64=publishing:nexus_gpg_secring_file
-            GITHUB_APP_ID=pyroscope-development-app:app-id
-            GITHUB_APP_PRIVATE_KEY=pyroscope-development-app:app-private-key
 
-      - name: Generate GitHub token
+      - id: get-github-app-token
         if: steps.check.outputs.is_release == 'true'
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2
-        id: app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@580590a644e82e79bb2598bdaba0be245a14dda0 # create-github-app-token/v0.2.2
         with:
-          app-id: ${{ env.GITHUB_APP_ID }}
-          private-key: ${{ env.GITHUB_APP_PRIVATE_KEY }}
+          github_app: pyroscope-development-app
 
       - name: Checkout code
         if: steps.check.outputs.is_release == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ steps.get-github-app-token.outputs.token }}
           persist-credentials: true
 
       - name: Set up Java 11
@@ -85,21 +81,19 @@ jobs:
         if: steps.check.outputs.is_release == 'true'
         id: get-user-id
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          GITHUB_TOKEN: ${{ steps.get-github-app-token.outputs.token }}
         run: |
-          APP_BOT="${APP_SLUG}[bot]"
+          APP_BOT="pyroscope-development-app[bot]"
           echo "user-id=$(gh api "/users/${APP_BOT}" --jq .id)" >> "$GITHUB_OUTPUT"
 
       - name: Create Tag
         if: steps.check.outputs.is_release == 'true'
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          GITHUB_TOKEN: ${{ steps.get-github-app-token.outputs.token }}
           USER_ID: ${{ steps.get-user-id.outputs.user-id }}
           VERSION: ${{ steps.check.outputs.version }}
         run: |
-          APP_BOT="${APP_SLUG}[bot]"
+          APP_BOT="pyroscope-development-app[bot]"
           git config --global user.name "${APP_BOT}"
           git config --global user.email "${USER_ID}+${APP_BOT}@users.noreply.github.com"
           git tag "v${VERSION}"
@@ -108,7 +102,7 @@ jobs:
       - name: Create GitHub Release
         if: steps.check.outputs.is_release == 'true'
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.get-github-app-token.outputs.token }}
           VERSION: ${{ steps.check.outputs.version }}
         run: |
           gh release create "v${VERSION}" \

@@ -42,4 +42,14 @@ docker-example-expt: build
 
 .PHONY: itest
 itest:
+<<<<<<< HEAD
 	cd itest && go test -v -timeout 15m -count=1 ./...
+=======
+	docker compose -f docker-compose-itest.yaml up --build --force-recreate -d pyroscope $(ITEST_SERVICE)
+	cd itest/query && go run . $(ITEST_SERVICE)
+	docker compose -f docker-compose-itest.yaml down pyroscope $(ITEST_SERVICE)
+
+.PHONY: itest-bootstrap
+itest-bootstrap:
+	cd itest/bootstrap && go test -v -timeout 20m -count=1 -run '^TestBootstrapClassloader$$' ./...
+>>>>>>> origin/main
