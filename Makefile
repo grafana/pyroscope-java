@@ -40,16 +40,14 @@ docker-example-expt: build
 	docker compose -f examples/docker-compose-expt.yml build
 	docker compose -f examples/docker-compose-expt.yml up
 
+.PHONY: ci-matrix
+ci-matrix:
+	@cd itest && go test -list . -json . | jq -sc '[.[] | select(.Action=="output") | .Output | rtrimstr("\n") | select(startswith("Test"))]'
+
 .PHONY: itest
 itest:
-<<<<<<< HEAD
 	cd itest && go test -v -timeout 15m -count=1 ./...
-=======
-	docker compose -f docker-compose-itest.yaml up --build --force-recreate -d pyroscope $(ITEST_SERVICE)
-	cd itest/query && go run . $(ITEST_SERVICE)
-	docker compose -f docker-compose-itest.yaml down pyroscope $(ITEST_SERVICE)
 
-.PHONY: itest-bootstrap
-itest-bootstrap:
-	cd itest/bootstrap && go test -v -timeout 20m -count=1 -run '^TestBootstrapClassloader$$' ./...
->>>>>>> origin/main
+.PHONY: itest/%
+itest/%:
+	cd itest && go test -v -timeout 15m -count=1 -run '^$*$$' ./...

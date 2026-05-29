@@ -3,8 +3,6 @@ package itest
 import (
 	"context"
 	"io"
-	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -13,11 +11,6 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
-
-func repoRoot() string {
-	_, filename, _, _ := runtime.Caller(0)
-	return filepath.Dir(filepath.Dir(filepath.Dir(filename)))
-}
 
 func TestBootstrapClassloader(t *testing.T) {
 	ctx := context.Background()

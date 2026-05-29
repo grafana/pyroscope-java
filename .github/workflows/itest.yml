@@ -10,8 +10,11 @@ permissions:
   contents: read
 
 jobs:
-  bootstrap-classloader-test:
+  discover:
+    name: discover tests
     runs-on: ubuntu-x64
+    outputs:
+      tests: ${{ steps.tests.outputs.tests }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -19,44 +22,81 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
-          go-version: 1.25.6
-      - run: make itest-bootstrap
-        shell: bash
-
-  discover-tests:
-    runs-on: ubuntu-x64
-    outputs:
-      tests: ${{ steps.list.outputs.tests }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-      - name: Install Go
-        uses: actions/setup-go@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4 # v4
-        with:
           go-version: stable
           cache-dependency-path: itest/go.sum
-      - name: List test functions
-        id: list
+      - name: Generate test matrix
+        id: tests
+        run: echo "tests=$(make ci-matrix)" >> "$GITHUB_OUTPUT"
+      - name: Validate matrix tests are discoverable
         run: |
-          tests=$(cd itest && go test -list . ./... 2>/dev/null | grep '^Test' | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          echo "tests=$tests" >> "$GITHUB_OUTPUT"
+          discovered=$(make ci-matrix)
+          for test in TestBootstrapClassloader TestQueryProfile; do
+            echo "$discovered" | jq -e --arg t "$test" 'index($t)' > /dev/null \
+              || { echo "Test $test not found in go test -list output: $discovered"; exit 1; }
+          done
 
-  integration-smoke-test:
-    needs: discover-tests
+  test:
+    name: integration-test ${{ matrix.test }}${{ matrix.image_version && format(' {0} Java {1}', matrix.image_version, matrix.java_version) || '' }}
+    needs: discover
     runs-on: ubuntu-x64
     strategy:
       fail-fast: false
       matrix:
-        test: ${{ fromJson(needs.discover-tests.outputs.tests) }}
+        include:
+          - test: TestBootstrapClassloader
+          - test: TestQueryProfile
+            dockerfile: alpine-test.Dockerfile
+            image_version: "3.19"
+            java_version: "8"
+          - test: TestQueryProfile
+            dockerfile: alpine-test.Dockerfile
+            image_version: "3.19"
+            java_version: "11"
+          - test: TestQueryProfile
+            dockerfile: alpine-test.Dockerfile
+            image_version: "3.19"
+            java_version: "17"
+          - test: TestQueryProfile
+            dockerfile: alpine-test.Dockerfile
+            image_version: "3.19"
+            java_version: "21"
+          - test: TestQueryProfile
+            dockerfile: alpine-test.Dockerfile
+            image_version: "3.19"
+            java_version: "25"
+          - test: TestQueryProfile
+            dockerfile: ubuntu-test.Dockerfile
+            image_version: "22.04"
+            java_version: "8"
+          - test: TestQueryProfile
+            dockerfile: ubuntu-test.Dockerfile
+            image_version: "22.04"
+            java_version: "11"
+          - test: TestQueryProfile
+            dockerfile: ubuntu-test.Dockerfile
+            image_version: "22.04"
+            java_version: "17"
+          - test: TestQueryProfile
+            dockerfile: ubuntu-test.Dockerfile
+            image_version: "22.04"
+            java_version: "21"
+          - test: TestQueryProfile
+            dockerfile: ubuntu-test.Dockerfile
+            image_version: "22.04"
+            java_version: "25"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Install Go
-        uses: actions/setup-go@7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4 # v4
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version: stable
           cache-dependency-path: itest/go.sum
-      - name: Run ${{ matrix.test }}
-        run: cd itest && go test -v -timeout 15m -count=1 -run '^${{ matrix.test }}$$' ./...
+      - name: Run integration test
+        run: go test -v -timeout 15m -count=1 -run '^${{ matrix.test }}$$' .
+        working-directory: itest
+        env:
+          DOCKERFILE: ${{ matrix.dockerfile }}
+          IMAGE_VERSION: ${{ matrix.image_version }}
+          JAVA_VERSION: ${{ matrix.java_version }}

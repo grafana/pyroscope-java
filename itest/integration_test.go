@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -24,11 +22,6 @@ import (
 
 const pyroscopeImage = "grafana/pyroscope:1.18.0@sha256:e7edae4fd99dbb8695a1e03d7db96ab247630cf83842407908922b2f66aafc6a"
 const needle = "run;Fib.lambda$appLogic$0;Fib.fib;Fib.fib;Fib.fib;Fib.fib;"
-
-func repoRoot() string {
-	_, filename, _, _ := runtime.Caller(0)
-	return filepath.Dir(filepath.Dir(filename))
-}
 
 func strPtr(s string) *string { return &s }
 
@@ -81,7 +74,7 @@ func getPyroscopeURL(t *testing.T, ctx context.Context, c testcontainers.Contain
 	return fmt.Sprintf("http://%s:%s", host, mappedPort.Port())
 }
 
-func runVariant(t *testing.T, dockerfile string, imageVersion string, javaVersion string) {
+func runQueryProfileTest(t *testing.T, dockerfile string, imageVersion string, javaVersion string) {
 	ctx := context.Background()
 	root := repoRoot()
 
@@ -225,41 +218,6 @@ func stackCollapseProto(p *profilev1.Profile, lineNumbers bool) string {
 	return strings.Join(res, "\n")
 }
 
-// Alpine variants
-
-func TestAlpine_3_16_Java8(t *testing.T)  { runVariant(t, "alpine-test.Dockerfile", "3.16", "8") }
-func TestAlpine_3_16_Java11(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.16", "11") }
-func TestAlpine_3_16_Java17(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.16", "17") }
-
-func TestAlpine_3_17_Java8(t *testing.T)  { runVariant(t, "alpine-test.Dockerfile", "3.17", "8") }
-func TestAlpine_3_17_Java11(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.17", "11") }
-func TestAlpine_3_17_Java17(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.17", "17") }
-
-func TestAlpine_3_18_Java8(t *testing.T)  { runVariant(t, "alpine-test.Dockerfile", "3.18", "8") }
-func TestAlpine_3_18_Java11(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.18", "11") }
-func TestAlpine_3_18_Java17(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.18", "17") }
-func TestAlpine_3_18_Java21(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.18", "21") }
-
-func TestAlpine_3_19_Java8(t *testing.T)  { runVariant(t, "alpine-test.Dockerfile", "3.19", "8") }
-func TestAlpine_3_19_Java11(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.19", "11") }
-func TestAlpine_3_19_Java17(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.19", "17") }
-func TestAlpine_3_19_Java21(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.19", "21") }
-func TestAlpine_3_19_Java25(t *testing.T) { runVariant(t, "alpine-test.Dockerfile", "3.19", "25") }
-
-// Ubuntu variants
-
-func TestUbuntu_18_04_Java8(t *testing.T)  { runVariant(t, "ubuntu-test.Dockerfile", "18.04", "8") }
-func TestUbuntu_18_04_Java11(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "18.04", "11") }
-func TestUbuntu_18_04_Java17(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "18.04", "17") }
-
-func TestUbuntu_20_04_Java8(t *testing.T)  { runVariant(t, "ubuntu-test.Dockerfile", "20.04", "8") }
-func TestUbuntu_20_04_Java11(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "20.04", "11") }
-func TestUbuntu_20_04_Java17(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "20.04", "17") }
-func TestUbuntu_20_04_Java21(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "20.04", "21") }
-func TestUbuntu_20_04_Java25(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "20.04", "25") }
-
-func TestUbuntu_22_04_Java8(t *testing.T)  { runVariant(t, "ubuntu-test.Dockerfile", "22.04", "8") }
-func TestUbuntu_22_04_Java11(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "22.04", "11") }
-func TestUbuntu_22_04_Java17(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "22.04", "17") }
-func TestUbuntu_22_04_Java21(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "22.04", "21") }
-func TestUbuntu_22_04_Java25(t *testing.T) { runVariant(t, "ubuntu-test.Dockerfile", "22.04", "25") }
+func TestQueryProfile(t *testing.T) {
+	runQueryProfileTest(t, envDockerfile(), envImageVersion(), envJavaVersion())
+}
