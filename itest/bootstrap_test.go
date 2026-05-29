@@ -11,6 +11,15 @@ import (
 )
 
 func TestBootstrapClassloader(t *testing.T) {
+	// This test does not depend on the OS/Java matrix axes. The CI matrix is
+	// derived from `go test -list`, so this name is crossed with every
+	// os/java combination; run the actual check only for the default combo to
+	// avoid redundant image builds.
+	if envDockerfile() != "ubuntu-test.Dockerfile" || envImageVersion() != "22.04" || envJavaVersion() != "17" {
+		t.Skipf("skipping bootstrap check for non-default matrix combo %s %s java %s",
+			envDockerfile(), envImageVersion(), envJavaVersion())
+	}
+
 	tag := dockertest.BuildImage(t, dockertest.BuildRequest{
 		Context:    repoRoot(),
 		Dockerfile: filepath.Join(repoRoot(), "itest/bootstrap/Dockerfile"),

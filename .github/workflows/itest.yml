@@ -27,63 +27,17 @@ jobs:
       - name: Generate test matrix
         id: tests
         run: echo "tests=$(make ci-matrix)" >> "$GITHUB_OUTPUT"
-      - name: Validate matrix tests are discoverable
-        run: |
-          discovered=$(make ci-matrix)
-          for test in TestBootstrapClassloader TestQueryProfile; do
-            echo "$discovered" | jq -e --arg t "$test" 'index($t)' > /dev/null \
-              || { echo "Test $test not found in go test -list output: $discovered"; exit 1; }
-          done
 
   test:
-    name: integration-test ${{ matrix.test }}${{ matrix.image_version && format(' {0} Java {1}', matrix.image_version, matrix.java_version) || '' }}
+    name: integration-test ${{ matrix.test }} ${{ matrix.os }} Java ${{ matrix.java_version }}
     needs: discover
     runs-on: ubuntu-x64
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - test: TestBootstrapClassloader
-          - test: TestQueryProfile
-            dockerfile: alpine-test.Dockerfile
-            image_version: "3.19"
-            java_version: "8"
-          - test: TestQueryProfile
-            dockerfile: alpine-test.Dockerfile
-            image_version: "3.19"
-            java_version: "11"
-          - test: TestQueryProfile
-            dockerfile: alpine-test.Dockerfile
-            image_version: "3.19"
-            java_version: "17"
-          - test: TestQueryProfile
-            dockerfile: alpine-test.Dockerfile
-            image_version: "3.19"
-            java_version: "21"
-          - test: TestQueryProfile
-            dockerfile: alpine-test.Dockerfile
-            image_version: "3.19"
-            java_version: "25"
-          - test: TestQueryProfile
-            dockerfile: ubuntu-test.Dockerfile
-            image_version: "22.04"
-            java_version: "8"
-          - test: TestQueryProfile
-            dockerfile: ubuntu-test.Dockerfile
-            image_version: "22.04"
-            java_version: "11"
-          - test: TestQueryProfile
-            dockerfile: ubuntu-test.Dockerfile
-            image_version: "22.04"
-            java_version: "17"
-          - test: TestQueryProfile
-            dockerfile: ubuntu-test.Dockerfile
-            image_version: "22.04"
-            java_version: "21"
-          - test: TestQueryProfile
-            dockerfile: ubuntu-test.Dockerfile
-            image_version: "22.04"
-            java_version: "25"
+        test: ${{ fromJSON(needs.discover.outputs.tests) }}
+        os: [alpine-3.19, ubuntu-22.04]
+        java_version: ["8", "11", "17", "21", "25"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -93,10 +47,27 @@ jobs:
         with:
           go-version: stable
           cache-dependency-path: itest/go.mod
+      - name: Resolve OS matrix entry
+        id: os
+        run: |
+          case "${{ matrix.os }}" in
+            alpine-3.19)
+              echo "dockerfile=alpine-test.Dockerfile" >> "$GITHUB_OUTPUT"
+              echo "image_version=3.19" >> "$GITHUB_OUTPUT"
+              ;;
+            ubuntu-22.04)
+              echo "dockerfile=ubuntu-test.Dockerfile" >> "$GITHUB_OUTPUT"
+              echo "image_version=22.04" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "unknown os ${{ matrix.os }}" >&2
+              exit 1
+              ;;
+          esac
       - name: Run integration test
         run: go test -v -timeout 15m -count=1 -run '^${{ matrix.test }}$$' .
         working-directory: itest
         env:
-          DOCKERFILE: ${{ matrix.dockerfile }}
-          IMAGE_VERSION: ${{ matrix.image_version }}
+          DOCKERFILE: ${{ steps.os.outputs.dockerfile }}
+          IMAGE_VERSION: ${{ steps.os.outputs.image_version }}
           JAVA_VERSION: ${{ matrix.java_version }}
