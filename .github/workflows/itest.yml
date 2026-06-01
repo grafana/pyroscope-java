@@ -10,8 +10,11 @@ permissions:
   contents: read
 
 jobs:
-  bootstrap-classloader-test:
+  discover:
+    name: discover tests
     runs-on: ubuntu-x64
+    outputs:
+      tests: ${{ steps.tests.outputs.tests }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -19,44 +22,22 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
-          go-version: 1.25.6
-      - run: make itest-bootstrap
-        shell: bash
+          go-version: stable
+          cache-dependency-path: itest/go.mod
+      - name: Generate test matrix
+        id: tests
+        run: echo "tests=$(make ci-matrix)" >> "$GITHUB_OUTPUT"
 
-  integration-smoke-test:
+  test:
+    name: integration-test ${{ matrix.test }} ${{ matrix.os }} Java ${{ matrix.java_version }}
+    needs: discover
     runs-on: ubuntu-x64
     strategy:
       fail-fast: false
       matrix:
-        svc:
-          - 'alpine-3.16-8'
-          - 'alpine-3.16-11'
-          - 'alpine-3.16-17'
-          - 'alpine-3.17-8'
-          - 'alpine-3.17-11'
-          - 'alpine-3.17-17'
-          - 'alpine-3.18-8'
-          - 'alpine-3.18-11'
-          - 'alpine-3.18-17'
-          - 'alpine-3.18-21'
-          - 'alpine-3.19-8'
-          - 'alpine-3.19-11'
-          - 'alpine-3.19-17'
-          - 'alpine-3.19-21'
-          - 'alpine-3.19-25'
-          - 'ubuntu-18.04-8'
-          - 'ubuntu-18.04-11'
-          - 'ubuntu-18.04-17'
-          - 'ubuntu-20.04-8'
-          - 'ubuntu-20.04-11'
-          - 'ubuntu-20.04-17'
-          - 'ubuntu-20.04-21'
-          - 'ubuntu-20.04-25'
-          - 'ubuntu-22.04-8'
-          - 'ubuntu-22.04-11'
-          - 'ubuntu-22.04-17'
-          - 'ubuntu-22.04-21'
-          - 'ubuntu-22.04-25'
+        test: ${{ fromJSON(needs.discover.outputs.tests) }}
+        os: [alpine-3.22, alpine-3.23, ubuntu-22.04, ubuntu-24.04]
+        java_version: ["8", "11", "17", "21", "25"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -64,8 +45,20 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
-          go-version: 1.25.6
-      - run: make itest
-        shell: bash
+          go-version: stable
+          cache-dependency-path: itest/go.mod
+      - name: Resolve OS matrix entry
+        id: os
+        run: |
+          os="${{ matrix.os }}"
+          distro="${os%%-*}"
+          version="${os#*-}"
+          echo "dockerfile=${distro}-test.Dockerfile" >> "$GITHUB_OUTPUT"
+          echo "image_version=${version}" >> "$GITHUB_OUTPUT"
+      - name: Run integration test
+        run: go test -v -timeout 15m -count=1 -run '^${{ matrix.test }}$$' .
+        working-directory: itest
         env:
-          ITEST_SERVICE: ${{ matrix.svc }}
+          DOCKERFILE: ${{ steps.os.outputs.dockerfile }}
+          IMAGE_VERSION: ${{ steps.os.outputs.image_version }}
+          JAVA_VERSION: ${{ matrix.java_version }}
