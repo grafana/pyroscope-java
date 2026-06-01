@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         test: ${{ fromJSON(needs.discover.outputs.tests) }}
-        os: [alpine-3.19, ubuntu-22.04]
+        os: [alpine-3.22, alpine-3.23, ubuntu-22.04, ubuntu-24.04]
         java_version: ["8", "11", "17", "21", "25"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -50,20 +50,11 @@ jobs:
       - name: Resolve OS matrix entry
         id: os
         run: |
-          case "${{ matrix.os }}" in
-            alpine-3.19)
-              echo "dockerfile=alpine-test.Dockerfile" >> "$GITHUB_OUTPUT"
-              echo "image_version=3.19" >> "$GITHUB_OUTPUT"
-              ;;
-            ubuntu-22.04)
-              echo "dockerfile=ubuntu-test.Dockerfile" >> "$GITHUB_OUTPUT"
-              echo "image_version=22.04" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "unknown os ${{ matrix.os }}" >&2
-              exit 1
-              ;;
-          esac
+          os="${{ matrix.os }}"
+          distro="${os%%-*}"
+          version="${os#*-}"
+          echo "dockerfile=${distro}-test.Dockerfile" >> "$GITHUB_OUTPUT"
+          echo "image_version=${version}" >> "$GITHUB_OUTPUT"
       - name: Run integration test
         run: go test -v -timeout 15m -count=1 -run '^${{ matrix.test }}$$' .
         working-directory: itest
