@@ -15,10 +15,7 @@ import java.util.Map;
 
 public class ProfilerSdk implements ProfilerApi {
 
-    private static final String TRACE_ID_LABEL_KEY = "trace_id";
-
     private final AsyncProfiler asprof;
-    private final ThreadLocal<ScopedContext> traceIdContext = new ThreadLocal<>();
 
     public ProfilerSdk() {
         this.asprof = PyroscopeAsyncProfiler.getAsyncProfiler();
@@ -52,19 +49,14 @@ public class ProfilerSdk implements ProfilerApi {
 
     @Override
     public void setTraceId(@NotNull String traceId) {
-        ScopedContext existing = traceIdContext.get();
-        if (existing != null) {
-            existing.close();
-        }
-        traceIdContext.set(new ScopedContext(new LabelsSet(TRACE_ID_LABEL_KEY, traceId)));
+        // W3C trace ID is 32 hex chars (128 bits). Split into two longs.
+        long hi = Long.parseUnsignedLong(traceId.substring(0, 16), 16);
+        long lo = Long.parseUnsignedLong(traceId.substring(16, 32), 16);
+        asprof.setTraceId(hi, lo);
     }
 
     @Override
     public void clearTraceId() {
-        ScopedContext ctx = traceIdContext.get();
-        if (ctx != null) {
-            ctx.close();
-            traceIdContext.remove();
-        }
+        asprof.setTraceId(0L, 0L);
     }
 }
