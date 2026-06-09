@@ -61,7 +61,7 @@ public class ProfilerSdk implements ProfilerApi {
         asprof.setTraceId(0L, 0L);
     }
 
-    private static long parseHex64(String s, int offset) {
+    static long parseHex64(String s, int offset) {
         long result = 0L;
         for (int i = 0; i < 16; i++) {
             int c = s.charAt(offset + i);
