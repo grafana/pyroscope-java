@@ -28,8 +28,9 @@ public interface ProfilerApi {
      * Attaches a {@code trace_id} label to samples produced by the current thread.
      * Thread local; pair with {@link #clearTraceId()}.
      */
-    // Empty default body so a newer caller against an older impl degrades to no label
-    // rather than NoSuchMethodError. Real impl is in ProfilerSdk.
+    // Default methods so an older ProfilerApi implementation can run against a newer ProfilerApi
+    // injected into the bootstrap classloader (no label rather than AbstractMethodError).
+    // Note: this does not help if the runtime ProfilerApi itself is older and lacks this method.
     default void setTraceId(@NotNull String traceId) {}
 
     default void clearTraceId() {}
