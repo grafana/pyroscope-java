@@ -41,4 +41,14 @@ class ProfilerSdkTest {
     void parseHex64_invalidChar() {
         assertThrows(NumberFormatException.class, () -> ProfilerSdk.parseHex64("0123456789abcdez", 0));
     }
+
+    @Test
+    void setTraceId_rejectsWrongLength() {
+        ProfilerSdk sdk = new ProfilerSdk();
+        // Both shorter and longer than 32 must throw the same exception type.
+        assertThrows(NumberFormatException.class, () -> sdk.setTraceId(""));
+        assertThrows(NumberFormatException.class, () -> sdk.setTraceId("0123456789abcdef"));
+        assertThrows(NumberFormatException.class, () ->
+                sdk.setTraceId("0123456789abcdef0123456789abcdef00"));
+    }
 }

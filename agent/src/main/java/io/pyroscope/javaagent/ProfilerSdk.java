@@ -51,6 +51,9 @@ public class ProfilerSdk implements ProfilerApi {
     public void setTraceId(@NotNull String traceId) {
         // W3C trace ID is 32 hex chars (128 bits). Parse directly into two longs
         // to avoid the String#substring allocations on this hot path.
+        if (traceId.length() != 32) {
+            throw new NumberFormatException("trace_id must be 32 hex chars, got length " + traceId.length());
+        }
         long hi = parseHex64(traceId, 0);
         long lo = parseHex64(traceId, 16);
         asprof.setTraceId(hi, lo);
