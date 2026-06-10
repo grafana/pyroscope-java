@@ -46,4 +46,40 @@ public class ProfilerSdk implements ProfilerApi {
     public long registerConstant(String constant) {
         return Pyroscope.LabelsWrapper.registerConstant(constant);
     }
+
+    @Override
+    public void setTraceId(@NotNull String traceId) {
+        // W3C trace ID is 32 hex chars (128 bits). Parse directly into two longs
+        // to avoid the String#substring allocations on this hot path.
+        if (traceId.length() != 32) {
+            throw new NumberFormatException("trace_id must be 32 hex chars, got length " + traceId.length());
+        }
+        long hi = parseHex64(traceId, 0);
+        long lo = parseHex64(traceId, 16);
+        asprof.setTraceId(hi, lo);
+    }
+
+    @Override
+    public void clearTraceId() {
+        asprof.setTraceId(0L, 0L);
+    }
+
+    static long parseHex64(String s, int offset) {
+        long result = 0L;
+        for (int i = 0; i < 16; i++) {
+            int c = s.charAt(offset + i);
+            int nibble;
+            if (c >= '0' && c <= '9') {
+                nibble = c - '0';
+            } else if (c >= 'a' && c <= 'f') {
+                nibble = c - 'a' + 10;
+            } else if (c >= 'A' && c <= 'F') {
+                nibble = c - 'A' + 10;
+            } else {
+                throw new NumberFormatException("invalid hex char in trace_id at index " + (offset + i));
+            }
+            result = (result << 4) | nibble;
+        }
+        return result;
+    }
 }

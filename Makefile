@@ -1,4 +1,4 @@
-GRAFANA_PYROSCOPE_VERSION := 4.3.0.1
+GRAFANA_PYROSCOPE_VERSION := 4.4.0.0
 
 .PHONY: download-async-profiler
 download-async-profiler:

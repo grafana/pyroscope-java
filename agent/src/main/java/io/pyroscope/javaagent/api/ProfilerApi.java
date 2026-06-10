@@ -23,4 +23,15 @@ public interface ProfilerApi {
     void setTracingContext(long spanId, long spanName);
 
     long registerConstant(String constant);
+
+    /**
+     * Attaches a {@code trace_id} label to samples produced by the current thread.
+     * Thread local; pair with {@link #clearTraceId()}.
+     */
+    // Default methods so an older ProfilerApi implementation can run against a newer ProfilerApi
+    // injected into the bootstrap classloader (no label rather than AbstractMethodError).
+    // Note: this does not help if the runtime ProfilerApi itself is older and lacks this method.
+    default void setTraceId(@NotNull String traceId) {}
+
+    default void clearTraceId() {}
 }
