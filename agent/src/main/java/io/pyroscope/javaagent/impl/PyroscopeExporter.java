@@ -12,12 +12,20 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.zip.Deflater;
 
 public class PyroscopeExporter implements Exporter {
 
     private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
+    private static final String OTEL_SCOPE_NAME = "otel.scope.name";
+    private static final String OTEL_SCOPE_VERSION = "otel.scope.version";
+    private static final String PROCESS_RUNTIME_NAME = "process.runtime.name";
+    private static final String PROCESS_RUNTIME_VERSION = "process.runtime.version";
+    private static final String PYROSCOPE_SCOPE_NAME = "io.pyroscope.javaagent";
+    private static final String UNKNOWN_SCOPE_VERSION = "unknown";
 
     final Config config;
     final Logger logger;
@@ -171,7 +179,36 @@ public class PyroscopeExporter implements Exporter {
         return config.timeseries.newBuilder()
             .addLabels(config.labels)
             .addLabels(Pyroscope.getStaticLabels())
+            .addLabelsIfAbsent(otelRequiredLabels())
             .build()
             .toString();
+    }
+
+    private static Map<String, String> otelRequiredLabels() {
+        Map<String, String> labels = new HashMap<>();
+        labels.put(OTEL_SCOPE_NAME, PYROSCOPE_SCOPE_NAME);
+        labels.put(OTEL_SCOPE_VERSION, scopeVersion());
+        putSystemProperty(labels, PROCESS_RUNTIME_NAME, "java.runtime.name");
+        putSystemProperty(labels, PROCESS_RUNTIME_VERSION, "java.runtime.version");
+        return labels;
+    }
+
+    private static void putSystemProperty(Map<String, String> labels, String labelName, String propertyName) {
+        String propertyValue = System.getProperty(propertyName);
+        if (propertyValue != null && !propertyValue.isEmpty()) {
+            labels.put(labelName, propertyValue);
+        }
+    }
+
+    private static String scopeVersion() {
+        Package packageInfo = PyroscopeExporter.class.getPackage();
+        if (packageInfo == null) {
+            return UNKNOWN_SCOPE_VERSION;
+        }
+        String version = packageInfo.getImplementationVersion();
+        if (version == null || version.isEmpty()) {
+            return UNKNOWN_SCOPE_VERSION;
+        }
+        return version;
     }
 }

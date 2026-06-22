@@ -62,6 +62,20 @@ public class AppName {
             return this;
         }
 
+        public Builder addLabelsIfAbsent(Map<String, String> labels) {
+            for (Map.Entry<String, String> it : labels.entrySet()) {
+                addLabelIfAbsent(it.getKey(), it.getValue());
+            }
+            return this;
+        }
+
+        public Builder addLabelIfAbsent(String k, String v) {
+            if (!this.labels.containsKey(k)) {
+                addLabel(k, v);
+            }
+            return this;
+        }
+
         public AppName build() {
             return new AppName(name, labels);
         }
