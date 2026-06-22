@@ -33,7 +33,7 @@ public class PyroscopeExporterTest {
         try {
             Map<String, String> labels = labelsFromSeriesName(exporter.staticLabels);
 
-            assertEquals("io.pyroscope.javaagent", labels.get("otel.scope.name"));
+            assertEquals("com.grafana.pyroscope/java", labels.get("otel.scope.name"));
             if (labels.containsKey("otel.scope.version")) {
                 assertFalse(labels.get("otel.scope.version").isEmpty());
             }
