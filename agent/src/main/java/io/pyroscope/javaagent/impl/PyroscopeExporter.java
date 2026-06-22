@@ -24,7 +24,7 @@ public class PyroscopeExporter implements Exporter {
     private static final String OTEL_SCOPE_VERSION = "otel.scope.version";
     private static final String PROCESS_RUNTIME_NAME = "process.runtime.name";
     private static final String PROCESS_RUNTIME_VERSION = "process.runtime.version";
-    private static final String PYROSCOPE_SCOPE_NAME = "io.pyroscope.javaagent";
+    private static final String PYROSCOPE_SCOPE_NAME = "com.grafana.pyroscope/java";
 
     final Config config;
     final Logger logger;
