@@ -25,7 +25,6 @@ public class PyroscopeExporter implements Exporter {
     private static final String PROCESS_RUNTIME_NAME = "process.runtime.name";
     private static final String PROCESS_RUNTIME_VERSION = "process.runtime.version";
     private static final String PYROSCOPE_SCOPE_NAME = "io.pyroscope.javaagent";
-    private static final String UNKNOWN_SCOPE_VERSION = "unknown";
 
     final Config config;
     final Logger logger;
@@ -187,27 +186,30 @@ public class PyroscopeExporter implements Exporter {
     private static Map<String, String> otelRequiredLabels() {
         Map<String, String> labels = new HashMap<>();
         labels.put(OTEL_SCOPE_NAME, PYROSCOPE_SCOPE_NAME);
-        labels.put(OTEL_SCOPE_VERSION, scopeVersion());
+        putLabelIfNotEmpty(labels, OTEL_SCOPE_VERSION, scopeVersion());
         putSystemProperty(labels, PROCESS_RUNTIME_NAME, "java.runtime.name");
         putSystemProperty(labels, PROCESS_RUNTIME_VERSION, "java.runtime.version");
         return labels;
     }
 
     private static void putSystemProperty(Map<String, String> labels, String labelName, String propertyName) {
-        String propertyValue = System.getProperty(propertyName);
-        if (propertyValue != null && !propertyValue.isEmpty()) {
-            labels.put(labelName, propertyValue);
+        putLabelIfNotEmpty(labels, labelName, System.getProperty(propertyName));
+    }
+
+    private static void putLabelIfNotEmpty(Map<String, String> labels, String labelName, String labelValue) {
+        if (labelValue != null && !labelValue.isEmpty()) {
+            labels.put(labelName, labelValue);
         }
     }
 
     private static String scopeVersion() {
         Package packageInfo = PyroscopeExporter.class.getPackage();
         if (packageInfo == null) {
-            return UNKNOWN_SCOPE_VERSION;
+            return null;
         }
         String version = packageInfo.getImplementationVersion();
         if (version == null || version.isEmpty()) {
-            return UNKNOWN_SCOPE_VERSION;
+            return null;
         }
         return version;
     }

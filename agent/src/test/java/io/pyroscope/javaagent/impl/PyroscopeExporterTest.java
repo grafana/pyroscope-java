@@ -34,7 +34,9 @@ public class PyroscopeExporterTest {
             Map<String, String> labels = labelsFromSeriesName(exporter.staticLabels);
 
             assertEquals("io.pyroscope.javaagent", labels.get("otel.scope.name"));
-            assertFalse(labels.get("otel.scope.version").isEmpty());
+            if (labels.containsKey("otel.scope.version")) {
+                assertFalse(labels.get("otel.scope.version").isEmpty());
+            }
             assertEquals(System.getProperty("java.runtime.name"), labels.get("process.runtime.name"));
             assertEquals(System.getProperty("java.runtime.version"), labels.get("process.runtime.version"));
         } finally {
