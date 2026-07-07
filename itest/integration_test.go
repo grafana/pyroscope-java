@@ -16,14 +16,17 @@ import (
 	"pyroscope-java-itest/require"
 )
 
-const pyroscopeImage = "grafana/pyroscope:1.18.0@sha256:e7edae4fd99dbb8695a1e03d7db96ab247630cf83842407908922b2f66aafc6a"
+const pyroscopeImage = "grafana/pyroscope:2.1.0@sha256:73b23dbb99f154a0803c136abafdff825475f415dd4d4587538d014c672b5a55"
 const needle = "run;Fib.lambda$appLogic$0;Fib.fib;Fib.fib;Fib.fib;Fib.fib;"
+const otelScopeNameLabel = "otel.scope.name"
+const expectedOtelScopeName = "com.grafana.pyroscope/java"
 
 func startPyroscope(t *testing.T, net *dockertest.Network) string {
 	t.Helper()
 	t.Log("starting pyroscope...")
 	c := dockertest.StartContainer(t, dockertest.ContainerRequest{
 		Image:          pyroscopeImage,
+		Cmd:            []string{"-architecture.storage=v2", "-validation.disable-label-sanitization=true", "-segment-writer.min-ready-duration=0s", "-ingester.min-ready-duration=0s", "-metastore.min-ready-duration=0s"},
 		ExposedPorts:   []string{"4040/tcp"},
 		Network:        net.Name,
 		NetworkAliases: []string{"pyroscope"},
@@ -68,7 +71,7 @@ func startApp(t *testing.T, net *dockertest.Network, image string) {
 	})
 }
 
-func queryProfile(t *testing.T, pyroscopeURL string, serviceName string) (string, error) {
+func queryProfile(t *testing.T, pyroscopeURL string, labelSelector string) (string, error) {
 	t.Helper()
 	qc := querier.NewClient(http.DefaultClient, pyroscopeURL)
 
@@ -80,7 +83,7 @@ func queryProfile(t *testing.T, pyroscopeURL string, serviceName string) (string
 			ProfileTypeID: "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
 			Start:         from.UnixMilli(),
 			End:           to.UnixMilli(),
-			LabelSelector: fmt.Sprintf(`{service_name="%s"}`, serviceName),
+			LabelSelector: labelSelector,
 			MaxNodes:      &maxNodes,
 			Format:        querier.ProfileFormat_PROFILE_FORMAT_TREE,
 		})
@@ -128,20 +131,21 @@ func serviceNameFromDockerfile(dockerfile string, imageVersion string, javaVersi
 
 func testTarget(t *testing.T, pyroscopeURL string, serviceName string) {
 	t.Helper()
+	labelSelector := fmt.Sprintf(`{service_name="%s","%s"="%s"}`, serviceName, otelScopeNameLabel, expectedOtelScopeName)
 	var lastCollapsed string
 	var lastErr error
 	ok := require.Eventually(t, func() bool {
-		lastCollapsed, lastErr = queryProfile(t, pyroscopeURL, serviceName)
+		lastCollapsed, lastErr = queryProfile(t, pyroscopeURL, labelSelector)
 		if lastErr != nil {
-			t.Logf("[%s] query error: %s", serviceName, lastErr)
+			t.Logf("[%s] query %s error: %s", serviceName, labelSelector, lastErr)
 			return false
 		}
 		if lastCollapsed == "" {
-			t.Logf("[%s] empty profile", serviceName)
+			t.Logf("[%s] empty profile for %s", serviceName, labelSelector)
 			return false
 		}
 		if !strings.Contains(lastCollapsed, needle) {
-			t.Logf("[%s] needle not found yet", serviceName)
+			t.Logf("[%s] needle not found yet for %s", serviceName, labelSelector)
 			return false
 		}
 		return true
@@ -149,9 +153,9 @@ func testTarget(t *testing.T, pyroscopeURL string, serviceName string) {
 
 	if !ok {
 		if lastErr != nil {
-			t.Logf("[%s] last error: %s", serviceName, lastErr)
+			t.Logf("[%s] last error for %s: %s", serviceName, labelSelector, lastErr)
 		}
-		t.Logf("[%s] last collapsed profile:\n%s", serviceName, lastCollapsed)
+		t.Logf("[%s] last collapsed profile for %s:\n%s", serviceName, labelSelector, lastCollapsed)
 		t.FailNow()
 	}
 }
