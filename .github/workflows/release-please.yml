@@ -31,6 +31,8 @@ jobs:
           token: ${{ steps.get-github-app-token.outputs.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          skip-github-pull-request: >-
+            ${{ contains(github.event.head_commit.message, 'chore(main): release') }}
 
   publish:
     name: Publish Maven artifacts
