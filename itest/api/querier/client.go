@@ -32,6 +32,7 @@ func (c *Client) SelectMergeStacktraces(ctx context.Context, req *SelectMergeSta
 		return nil, fmt.Errorf("failed to create http request: %w", err)
 	}
 	httpRequest.Header.Set("Content-Type", "application/json")
+	httpRequest.Header.Set("Accept", "application/json;allow-utf8-labelnames=true")
 
 	resp, err := c.HTTP.Do(httpRequest)
 	if err != nil {

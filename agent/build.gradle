@@ -118,7 +118,10 @@ shadowJar {
     relocate("okio",  "io.pyroscope.vendor.okio")
     relocate("okhttp3",  "io.pyroscope.vendor.okhttp3")
     relocate("kotlin",  "io.pyroscope.vendor.kotlin")
-    relocate("com",  "io.pyroscope.vendor.com")
+    relocate("com",  "io.pyroscope.vendor.com") {
+        // Keep the public OTel instrumentation scope name stable.
+        exclude "%regex[com\\.grafana\\.pyroscope/java]"
+    }
 
     dependencies {
         exclude "org/jetbrains/**"
