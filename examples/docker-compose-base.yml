@@ -1,6 +1,6 @@
 services:
   pyroscope:
-    image: "grafana/pyroscope:2.1.0@sha256:73b23dbb99f154a0803c136abafdff825475f415dd4d4587538d014c672b5a55"
+    image: "grafana/pyroscope:1.18.0@sha256:e7edae4fd99dbb8695a1e03d7db96ab247630cf83842407908922b2f66aafc6a"
     ports:
       - "4040:4040"
   app:
