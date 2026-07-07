@@ -63,7 +63,8 @@ javadoc{
 jar {
     manifest {
         attributes(
-                'Premain-Class': 'io.pyroscope.javaagent.PyroscopeAgent'
+                'Premain-Class': 'io.pyroscope.javaagent.PyroscopeAgent',
+                'Implementation-Version': pyroscopeVersion
         )
     }
     from(asyncProfilerDistDir) {
@@ -92,6 +93,12 @@ java {
 
 shadowJar {
     dependsOn copyBootstrapToResources
+    manifest {
+        attributes(
+                'Premain-Class': 'io.pyroscope.javaagent.PyroscopeAgent',
+                'Implementation-Version': pyroscopeVersion
+        )
+    }
 
     exclude 'Log4j-*'
     exclude 'META-INF/org/apache/logging/log4j/**'
