@@ -71,7 +71,6 @@ public final class OtlpHttpExporter implements Exporter {
                 }
             } catch (IOException e) {
                 logger.log(Logger.Level.ERROR, "Error uploading OTLP profile: %s", e.getMessage());
-                retry = true;
             }
 
             if (retry) {
