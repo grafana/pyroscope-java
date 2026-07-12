@@ -121,6 +121,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         final byte[] data;
         if (format == Format.JFR) {
             data = dumpJFR();
+        } else if (format == Format.OTLP) {
+            data = instance.dumpOtlp();
         } else {
             data = instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8);
         }

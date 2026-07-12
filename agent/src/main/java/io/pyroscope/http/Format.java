@@ -1,7 +1,8 @@
 package io.pyroscope.http;
 
 public enum Format {
-    JFR ("jfr");
+    JFR ("jfr"),
+    OTLP ("otlp");
 
     /**
      * Profile data format, as expected by Pyroscope's HTTP API.
