@@ -60,9 +60,9 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
      */
     @Override
     public synchronized void start() {
-        if (format == Format.JFR) {
+        if (format == Format.JFR || format == Format.OTLP) {
             try {
-                instance.execute(createJFRCommand());
+                instance.execute(createStartCommand());
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
@@ -90,20 +90,26 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         return dumpImpl(started, ended);
     }
 
-    private String createJFRCommand() {
+    String createStartCommand() {
+        return createStartCommand(config, format, tempJFRFile);
+    }
+
+    static String createStartCommand(Config config, Format format, File tempJFRFile) {
         StringBuilder sb = new StringBuilder();
-        sb.append("start,event=").append(eventType.id);
-        if (alloc != null && !alloc.isEmpty()) {
-            sb.append(",alloc=").append(alloc);
+        sb.append("start,event=").append(config.profilingEvent.id);
+        if (config.profilingAlloc != null && !config.profilingAlloc.isEmpty()) {
+            sb.append(",alloc=").append(config.profilingAlloc);
             if (config.allocLive) {
                 sb.append(",live");
             }
         }
-        if (lock != null && !lock.isEmpty()) {
-            sb.append(",lock=").append(lock);
+        if (config.profilingLock != null && !config.profilingLock.isEmpty()) {
+            sb.append(",lock=").append(config.profilingLock);
         }
-        sb.append(",interval=").append(interval.toNanos())
-                .append(",file=").append(tempJFRFile.toString());
+        sb.append(",interval=").append(config.profilingInterval.toNanos());
+        if (format == Format.JFR) {
+            sb.append(",file=").append(tempJFRFile.toString());
+        }
         if (config.APLogLevel != null) {
             sb.append(",loglevel=").append(config.APLogLevel);
         }
