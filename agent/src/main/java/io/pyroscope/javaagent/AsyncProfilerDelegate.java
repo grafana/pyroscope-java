@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.Instant;
 
 
@@ -22,9 +21,6 @@ import static io.pyroscope.Preconditions.checkNotNull;
 public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private Config config;
     private EventType eventType;
-    private String alloc;
-    private String lock;
-    private Duration interval;
     private Format format;
     private File tempJFRFile;
 
@@ -38,10 +34,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     public void setConfig(@NotNull final Config config) {
         checkNotNull(config, "config");
         this.config = config;
-        this.alloc = config.profilingAlloc;
-        this.lock = config.profilingLock;
         this.eventType = config.profilingEvent;
-        this.interval = config.profilingInterval;
         this.format = config.format;
 
         if (format == Format.JFR && null == tempJFRFile) {
@@ -60,14 +53,10 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
      */
     @Override
     public synchronized void start() {
-        if (format == Format.JFR || format == Format.OTLP) {
-            try {
-                instance.execute(createStartCommand());
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-        } else {
-            instance.start(eventType.id, interval.toNanos());
+        try {
+            instance.execute(createStartCommand());
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 
