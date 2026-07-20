@@ -159,10 +159,7 @@ public class PyroscopeAgent {
                 }
                 if (scheduler == null) {
                     if (exporter == null) {
-                        Exporter delegate = config.format == io.pyroscope.http.Format.OTLP
-                            ? new OtlpHttpExporter(config, logger)
-                            : new PyroscopeExporter(config, logger);
-                        exporter = new QueuedExporter(config, delegate, logger);
+                        exporter = new QueuedExporter(config, new PyroscopeExporter(config, logger), logger);
                     }
                     if (config.samplingDuration == null) {
                         scheduler = new ContinuousProfilingScheduler(config, exporter, logger);

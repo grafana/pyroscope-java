@@ -1,5 +1,9 @@
 package io.pyroscope.javaagent.impl;
 
+import com.sun.net.httpserver.HttpServer;
+import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.EventType;
+import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.v2.Pyroscope;
@@ -7,6 +11,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,6 +104,47 @@ public class PyroscopeExporterTest {
         } finally {
             exporter.stop();
         }
+    }
+
+    @Test
+    void exportsOtlpAsRawProtobufToProfilesEndpoint() throws Exception {
+        byte[] profile = new byte[] {1, 2, 3, 4};
+        String[] contentType = new String[1];
+        byte[][] requestBody = new byte[1][];
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+        server.createContext("/v1development/profiles", exchange -> {
+            contentType[0] = exchange.getRequestHeaders().getFirst("Content-Type");
+            requestBody[0] = readAllBytes(exchange.getRequestBody());
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+        });
+        server.start();
+
+        PyroscopeExporter exporter = new PyroscopeExporter(
+            new Config.Builder()
+                .setFormat(Format.OTLP)
+                .setServerAddress("http://localhost:" + server.getAddress().getPort())
+                .build(),
+            NOOP_LOGGER);
+        try {
+            exporter.export(new Snapshot(
+                Format.OTLP, EventType.CPU, Instant.EPOCH, Instant.EPOCH, profile, null));
+            assertEquals("application/x-protobuf", contentType[0]);
+            assertEquals(Arrays.toString(profile), Arrays.toString(requestBody[0]));
+        } finally {
+            exporter.stop();
+            server.stop(0);
+        }
+    }
+
+    private static byte[] readAllBytes(InputStream input) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int read;
+        while ((read = input.read(buffer)) != -1) {
+            output.write(buffer, 0, read);
+        }
+        return output.toByteArray();
     }
 
     private static Map<String, String> labelsFromSeriesName(String seriesName) {
