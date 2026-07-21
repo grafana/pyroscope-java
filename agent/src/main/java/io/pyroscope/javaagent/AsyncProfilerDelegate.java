@@ -103,7 +103,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
             sb.append(",lock=").append(lock);
         }
         sb.append(",interval=").append(interval.toNanos())
-                .append(",file=").append(tempJFRFile.toString());
+                .append(",file=").append(tempJFRFile.toString())
+                .append(",timeout=").append(config.uploadInterval.getSeconds());
         if (config.APLogLevel != null) {
             sb.append(",loglevel=").append(config.APLogLevel);
         }
