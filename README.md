@@ -29,6 +29,15 @@ of `pyroscope.jar`
 
 Visit [docs](https://pyroscope.io/docs/java/) page for usage and configuration documentation.
 
+### Experimental OTLP Profiles export
+
+The agent can export async-profiler recordings using the experimental OpenTelemetry Profiles signal. Set
+`PYROSCOPE_FORMAT=otlp` and configure `PYROSCOPE_SERVER_ADDRESS` with the base address of an OTLP/HTTP receiver.
+The agent sends protobuf requests to `<server-address>/v1development/profiles`.
+
+OTLP export requires the default `ASYNC` profiler and is not supported by the JFR profiler used on Windows.
+The OpenTelemetry Profiles protocol and async-profiler output are experimental and may change incompatibly.
+
 ## Building
 
 If you want to build the agent JAR yourself, from this repo run:

@@ -1,5 +1,6 @@
 package io.pyroscope.javaagent.impl;
 
+import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Exporter;
@@ -20,6 +21,7 @@ import java.util.zip.Deflater;
 public class PyroscopeExporter implements Exporter {
 
     private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
+    private static final String OTLP_PROFILES_PATH = "v1development/profiles";
     private static final String OTEL_SCOPE_NAME = "otel.scope.name";
     private static final String OTEL_SCOPE_VERSION = "otel.scope.version";
     private static final String PROCESS_RUNTIME_NAME = "process.runtime.name";
@@ -70,25 +72,9 @@ public class PyroscopeExporter implements Exporter {
         int tries = 0;
         while (retry) {
             tries++;
-            final RequestBody requestBody;
-            byte[] labels = snapshot.labels.toByteArray();
-            logger.log(Logger.Level.DEBUG, "Upload attempt %d to %s. %s %s JFR: %s, labels: %s", tries, url.toString(),
-                snapshot.started.toString(), snapshot.ended.toString(), snapshot.data.length, labels.length);
-            MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM);
-            RequestBody jfrBody = RequestBody.create(snapshot.data);
-            if (config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
-                jfrBody = GzipSink.gzip(jfrBody, config.compressionLevelJFR);
-            }
-            bodyBuilder.addFormDataPart("jfr", "jfr", jfrBody);
-            if (labels.length > 0) {
-                RequestBody labelsBody = RequestBody.create(labels, PROTOBUF);
-                if (config.compressionLevelLabels != Deflater.NO_COMPRESSION) {
-                    labelsBody = GzipSink.gzip(labelsBody, config.compressionLevelLabels);
-                }
-                bodyBuilder.addFormDataPart("labels", "labels", labelsBody);
-            }
-            requestBody = bodyBuilder.build();
+            final RequestBody requestBody = requestBody(snapshot);
+            logger.log(Logger.Level.DEBUG, "Upload attempt %d to %s. Profile: %s bytes",
+                tries, url, snapshot.data.length);
             Request.Builder request = new Request.Builder()
                 .post(requestBody)
                 .url(url);
@@ -128,6 +114,29 @@ public class PyroscopeExporter implements Exporter {
         }
     }
 
+    private RequestBody requestBody(Snapshot snapshot) {
+        if (config.format == Format.OTLP) {
+            return RequestBody.create(snapshot.data, PROTOBUF);
+        }
+
+        byte[] labels = snapshot.labels.toByteArray();
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+            .setType(MultipartBody.FORM);
+        RequestBody jfrBody = RequestBody.create(snapshot.data);
+        if (config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
+            jfrBody = GzipSink.gzip(jfrBody, config.compressionLevelJFR);
+        }
+        bodyBuilder.addFormDataPart("jfr", "jfr", jfrBody);
+        if (labels.length > 0) {
+            RequestBody labelsBody = RequestBody.create(labels, PROTOBUF);
+            if (config.compressionLevelLabels != Deflater.NO_COMPRESSION) {
+                labelsBody = GzipSink.gzip(labelsBody, config.compressionLevelLabels);
+            }
+            bodyBuilder.addFormDataPart("labels", "labels", labelsBody);
+        }
+        return bodyBuilder.build();
+    }
+
     private static boolean shouldRetry(int status) {
         boolean isRateLimited = (status == 429);
         boolean isServerError = (status >= 500 && status <= 599);
@@ -156,6 +165,13 @@ public class PyroscopeExporter implements Exporter {
     }
 
     private HttpUrl urlForSnapshot(final Snapshot snapshot) {
+        if (config.format == Format.OTLP) {
+            return HttpUrl.parse(config.serverAddress)
+                .newBuilder()
+                .addPathSegments(OTLP_PROFILES_PATH)
+                .build();
+        }
+
         Instant started = snapshot.started;
         Instant finished = snapshot.ended;
         HttpUrl.Builder builder = HttpUrl.parse(config.serverAddress)
