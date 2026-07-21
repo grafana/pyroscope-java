@@ -21,7 +21,7 @@ import java.util.zip.Deflater;
 public class PyroscopeExporter implements Exporter {
 
     private static final MediaType PROTOBUF = MediaType.parse("application/x-protobuf");
-    private static final String PROFILES_PATH = "v1development/profiles";
+    private static final String OTLP_PROFILES_PATH = "v1development/profiles";
     private static final String OTEL_SCOPE_NAME = "otel.scope.name";
     private static final String OTEL_SCOPE_VERSION = "otel.scope.version";
     private static final String PROCESS_RUNTIME_NAME = "process.runtime.name";
@@ -168,7 +168,7 @@ public class PyroscopeExporter implements Exporter {
         if (config.format == Format.OTLP) {
             return HttpUrl.parse(config.serverAddress)
                 .newBuilder()
-                .addPathSegments(PROFILES_PATH)
+                .addPathSegments(OTLP_PROFILES_PATH)
                 .build();
         }
 

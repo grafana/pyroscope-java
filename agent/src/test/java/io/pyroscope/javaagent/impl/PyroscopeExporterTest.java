@@ -20,9 +20,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PyroscopeExporterTest {
     private static final Logger NOOP_LOGGER = (level, msg, args) -> {};
@@ -111,10 +114,12 @@ public class PyroscopeExporterTest {
         byte[] profile = new byte[] {1, 2, 3, 4};
         String[] contentType = new String[1];
         byte[][] requestBody = new byte[1][];
+        CountDownLatch requestCaptured = new CountDownLatch(1);
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/v1development/profiles", exchange -> {
             contentType[0] = exchange.getRequestHeaders().getFirst("Content-Type");
             requestBody[0] = readAllBytes(exchange.getRequestBody());
+            requestCaptured.countDown();
             exchange.sendResponseHeaders(200, -1);
             exchange.close();
         });
@@ -129,6 +134,7 @@ public class PyroscopeExporterTest {
         try {
             exporter.export(new Snapshot(
                 Format.OTLP, EventType.CPU, Instant.EPOCH, Instant.EPOCH, profile, null));
+            assertTrue(requestCaptured.await(5, TimeUnit.SECONDS));
             assertEquals("application/x-protobuf", contentType[0]);
             assertEquals(Arrays.toString(profile), Arrays.toString(requestBody[0]));
         } finally {
