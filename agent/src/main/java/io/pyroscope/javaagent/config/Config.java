@@ -254,6 +254,7 @@ public final class Config {
                ", httpHeaders=" + httpHeaders +
                ", samplingDuration=" + samplingDuration +
                ", tenantID=" + tenantID +
+               ", jfrDir='" + jfrDir + '\'' +
                '}';
     }
 

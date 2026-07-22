@@ -1,6 +1,7 @@
 package io.pyroscope.javaagent;
 
 import io.pyroscope.javaagent.api.Logger;
+import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
 
 import java.io.IOException;
@@ -42,19 +43,8 @@ class BootstrapApiInjector {
         inject(instrumentation, jfrDir);
     }
 
-    private static final String PYROSCOPE_JFR_DIR_PROPERTY = "pyroscope.jfr.dir";
-
     private static String getJfrDir() {
-        // matches PropertiesConfigurationProvider's PYROSCOPE_JFR_DIR -> pyroscope.jfr.dir fallback,
-        // so -Dpyroscope.jfr.dir=... behaves the same here as it does for the rest of Config.
-        String jfrDir = System.getProperty(PYROSCOPE_JFR_DIR);
-        if (jfrDir == null || jfrDir.isEmpty()) {
-            jfrDir = System.getProperty(PYROSCOPE_JFR_DIR_PROPERTY);
-        }
-        if (jfrDir == null || jfrDir.isEmpty()) {
-            jfrDir = System.getenv(PYROSCOPE_JFR_DIR);
-        }
-        return jfrDir;
+        return DefaultConfigurationProvider.INSTANCE.get(PYROSCOPE_JFR_DIR);
     }
 
     static void inject(Instrumentation instrumentation, String jfrDir) {

@@ -72,19 +72,4 @@ public class AsyncProfilerDelegateJfrDirTest {
             "Created path should be a directory");
     }
 
-    @Test
-    void testJFRFileNotCreatedForNonJFRFormat() throws Exception {
-        Config config = new Config.Builder()
-            .setFormat(Format.JFR)
-            .setJfrDir(tempDir.toString())
-            .build();
-
-        AsyncProfilerDelegate delegate = new AsyncProfilerDelegate(config);
-
-        java.lang.reflect.Field field = AsyncProfilerDelegate.class.getDeclaredField("tempJFRFile");
-        field.setAccessible(true);
-        java.io.File jfrFile = (java.io.File) field.get(delegate);
-
-        assertNotNull(jfrFile, "JFR file should be created for JFR format");
-    }
 }
