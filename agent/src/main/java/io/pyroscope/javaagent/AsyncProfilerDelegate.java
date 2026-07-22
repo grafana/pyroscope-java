@@ -20,6 +20,9 @@ import java.time.Instant;
 import static io.pyroscope.Preconditions.checkNotNull;
 
 public final class AsyncProfilerDelegate implements ProfilerDelegate {
+    private static final int TIMEOUT_SAFETY_MULTIPLIER = 2;
+    private static final String PROFILER_NOT_ACTIVE = "Profiler is not active";
+
     private Config config;
     private EventType eventType;
     private String alloc;
@@ -76,7 +79,13 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
      */
     @Override
     public synchronized void stop() {
-        instance.stop();
+        try {
+            instance.stop();
+        } catch (IllegalStateException e) {
+            if (format != Format.JFR || !PROFILER_NOT_ACTIVE.equals(e.getMessage())) {
+                throw e;
+            }
+        }
     }
 
     /**
@@ -104,7 +113,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         }
         sb.append(",interval=").append(interval.toNanos())
                 .append(",file=").append(tempJFRFile.toString())
-                .append(",timeout=").append(config.uploadInterval.getSeconds());
+                .append(",timeout=").append(asyncProfilerTimeoutSeconds(config.uploadInterval));
         if (config.APLogLevel != null) {
             sb.append(",loglevel=").append(config.APLogLevel);
         }
@@ -113,6 +122,15 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
             sb.append(",").append(config.APExtraArguments);
         }
         return sb.toString();
+    }
+
+    static long asyncProfilerTimeoutSeconds(Duration profilingDuration) {
+        Duration timeout = profilingDuration.multipliedBy(TIMEOUT_SAFETY_MULTIPLIER);
+        long seconds = timeout.getSeconds();
+        if (timeout.getNano() > 0) {
+            seconds++;
+        }
+        return Math.max(1, seconds);
     }
 
     private Snapshot dumpImpl(Instant started, Instant ended) {
