@@ -99,7 +99,6 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
         if (!this.started) {
             return;
         }
-        this.logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler stopping");
         try {
             this.profiler.stop();
         } catch (Throwable throwable) {
@@ -118,21 +117,34 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
             if (!started) {
                 return;
             }
-            logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler#schedulerTick");
             Snapshot snapshot;
             Instant now;
             try {
+                logger.log(Logger.Level.DEBUG, "ContinuousProfilingScheduler#schedulerTick");
                 profiler.stop();
                 now = Instant.now();
                 snapshot = profiler.dumpProfile(this.profilingIntervalStartTime, now);
                 profiler.start();
             } catch (Throwable throwable) {
+                stopSchedulerAfterFailure(throwable);
                 logger.log(Logger.Level.ERROR, "Error dumping profiler %s", throwable);
-                stopSchedulerLocked();
                 return;
             }
             profilingIntervalStartTime = now;
-            exporter.export(snapshot);
+            try {
+                exporter.export(snapshot);
+            } catch (Throwable e) {
+                stopSchedulerAfterFailure(e);
+                logger.log(Logger.Level.ERROR, "Error exporting profile %s", e);
+            }
+        }
+    }
+
+    private void stopSchedulerAfterFailure(Throwable failure) {
+        try {
+            stopSchedulerLocked();
+        } catch (Throwable stopFailure) {
+            failure.addSuppressed(stopFailure);
         }
     }
 
