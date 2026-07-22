@@ -1,8 +1,9 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.PyroscopeAsyncProfiler;
+import io.pyroscope.javaagent.util.JfrFileUtil;
 import io.pyroscope.labels.v2.Pyroscope;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-
 
 import static io.pyroscope.Preconditions.checkNotNull;
 
@@ -46,8 +46,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
 
         if (format == Format.JFR && null == tempJFRFile) {
             try {
-                // flight recorder is built on top of a file descriptor, so we need a file.
-                tempJFRFile = File.createTempFile("pyroscope", ".jfr");
+                tempJFRFile = JfrFileUtil.createJfrFile(config);
                 tempJFRFile.deleteOnExit();
             } catch (IOException e) {
                 throw new IllegalStateException(e);

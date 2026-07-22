@@ -2,6 +2,7 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.util.JfrFileUtil;
 import io.pyroscope.labels.v2.Pyroscope;
 
 import java.io.BufferedReader;
@@ -48,7 +49,7 @@ public final class JFRJCMDProfilerDelegate implements ProfilerDelegate {
         jfrSettingsPath = findJfrSettingsPath(config);
 
         try {
-            tempJFRFile = File.createTempFile("pyroscope", ".jfr");
+            tempJFRFile = JfrFileUtil.createJfrFile(config);
             tempJFRFile.deleteOnExit();
         } catch (IOException e) {
             throw new IllegalStateException(e);
