@@ -3,13 +3,13 @@ package io.pyroscope.javaagent;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
+import io.pyroscope.javaagent.util.JfrFileUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.jar.JarFile;
 
@@ -71,10 +71,6 @@ class BootstrapApiInjector {
     }
 
     private static Path createBootstrapJar(String jfrDir) throws IOException {
-        if (jfrDir != null && !jfrDir.isEmpty()) {
-            Files.createDirectories(Paths.get(jfrDir));
-            return Files.createTempFile(Paths.get(jfrDir), "pyroscope-bootstrap-", ".jar");
-        }
-        return Files.createTempFile("pyroscope-bootstrap-", ".jar");
+        return JfrFileUtil.createTempFile(jfrDir, "pyroscope-bootstrap-", ".jar").toPath();
     }
 }
