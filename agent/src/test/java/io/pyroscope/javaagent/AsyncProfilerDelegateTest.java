@@ -9,13 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class AsyncProfilerDelegateTest {
 
     @Test
-    void timeoutHasSafetyMargin() {
-        assertEquals(20, AsyncProfilerDelegate.asyncProfilerTimeoutSeconds(Duration.ofSeconds(10)));
+    void timeoutUsesExactWholeSeconds() {
+        assertEquals(10, AsyncProfilerDelegate.asyncProfilerTimeoutSeconds(Duration.ofSeconds(10)));
     }
 
     @Test
     void timeoutRoundsUpToWholeSeconds() {
-        assertEquals(3, AsyncProfilerDelegate.asyncProfilerTimeoutSeconds(Duration.ofMillis(1500)));
+        assertEquals(2, AsyncProfilerDelegate.asyncProfilerTimeoutSeconds(Duration.ofMillis(1500)));
         assertEquals(1, AsyncProfilerDelegate.asyncProfilerTimeoutSeconds(Duration.ofMillis(1)));
     }
 }

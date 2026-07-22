@@ -20,7 +20,6 @@ import java.time.Instant;
 import static io.pyroscope.Preconditions.checkNotNull;
 
 public final class AsyncProfilerDelegate implements ProfilerDelegate {
-    private static final int TIMEOUT_SAFETY_MULTIPLIER = 2;
     private static final String PROFILER_NOT_ACTIVE = "Profiler is not active";
 
     private Config config;
@@ -82,6 +81,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         try {
             instance.stop();
         } catch (IllegalStateException e) {
+            // async-profiler throws when stop is called after the JFR timeout has already elapsed.
             if (format != Format.JFR || !PROFILER_NOT_ACTIVE.equals(e.getMessage())) {
                 throw e;
             }
@@ -125,9 +125,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     }
 
     static long asyncProfilerTimeoutSeconds(Duration profilingDuration) {
-        Duration timeout = profilingDuration.multipliedBy(TIMEOUT_SAFETY_MULTIPLIER);
-        long seconds = timeout.getSeconds();
-        if (timeout.getNano() > 0) {
+        long seconds = profilingDuration.getSeconds();
+        if (profilingDuration.getNano() > 0) {
             seconds++;
         }
         return Math.max(1, seconds);
