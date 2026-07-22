@@ -82,7 +82,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
             instance.stop();
         } catch (IllegalStateException e) {
             // async-profiler throws when stop is called after the JFR timeout has already elapsed.
-            if (format != Format.JFR || !PROFILER_NOT_ACTIVE.equals(e.getMessage())) {
+            if (!PROFILER_NOT_ACTIVE.equals(e.getMessage())) {
                 throw e;
             }
         }
