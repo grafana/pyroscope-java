@@ -125,11 +125,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     }
 
     static long asyncProfilerTimeoutSeconds(Duration profilingDuration) {
-        long seconds = profilingDuration.getSeconds();
-        if (profilingDuration.getNano() > 0) {
-            seconds++;
-        }
-        return Math.max(1, seconds);
+        return profilingDuration.getSeconds() + 1;
     }
 
     private Snapshot dumpImpl(Instant started, Instant ended) {

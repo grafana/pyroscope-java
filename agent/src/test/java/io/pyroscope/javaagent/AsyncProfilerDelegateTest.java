@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class AsyncProfilerDelegateTest {
 
     @Test
-    void timeoutUsesExactWholeSeconds() {
-        assertEquals(10, AsyncProfilerDelegate.asyncProfilerTimeoutSeconds(Duration.ofSeconds(10)));
+    void timeoutAddsOneSecond() {
+        assertEquals(11, AsyncProfilerDelegate.asyncProfilerTimeoutSeconds(Duration.ofSeconds(10)));
     }
 
     @Test
