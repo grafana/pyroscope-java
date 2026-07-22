@@ -10,22 +10,22 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JfrFileUtilTest {
+public class TmpFileUtilTest {
 
     @TempDir
     Path tempDir;
 
     @Test
     void testCreateJfrFileInConfiguredDirectory() throws Exception {
-        String jfrDir = tempDir.toString();
+        String tmpDir = tempDir.toString();
         Config config = new Config.Builder()
-            .setJfrDir(jfrDir)
+            .setTmpDir(tmpDir)
             .build();
 
-        File jfrFile = JfrFileUtil.createJfrFile(config);
+        File jfrFile = TmpFileUtil.createJfrFile(config);
 
         assertNotNull(jfrFile);
-        assertTrue(jfrFile.getAbsolutePath().startsWith(jfrDir),
+        assertTrue(jfrFile.getAbsolutePath().startsWith(tmpDir),
             "JFR file should be created in the configured directory");
         assertTrue(jfrFile.getAbsolutePath().endsWith(".jfr"),
             "JFR file should have .jfr extension");
@@ -34,10 +34,10 @@ public class JfrFileUtilTest {
     @Test
     void testCreateJfrFileInDefaultDirectoryWhenNotConfigured() throws Exception {
         Config config = new Config.Builder()
-            .setJfrDir(null)
+            .setTmpDir(null)
             .build();
 
-        File jfrFile = JfrFileUtil.createJfrFile(config);
+        File jfrFile = TmpFileUtil.createJfrFile(config);
 
         assertNotNull(jfrFile);
         assertTrue(jfrFile.getAbsolutePath().endsWith(".jfr"),
@@ -47,10 +47,10 @@ public class JfrFileUtilTest {
     @Test
     void testCreateJfrFileInDefaultDirectoryWhenEmptyString() throws Exception {
         Config config = new Config.Builder()
-            .setJfrDir("")
+            .setTmpDir("")
             .build();
 
-        File jfrFile = JfrFileUtil.createJfrFile(config);
+        File jfrFile = TmpFileUtil.createJfrFile(config);
 
         assertNotNull(jfrFile);
         assertTrue(jfrFile.getAbsolutePath().endsWith(".jfr"),
@@ -59,32 +59,32 @@ public class JfrFileUtilTest {
 
     @Test
     void testDirectoriesCreatedIfNotExists() throws Exception {
-        Path jfrDir = tempDir.resolve("deeply/nested/jfr/directory");
-        assertFalse(Files.exists(jfrDir), "Test directory should not exist initially");
+        Path tmpDir = tempDir.resolve("deeply/nested/jfr/directory");
+        assertFalse(Files.exists(tmpDir), "Test directory should not exist initially");
 
         Config config = new Config.Builder()
-            .setJfrDir(jfrDir.toString())
+            .setTmpDir(tmpDir.toString())
             .build();
 
-        File jfrFile = JfrFileUtil.createJfrFile(config);
+        File jfrFile = TmpFileUtil.createJfrFile(config);
 
-        assertTrue(Files.exists(jfrDir),
+        assertTrue(Files.exists(tmpDir),
             "Configured directory should be created");
-        assertTrue(Files.isDirectory(jfrDir),
+        assertTrue(Files.isDirectory(tmpDir),
             "Created path should be a directory");
-        assertTrue(jfrFile.getAbsolutePath().startsWith(jfrDir.toString()),
+        assertTrue(jfrFile.getAbsolutePath().startsWith(tmpDir.toString()),
             "JFR file should be in the created directory");
     }
 
     @Test
     void testMultipleFilesInSameDirectory() throws Exception {
-        String jfrDir = tempDir.toString();
+        String tmpDir = tempDir.toString();
         Config config = new Config.Builder()
-            .setJfrDir(jfrDir)
+            .setTmpDir(tmpDir)
             .build();
 
-        File jfrFile1 = JfrFileUtil.createJfrFile(config);
-        File jfrFile2 = JfrFileUtil.createJfrFile(config);
+        File jfrFile1 = TmpFileUtil.createJfrFile(config);
+        File jfrFile2 = TmpFileUtil.createJfrFile(config);
 
         assertNotNull(jfrFile1);
         assertNotNull(jfrFile2);
@@ -99,10 +99,10 @@ public class JfrFileUtilTest {
     @Test
     void testJfrFileNamePattern() throws Exception {
         Config config = new Config.Builder()
-            .setJfrDir(tempDir.toString())
+            .setTmpDir(tempDir.toString())
             .build();
 
-        File jfrFile = JfrFileUtil.createJfrFile(config);
+        File jfrFile = TmpFileUtil.createJfrFile(config);
         String fileName = jfrFile.getName();
 
         assertTrue(fileName.startsWith("pyroscope"),

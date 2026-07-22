@@ -3,7 +3,7 @@ package io.pyroscope.javaagent;
 import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.javaagent.util.JfrFileUtil;
+import io.pyroscope.javaagent.util.TmpFileUtil;
 import io.pyroscope.labels.v2.Pyroscope;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
@@ -11,13 +11,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 
 import static io.pyroscope.Preconditions.checkNotNull;
+import static java.nio.file.Files.newInputStream;
 
 public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private Config config;
@@ -45,8 +45,12 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         this.format = config.format;
 
         if (format == Format.JFR && null == tempJFRFile) {
+            if (config.tmpDir != null && config.tmpDir.contains(",")) {
+                throw new IllegalStateException(
+                    "PYROSCOPE_TMP_DIR must not contain commas — async-profiler uses comma as option separator: " + config.tmpDir);
+            }
             try {
-                tempJFRFile = JfrFileUtil.createJfrFile(config);
+                tempJFRFile = TmpFileUtil.createJfrFile(config);
                 tempJFRFile.deleteOnExit();
             } catch (IOException e) {
                 throw new IllegalStateException(e);
@@ -136,7 +140,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private byte[] dumpJFR() {
         try {
             byte[] bytes = new byte[(int) tempJFRFile.length()];
-            try (DataInputStream ds = new DataInputStream(new FileInputStream(tempJFRFile))) {
+            try (DataInputStream ds = new DataInputStream(newInputStream(tempJFRFile.toPath()))) {
                 ds.readFully(bytes);
             }
             return bytes;

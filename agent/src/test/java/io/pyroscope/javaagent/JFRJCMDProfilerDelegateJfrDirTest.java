@@ -22,7 +22,7 @@ public class JFRJCMDProfilerDelegateJfrDirTest {
     void testJFRFileCreatedInConfiguredDirectory() throws IOException {
         String jfrDir = tempDir.toString();
         Config config = new Config.Builder()
-            .setJfrDir(jfrDir)
+            .setTmpDir(jfrDir)
             .build();
 
         JFRJCMDProfilerDelegate delegate = new JFRJCMDProfilerDelegate(config);
@@ -40,7 +40,7 @@ public class JFRJCMDProfilerDelegateJfrDirTest {
     @Test
     void testJFRFileCreatedInDefaultDirectoryWhenNotConfigured() throws IOException {
         Config config = new Config.Builder()
-            .setJfrDir(null)
+            .setTmpDir(null)
             .build();
 
         JFRJCMDProfilerDelegate delegate = new JFRJCMDProfilerDelegate(config);
@@ -56,7 +56,7 @@ public class JFRJCMDProfilerDelegateJfrDirTest {
     @Test
     void testJFRFileCreatedInDefaultDirectoryWhenEmptyString() throws IOException {
         Config config = new Config.Builder()
-            .setJfrDir("")
+            .setTmpDir("")
             .build();
 
         JFRJCMDProfilerDelegate delegate = new JFRJCMDProfilerDelegate(config);
@@ -75,7 +75,7 @@ public class JFRJCMDProfilerDelegateJfrDirTest {
         assertFalse(Files.exists(jfrDir), "Test directory should not exist initially");
 
         Config config = new Config.Builder()
-            .setJfrDir(jfrDir.toString())
+            .setTmpDir(jfrDir.toString())
             .build();
 
         JFRJCMDProfilerDelegate delegate = new JFRJCMDProfilerDelegate(config);
@@ -91,7 +91,7 @@ public class JFRJCMDProfilerDelegateJfrDirTest {
     void testJFRFileNameStartsWithPyroscope() throws IOException {
         String jfrDir = tempDir.toString();
         Config config = new Config.Builder()
-            .setJfrDir(jfrDir)
+            .setTmpDir(jfrDir)
             .build();
 
         JFRJCMDProfilerDelegate delegate = new JFRJCMDProfilerDelegate(config);

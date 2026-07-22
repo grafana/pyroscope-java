@@ -25,14 +25,14 @@ public class BootstrapApiInjectorJfrDirTest {
 
     @BeforeEach
     void setUp() {
-        System.clearProperty("PYROSCOPE_JFR_DIR");
-        System.clearProperty("pyroscope.jfr.dir");
+        System.clearProperty("PYROSCOPE_TMP_DIR");
+        System.clearProperty("pyroscope.tmp.dir");
     }
 
     @AfterEach
     void tearDown() {
-        System.clearProperty("PYROSCOPE_JFR_DIR");
-        System.clearProperty("pyroscope.jfr.dir");
+        System.clearProperty("PYROSCOPE_TMP_DIR");
+        System.clearProperty("pyroscope.tmp.dir");
     }
 
     @Test
@@ -111,22 +111,22 @@ public class BootstrapApiInjectorJfrDirTest {
     @Test
     void testGetJfrDirFromSystemProperty() throws Exception {
         String jfrDir = tempDir.toString();
-        System.setProperty("PYROSCOPE_JFR_DIR", jfrDir);
+        System.setProperty("PYROSCOPE_TMP_DIR", jfrDir);
 
-        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getJfrDir");
+        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getTmpDir");
         method.setAccessible(true);
         String result = (String) method.invoke(null);
 
         assertEquals(jfrDir, result,
-            "Should read PYROSCOPE_JFR_DIR from system property (-D flag)");
+            "Should read PYROSCOPE_TMP_DIR from system property (-D flag)");
     }
 
     @Test
     void testGetJfrDirPrefersSystemPropertyOverEnv() throws Exception {
         String jfrDir = tempDir.toString();
-        System.setProperty("PYROSCOPE_JFR_DIR", jfrDir);
+        System.setProperty("PYROSCOPE_TMP_DIR", jfrDir);
 
-        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getJfrDir");
+        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getTmpDir");
         method.setAccessible(true);
         String result = (String) method.invoke(null);
 
@@ -136,39 +136,39 @@ public class BootstrapApiInjectorJfrDirTest {
 
     @Test
     void testGetJfrDirFromDottedLowercaseSystemProperty() throws Exception {
-        // e.g. java -Dpyroscope.jfr.dir=/path -javaagent:pyroscope.jar ...
+        // e.g. java -Dpyroscope.tmp.dir=/path -javaagent:pyroscope.jar ...
         // must match the convention used by -Dpyroscope.application.name etc.
         String jfrDir = tempDir.toString();
-        System.setProperty("pyroscope.jfr.dir", jfrDir);
+        System.setProperty("pyroscope.tmp.dir", jfrDir);
 
-        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getJfrDir");
+        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getTmpDir");
         method.setAccessible(true);
         String result = (String) method.invoke(null);
 
         assertEquals(jfrDir, result,
-            "Should read -Dpyroscope.jfr.dir just like other -Dpyroscope.* properties");
+            "Should read -Dpyroscope.tmp.dir just like other -Dpyroscope.* properties");
     }
 
     @Test
     void testGetJfrDirPrefersUppercaseSystemPropertyOverDottedLowercase() throws Exception {
         String uppercaseDir = tempDir.resolve("uppercase").toString();
         String dottedDir = tempDir.resolve("dotted").toString();
-        System.setProperty("PYROSCOPE_JFR_DIR", uppercaseDir);
-        System.setProperty("pyroscope.jfr.dir", dottedDir);
+        System.setProperty("PYROSCOPE_TMP_DIR", uppercaseDir);
+        System.setProperty("pyroscope.tmp.dir", dottedDir);
 
-        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getJfrDir");
+        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getTmpDir");
         method.setAccessible(true);
         String result = (String) method.invoke(null);
 
         assertEquals(uppercaseDir, result,
-            "Exact-case PYROSCOPE_JFR_DIR system property should win over the dotted-lowercase form");
+            "Exact-case PYROSCOPE_TMP_DIR system property should win over the dotted-lowercase form");
     }
 
     @Test
     void testGetJfrDirFallsBackToNull() throws Exception {
-        System.clearProperty("PYROSCOPE_JFR_DIR");
+        System.clearProperty("PYROSCOPE_TMP_DIR");
 
-        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getJfrDir");
+        java.lang.reflect.Method method = BootstrapApiInjector.class.getDeclaredMethod("getTmpDir");
         method.setAccessible(true);
         String result = (String) method.invoke(null);
 

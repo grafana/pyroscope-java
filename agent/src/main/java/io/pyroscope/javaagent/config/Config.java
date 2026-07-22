@@ -58,7 +58,7 @@ public final class Config {
     private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
     private static final String PYROSCOPE_TENANT_ID = "PYROSCOPE_TENANT_ID";
     private static final String PYROSCOPE_PROFILE_EXPORT_TIMEOUT = "PYROSCOPE_PROFILE_EXPORT_TIMEOUT";
-    private static final String PYROSCOPE_JFR_DIR = "PYROSCOPE_JFR_DIR";
+    private static final String PYROSCOPE_TMP_DIR = "PYROSCOPE_TMP_DIR";
 
     /**
      * Experimental feature, may be removed in the future
@@ -138,7 +138,7 @@ public final class Config {
     public final String APExtraArguments;
     public final String basicAuthUser;
     public final String basicAuthPassword;
-    public final String jfrDir;
+    public final String tmpDir;
 
     Config(final boolean agentEnabled,
            final String applicationName,
@@ -169,7 +169,7 @@ public final class Config {
            String basicAuthUser,
            String basicAuthPassword,
            Duration profileExportTimeout,
-           String jfrDir) {
+           String tmpDir) {
         this.agentEnabled = agentEnabled;
         this.applicationName = applicationName;
         this.profilerType = profilerType;
@@ -195,7 +195,7 @@ public final class Config {
         this.APExtraArguments = APExtraArguments;
         this.basicAuthUser = basicAuthUser;
         this.basicAuthPassword = basicAuthPassword;
-        this.jfrDir = jfrDir;
+        this.tmpDir = tmpDir;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -254,7 +254,7 @@ public final class Config {
                ", httpHeaders=" + httpHeaders +
                ", samplingDuration=" + samplingDuration +
                ", tenantID=" + tenantID +
-               ", jfrDir='" + jfrDir + '\'' +
+               ", tmpDir='" + tmpDir + '\'' +
                '}';
     }
 
@@ -311,7 +311,7 @@ public final class Config {
             cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
             cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG), cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG),
             profileExportTimeout(cp),
-            jfrDir(cp));
+            tmpDir(cp));
     }
 
     /**
@@ -665,8 +665,8 @@ public final class Config {
         return cp.get(PYROSCOPE_TENANT_ID);
     }
 
-    private static String jfrDir(ConfigurationProvider cp) {
-        return cp.get(PYROSCOPE_JFR_DIR);
+    private static String tmpDir(ConfigurationProvider cp) {
+        return cp.get(PYROSCOPE_TMP_DIR);
     }
 
     private static Duration samplingDuration(ConfigurationProvider configurationProvider) {
@@ -740,7 +740,7 @@ public final class Config {
         private String basicAuthUser;
         private String basicAuthPassword;
         private String jfrProfilerSettings;
-        private String jfrDir;
+        private String tmpDir;
 
         public Builder() {
         }
@@ -777,7 +777,7 @@ public final class Config {
             APExtraArguments = buildUpon.APExtraArguments;
             basicAuthUser = buildUpon.basicAuthUser;
             basicAuthPassword = buildUpon.basicAuthPassword;
-            jfrDir = buildUpon.jfrDir;
+            tmpDir = buildUpon.tmpDir;
         }
 
         public Builder setAgentEnabled(boolean agentEnabled) {
@@ -952,8 +952,8 @@ public final class Config {
             return this;
         }
 
-        public Builder setJfrDir(String jfrDir) {
-            this.jfrDir = jfrDir;
+        public Builder setTmpDir(String tmpDir) {
+            this.tmpDir = tmpDir;
             return this;
         }
 
@@ -990,7 +990,7 @@ public final class Config {
                 APExtraArguments,
                 basicAuthUser, basicAuthPassword,
                 profileExportTimeout,
-                jfrDir);
+                tmpDir);
         }
     }
 }

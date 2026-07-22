@@ -2,7 +2,7 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
-import io.pyroscope.javaagent.util.JfrFileUtil;
+import io.pyroscope.javaagent.util.TmpFileUtil;
 import jdk.jfr.Recording;
 
 import java.io.File;
@@ -37,7 +37,7 @@ public final class JFRJDKProfilerDelegate implements ProfilerDelegate {
     public void setConfig(final Config config) {
         this.config = config;
         try {
-            tempJFRFile = JfrFileUtil.createJfrFile(config);
+            tempJFRFile = TmpFileUtil.createJfrFile(config);
             tempJFRFile.deleteOnExit();
         } catch (IOException e) {
             throw new UncheckedIOException("cannot create JFR destination path", e);

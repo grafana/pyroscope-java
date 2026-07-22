@@ -20,7 +20,7 @@ public class AsyncProfilerDelegateJfrDirTest {
         String jfrDir = tempDir.toString();
         Config config = new Config.Builder()
             .setFormat(Format.JFR)
-            .setJfrDir(jfrDir)
+            .setTmpDir(jfrDir)
             .build();
 
         AsyncProfilerDelegate delegate = new AsyncProfilerDelegate(config);
@@ -40,7 +40,7 @@ public class AsyncProfilerDelegateJfrDirTest {
     void testJFRFileCreatedInDefaultDirectoryWhenNotConfigured() throws Exception {
         Config config = new Config.Builder()
             .setFormat(Format.JFR)
-            .setJfrDir(null)
+            .setTmpDir(null)
             .build();
 
         AsyncProfilerDelegate delegate = new AsyncProfilerDelegate(config);
@@ -61,7 +61,7 @@ public class AsyncProfilerDelegateJfrDirTest {
 
         Config config = new Config.Builder()
             .setFormat(Format.JFR)
-            .setJfrDir(jfrDir.toString())
+            .setTmpDir(jfrDir.toString())
             .build();
 
         AsyncProfilerDelegate delegate = new AsyncProfilerDelegate(config);

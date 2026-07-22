@@ -14,10 +14,10 @@ public class ConfigJfrDirTest {
     void testConfigBuilderWithJfrDir() {
         String testDir = "/custom/jfr/path";
         Config config = new Config.Builder()
-            .setJfrDir(testDir)
+            .setTmpDir(testDir)
             .build();
 
-        assertEquals(testDir, config.jfrDir);
+        assertEquals(testDir, config.tmpDir);
     }
 
     @Test
@@ -25,16 +25,16 @@ public class ConfigJfrDirTest {
         Config config = new Config.Builder()
             .build();
 
-        assertNull(config.jfrDir);
+        assertNull(config.tmpDir);
     }
 
     @Test
     void testConfigBuilderWithEmptyJfrDir() {
         Config config = new Config.Builder()
-            .setJfrDir("")
+            .setTmpDir("")
             .build();
 
-        assertEquals("", config.jfrDir);
+        assertEquals("", config.tmpDir);
     }
 
     @Test
@@ -71,11 +71,11 @@ public class ConfigJfrDirTest {
         when(cp.get("PYROSCOPE_PROFILE_EXPORT_TIMEOUT")).thenReturn(null);
 
         String testDir = "/var/lib/pyroscope/jfr";
-        when(cp.get("PYROSCOPE_JFR_DIR")).thenReturn(testDir);
+        when(cp.get("PYROSCOPE_TMP_DIR")).thenReturn(testDir);
 
         Config config = Config.build(cp);
 
-        assertEquals(testDir, config.jfrDir);
+        assertEquals(testDir, config.tmpDir);
     }
 
     @Test
@@ -110,24 +110,24 @@ public class ConfigJfrDirTest {
         when(cp.get("PYROSCOPE_BASIC_AUTH_USER")).thenReturn(null);
         when(cp.get("PYROSCOPE_BASIC_AUTH_PASSWORD")).thenReturn(null);
         when(cp.get("PYROSCOPE_PROFILE_EXPORT_TIMEOUT")).thenReturn(null);
-        when(cp.get("PYROSCOPE_JFR_DIR")).thenReturn(null);
+        when(cp.get("PYROSCOPE_TMP_DIR")).thenReturn(null);
 
         Config config = Config.build(cp);
 
-        assertNull(config.jfrDir);
+        assertNull(config.tmpDir);
     }
 
     @Test
     void testConfigNewBuilderPreservesJfrDir() {
         String testDir = "/custom/jfr/path";
         Config original = new Config.Builder()
-            .setJfrDir(testDir)
+            .setTmpDir(testDir)
             .build();
 
         Config copy = original.newBuilder()
             .build();
 
-        assertEquals(testDir, copy.jfrDir);
+        assertEquals(testDir, copy.tmpDir);
     }
 
     @Test
@@ -136,13 +136,13 @@ public class ConfigJfrDirTest {
         String newDir = "/new/path";
 
         Config original = new Config.Builder()
-            .setJfrDir(originalDir)
+            .setTmpDir(originalDir)
             .build();
 
         Config updated = original.newBuilder()
-            .setJfrDir(newDir)
+            .setTmpDir(newDir)
             .build();
 
-        assertEquals(newDir, updated.jfrDir);
+        assertEquals(newDir, updated.tmpDir);
     }
 }

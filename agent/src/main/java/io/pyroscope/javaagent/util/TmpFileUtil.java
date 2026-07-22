@@ -9,12 +9,12 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class JfrFileUtil {
-    private JfrFileUtil() {
+public class TmpFileUtil {
+    private TmpFileUtil() {
     }
 
     public static File createJfrFile(Config config) throws IOException {
-        return createTempFile(config.jfrDir, "pyroscope", ".jfr");
+        return createTempFile(config.tmpDir, "pyroscope", ".jfr");
     }
 
     public static File createTempFile(String dir, String prefix, String suffix) throws IOException {
@@ -23,11 +23,11 @@ public class JfrFileUtil {
             try {
                 dirPath = Paths.get(dir);
             } catch (InvalidPathException e) {
-                throw new IOException("Invalid jfr dir path: " + dir, e);
+                throw new IOException("Invalid tmp dir path: " + dir, e);
             }
             Files.createDirectories(dirPath);
-            return Files.createTempFile(dirPath, prefix, suffix).toFile();
+            return Files.createTempFile(dirPath, prefix, suffix).toFile().getAbsoluteFile();
         }
-        return File.createTempFile(prefix, suffix);
+        return File.createTempFile(prefix, suffix).getAbsoluteFile();
     }
 }
