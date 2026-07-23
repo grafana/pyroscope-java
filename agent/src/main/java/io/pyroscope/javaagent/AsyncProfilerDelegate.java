@@ -20,6 +20,8 @@ import java.time.Instant;
 import static io.pyroscope.Preconditions.checkNotNull;
 
 public final class AsyncProfilerDelegate implements ProfilerDelegate {
+    private static final String PROFILER_NOT_ACTIVE = "Profiler is not active";
+
     private Config config;
     private EventType eventType;
     private String alloc;
@@ -76,7 +78,14 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
      */
     @Override
     public synchronized void stop() {
-        instance.stop();
+        try {
+            instance.stop();
+        } catch (IllegalStateException e) {
+            // async-profiler throws when stop is called after the JFR timeout has already elapsed.
+            if (!PROFILER_NOT_ACTIVE.equals(e.getMessage())) {
+                throw e;
+            }
+        }
     }
 
     /**
@@ -103,7 +112,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
             sb.append(",lock=").append(lock);
         }
         sb.append(",interval=").append(interval.toNanos())
-                .append(",file=").append(tempJFRFile.toString());
+                .append(",file=").append(tempJFRFile.toString())
+                .append(",timeout=").append(asyncProfilerTimeoutSeconds(config.uploadInterval));
         if (config.APLogLevel != null) {
             sb.append(",loglevel=").append(config.APLogLevel);
         }
@@ -112,6 +122,10 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
             sb.append(",").append(config.APExtraArguments);
         }
         return sb.toString();
+    }
+
+    static long asyncProfilerTimeoutSeconds(Duration profilingDuration) {
+        return profilingDuration.getSeconds() + 1;
     }
 
     private Snapshot dumpImpl(Instant started, Instant ended) {
