@@ -1,7 +1,9 @@
 package io.pyroscope.javaagent;
 
 import io.pyroscope.javaagent.api.Logger;
+import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
+import io.pyroscope.javaagent.util.TmpFileUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,8 +36,18 @@ import java.util.jar.JarFile;
 class BootstrapApiInjector {
 
     private static final String RESOURCE_NAME = "/pyroscope-bootstrap.jar.bin";
+    private static final String PYROSCOPE_TMP_DIR = "PYROSCOPE_TMP_DIR";
 
     static void inject(Instrumentation instrumentation) {
+        String tmpDir = getTmpDir();
+        inject(instrumentation, tmpDir);
+    }
+
+    private static String getTmpDir() {
+        return DefaultConfigurationProvider.INSTANCE.get(PYROSCOPE_TMP_DIR);
+    }
+
+    static void inject(Instrumentation instrumentation, String tmpDir) {
         try {
             try (InputStream is = BootstrapApiInjector.class.getResourceAsStream(RESOURCE_NAME)) {
                 if (is == null) {
@@ -44,7 +56,7 @@ class BootstrapApiInjector {
                         RESOURCE_NAME);
                     return;
                 }
-                Path tempJar = Files.createTempFile("pyroscope-bootstrap-", ".jar");
+                Path tempJar = createBootstrapJar(tmpDir);
                 tempJar.toFile().deleteOnExit();
                 Files.copy(is, tempJar, StandardCopyOption.REPLACE_EXISTING);
 
@@ -56,5 +68,9 @@ class BootstrapApiInjector {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR,
                 "BootstrapApiInjector: Failed to inject bootstrap API: %s", e);
         }
+    }
+
+    private static Path createBootstrapJar(String tmpDir) throws IOException {
+        return TmpFileUtil.createTempFile(tmpDir, "pyroscope-bootstrap-", ".jar").toPath();
     }
 }
