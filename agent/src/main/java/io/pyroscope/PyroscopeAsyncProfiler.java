@@ -178,10 +178,10 @@ public class PyroscopeAsyncProfiler {
     }
 
     /**
-     * <p>Adds the checksum to the library file name.</p>
+     * <p>Adds the distribution and the checksum to the library file name.</p>
      *
      * <p>E.g. {@code libasyncProfiler-linux-x64.so} ->
-     * {@code libasyncProfiler-linux-x64-7b43b7cc6c864dd729cc7dcdb6e3db8f5ee5b4a4.so}</p>
+     * {@code libasyncProfiler-linux-x64-fork-7b43b7cc6c864dd729cc7dcdb6e3db8f5ee5b4a4.so}</p>
      */
     private static String targetLibraryFileName(final APDistribution distribution, final String libraryFileName) throws IOException {
         if (!libraryFileName.endsWith(".so")) {
@@ -197,6 +197,8 @@ public class PyroscopeAsyncProfiler {
             checksum = new String(buf, 0, bufLen, StandardCharsets.UTF_8);
         }
 
-        return libraryFileName.substring(0, libraryFileName.length() - 3) + "-" + checksum + ".so";
+        final String distributionName = distribution == APDistribution.GENUINE ? "genuine" : "fork";
+        return libraryFileName.substring(0, libraryFileName.length() - 3)
+            + "-" + distributionName + "-" + checksum + ".so";
     }
 }
