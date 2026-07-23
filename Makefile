@@ -1,9 +1,11 @@
 GRAFANA_PYROSCOPE_VERSION := 4.4.0.0
+GENUINE_ASYNC_PROFILER_VERSION := 4.4
 
 .PHONY: download-async-profiler
 download-async-profiler:
 	./scripts/download-async-profiler.sh -v $(GRAFANA_PYROSCOPE_VERSION) -r https://github.com/grafana/async-profiler -d async-profiler-grafana-fork-dist
-	#./scripts/download-async-profiler.sh -v 4.0 -r https://github.com/async-profiler/async-profiler -d async-profiler-genuine-dist
+	./scripts/download-async-profiler.sh -v $(GENUINE_ASYNC_PROFILER_VERSION) -r https://github.com/async-profiler/async-profiler -d async-profiler-genuine-dist
+	rm -f async-profiler-genuine-dist/lib/async-profiler.jar
 
 .PHONY: clean
 clean:

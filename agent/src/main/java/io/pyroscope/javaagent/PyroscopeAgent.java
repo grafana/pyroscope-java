@@ -1,9 +1,11 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.config.ProfilerType;
 import io.pyroscope.javaagent.impl.*;
 import io.pyroscope.labels.v2.ScopedContext;
 import org.jetbrains.annotations.NotNull;
@@ -61,7 +63,14 @@ public class PyroscopeAgent {
             logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
             try {
                 options.scheduler.start(options.profiler);
-                ScopedContext.ENABLED.set(true);
+                if (options.config.profilerType != ProfilerType.ASYNC
+                    || PyroscopeAsyncProfiler.isLabelsSupported()) {
+                    ScopedContext.ENABLED.set(true);
+                } else {
+                    logger.log(Logger.Level.WARN, "Dynamic labels are not supported by the loaded " +
+                        "async-profiler library and will be ignored. Use the fork distribution " +
+                        "(PYROSCOPE_AP_DISTRIBUTION=fork) for labels support.");
+                }
                 logger.log(Logger.Level.INFO, "Profiling started");
                 ProfilerApiPublisher.publish(logger);
             } catch (final Throwable e) {

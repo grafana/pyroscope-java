@@ -86,6 +86,36 @@ public class ShadowJarContentsTest {
     }
 
     @Test
+    void containsForkAndGenuineAsyncProfilerLibraries() throws Exception {
+        String jarPath = System.getProperty("shadowJar.path");
+        if (jarPath == null || jarPath.isEmpty()) {
+            fail("System property 'shadowJar.path' is not set. Run this test via Gradle.");
+        }
+
+        File jarFile = new File(jarPath);
+        assertTrue(jarFile.exists(), "shadowJar not found at: " + jarPath);
+
+        String[] libraries = {
+            "libasyncProfiler-linux-x64.so",
+            "libasyncProfiler-linux-arm64.so",
+            "libasyncProfiler-macos.so",
+        };
+
+        try (JarFile jar = new JarFile(jarFile)) {
+            for (String library : libraries) {
+                for (String prefix : new String[]{"", "genuine/"}) {
+                    String name = prefix + library;
+                    JarEntry entry = jar.getJarEntry(name);
+                    assertNotNull(entry, "async-profiler library not found in shadow jar: " + name);
+                    assertTrue(entry.getSize() > 0, "async-profiler library is empty: " + name);
+                    assertNotNull(jar.getJarEntry(name + ".sha1"),
+                        "async-profiler library checksum not found in shadow jar: " + name + ".sha1");
+                }
+            }
+        }
+    }
+
+    @Test
     void bootstrapApiClassesInShadowJar() throws Exception {
         String jarPath = System.getProperty("shadowJar.path");
         if (jarPath == null || jarPath.isEmpty()) {

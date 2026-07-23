@@ -12,6 +12,24 @@ The agent is distributed as a single JAR file `pyroscope.jar`. It contains nativ
 - MacOS on x64.
 - MacOS on ARM64.
 
+## async-profiler distributions
+
+The JAR bundles two builds of async-profiler and can also load one supplied by you:
+
+- `fork` (default) — the [Grafana fork](https://github.com/grafana/async-profiler) of async-profiler.
+  Required for dynamic labels (`ScopedContext`, `ConstantContext`) and tracing context
+  (span/trace ID) integration.
+- `genuine` — the [upstream async-profiler](https://github.com/async-profiler/async-profiler).
+  Select it with `PYROSCOPE_AP_DISTRIBUTION=genuine`. Dynamic labels and tracing context are
+  not supported by upstream async-profiler; those APIs become no-ops.
+- A non-bundled library — set `PYROSCOPE_AP_LIBRARY_PATH=/path/to/libasyncProfiler.so` to load
+  a `libasyncProfiler` you bundle yourself (this takes precedence over `PYROSCOPE_AP_DISTRIBUTION`).
+  Feature availability is detected at runtime: labels and tracing context work only if the
+  provided library is a build of the Grafana fork.
+
+Both options can also be set programmatically via `Config.Builder#setAPDistribution` and
+`Config.Builder#setAPLibraryPath`.
+
 ## Windows OS support
 
 It also contains support for Windows OS, through JFR profiler. In order to use JFR as profiler in place of

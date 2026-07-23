@@ -69,16 +69,26 @@ public class ConstantContext {
      * Activates this context for the current thread.
      * This sets the async-profiler's context ID to this context's ID,
      * which will associate profiled samples with these labels.
+     *
+     * <p>No-op when the loaded async-profiler library does not support labels
+     * (only the fork distribution does).
      */
     public void activate() {
-        ScopedContext.getAsyncProfiler().setContextId(contextId);
+        if (ScopedContext.labelsSupported()) {
+            ScopedContext.getAsyncProfiler().setContextId(contextId);
+        }
     }
 
     /**
      * Deactivates this context for the current thread.
      * This resets the async-profiler's context ID to 0 (no context).
+     *
+     * <p>No-op when the loaded async-profiler library does not support labels
+     * (only the fork distribution does).
      */
     public void deactivate() {
-        ScopedContext.getAsyncProfiler().setContextId(0);
+        if (ScopedContext.labelsSupported()) {
+            ScopedContext.getAsyncProfiler().setContextId(0);
+        }
     }
 }

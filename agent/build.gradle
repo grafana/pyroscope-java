@@ -12,6 +12,7 @@ repositories {
 }
 
 def asyncProfilerDistDir = file("$rootDir/async-profiler-grafana-fork-dist/lib")
+def asyncProfilerGenuineDistDir = file("$rootDir/async-profiler-genuine-dist/lib")
 def pyroscopeVersion = project.properties['pyroscope_version']
 dependencies {
     api files("$asyncProfilerDistDir/async-profiler.jar")
@@ -71,6 +72,11 @@ jar {
         include "**.so"
         include "**.so.sha1"
     }
+    from(asyncProfilerGenuineDistDir) {
+        include "**.so"
+        include "**.so.sha1"
+        into "genuine"
+    }
 }
 
 test {
@@ -107,6 +113,11 @@ shadowJar {
     from(asyncProfilerDistDir) {
         include "**.so"
         include "**.so.sha1"
+    }
+    from(asyncProfilerGenuineDistDir) {
+        include "**.so"
+        include "**.so.sha1"
+        into "genuine"
     }
 
     archiveFileName = "pyroscope.jar"
