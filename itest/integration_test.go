@@ -62,12 +62,13 @@ func appImagePrefix(dockerfile string) string {
 	}
 }
 
-func startApp(t *testing.T, net *dockertest.Network, image string) {
+func startApp(t *testing.T, net *dockertest.Network, image string, env map[string]string) {
 	t.Helper()
-	t.Logf("starting app %s ...", image)
+	t.Logf("starting app %s (env %v) ...", image, env)
 	dockertest.StartContainer(t, dockertest.ContainerRequest{
 		Image:   image,
 		Network: net.Name,
+		Env:     env,
 	})
 }
 
@@ -102,14 +103,14 @@ func queryProfile(t *testing.T, pyroscopeURL string, labelSelector string) (stri
 	return buf.String(), nil
 }
 
-func runQueryProfileTest(t *testing.T, dockerfile string, imageVersion string, javaVersion string) {
+func runQueryProfileTest(t *testing.T, dockerfile string, imageVersion string, javaVersion string, extraEnv map[string]string) {
 	net := dockertest.CreateNetwork(t)
 
 	pyroscopeURL := startPyroscope(t, net)
 	t.Logf("pyroscope URL: %s", pyroscopeURL)
 
 	image := buildAppImage(t, dockerfile, imageVersion, javaVersion)
-	startApp(t, net, image)
+	startApp(t, net, image, extraEnv)
 
 	serviceName := serviceNameFromDockerfile(dockerfile, imageVersion, javaVersion)
 	testTarget(t, pyroscopeURL, serviceName)
@@ -161,5 +162,21 @@ func testTarget(t *testing.T, pyroscopeURL string, serviceName string) {
 }
 
 func TestQueryProfile(t *testing.T) {
-	runQueryProfileTest(t, envDockerfile(), envImageVersion(), envJavaVersion())
+	runQueryProfileTest(t, envDockerfile(), envImageVersion(), envJavaVersion(), nil)
+}
+
+// TestQueryProfileGenuine runs the app with the bundled genuine (upstream)
+// async-profiler distribution instead of the default Grafana fork.
+func TestQueryProfileGenuine(t *testing.T) {
+	runQueryProfileTest(t, envDockerfile(), envImageVersion(), envJavaVersion(), map[string]string{
+		"PYROSCOPE_AP_DISTRIBUTION": "genuine",
+	})
+}
+
+// TestQueryProfileExternalLibrary runs the app with a non-bundled libasyncProfiler,
+// loaded from a path provided by the user (a genuine build baked into the test image).
+func TestQueryProfileExternalLibrary(t *testing.T) {
+	runQueryProfileTest(t, envDockerfile(), envImageVersion(), envJavaVersion(), map[string]string{
+		"PYROSCOPE_AP_LIBRARY_PATH": "/app/libasyncProfiler.so",
+	})
 }

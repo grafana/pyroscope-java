@@ -41,6 +41,8 @@ public final class Config {
     private static final String PYROSCOPE_LOG_LEVEL_CONFIG = "PYROSCOPE_LOG_LEVEL";
     private static final String PYROSCOPE_AP_LOG_LEVEL_CONFIG = "PYROSCOPE_AP_LOG_LEVEL";
     private static final String PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG = "PYROSCOPE_AP_EXTRA_ARGUMENTS";
+    private static final String PYROSCOPE_AP_DISTRIBUTION_CONFIG = "PYROSCOPE_AP_DISTRIBUTION";
+    private static final String PYROSCOPE_AP_LIBRARY_PATH_CONFIG = "PYROSCOPE_AP_LIBRARY_PATH";
     private static final String PYROSCOPE_SERVER_ADDRESS_CONFIG = "PYROSCOPE_SERVER_ADDRESS";
     private static final String PYROSCOPE_ADHOC_SERVER_ADDRESS_CONFIG = "PYROSCOPE_ADHOC_SERVER_ADDRESS";
     private static final String PYROSCOPE_AUTH_TOKEN_CONFIG = "PYROSCOPE_AUTH_TOKEN";
@@ -99,6 +101,7 @@ public final class Config {
     private static final boolean DEFAULT_GC_BEFORE_DUMP = false;
     private static final Duration DEFAULT_SAMPLING_DURATION = null;
     private static final Duration DEFAULT_PROFILE_EXPORT_TIMEOUT = Duration.ofSeconds(10);
+    private static final APDistribution DEFAULT_AP_DISTRIBUTION = APDistribution.FORK;
 
     public final boolean agentEnabled;
     public final String applicationName;
@@ -135,6 +138,8 @@ public final class Config {
     public final String tenantID;
     public final String APLogLevel;
     public final String APExtraArguments;
+    public final APDistribution apDistribution;
+    public final String apLibraryPath;
     public final String basicAuthUser;
     public final String basicAuthPassword;
 
@@ -164,6 +169,8 @@ public final class Config {
            String tenantID,
            String APLogLevel,
            String APExtraArguments,
+           APDistribution apDistribution,
+           String apLibraryPath,
            String basicAuthUser,
            String basicAuthPassword,
            Duration profileExportTimeout) {
@@ -190,6 +197,8 @@ public final class Config {
         this.tenantID = tenantID;
         this.APLogLevel = APLogLevel;
         this.APExtraArguments = APExtraArguments;
+        this.apDistribution = apDistribution == null ? DEFAULT_AP_DISTRIBUTION : apDistribution;
+        this.apLibraryPath = apLibraryPath;
         this.basicAuthUser = basicAuthUser;
         this.basicAuthPassword = basicAuthPassword;
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
@@ -250,6 +259,8 @@ public final class Config {
                ", httpHeaders=" + httpHeaders +
                ", samplingDuration=" + samplingDuration +
                ", tenantID=" + tenantID +
+               ", apDistribution=" + apDistribution +
+               ", apLibraryPath='" + apLibraryPath + '\'' +
                '}';
     }
 
@@ -304,6 +315,8 @@ public final class Config {
             tenantID(cp),
             cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG),
             cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
+            apDistribution(cp),
+            apLibraryPath(cp),
             cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG), cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG),
             profileExportTimeout(cp));
     }
@@ -659,6 +672,18 @@ public final class Config {
         return cp.get(PYROSCOPE_TENANT_ID);
     }
 
+    public static APDistribution apDistribution(ConfigurationProvider cp) {
+        return APDistribution.parse(cp.get(PYROSCOPE_AP_DISTRIBUTION_CONFIG), DEFAULT_AP_DISTRIBUTION);
+    }
+
+    public static String apLibraryPath(ConfigurationProvider cp) {
+        final String path = cp.get(PYROSCOPE_AP_LIBRARY_PATH_CONFIG);
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        return path;
+    }
+
     private static Duration samplingDuration(ConfigurationProvider configurationProvider) {
         Duration uploadInterval = uploadInterval(configurationProvider);
 
@@ -727,6 +752,8 @@ public final class Config {
         private String tenantID = null;
         private String APLogLevel = null;
         private String APExtraArguments = null;
+        private APDistribution apDistribution = DEFAULT_AP_DISTRIBUTION;
+        private String apLibraryPath = null;
         private String basicAuthUser;
         private String basicAuthPassword;
         private String jfrProfilerSettings;
@@ -764,6 +791,8 @@ public final class Config {
             tenantID = buildUpon.tenantID;
             APLogLevel = buildUpon.APLogLevel;
             APExtraArguments = buildUpon.APExtraArguments;
+            apDistribution = buildUpon.apDistribution;
+            apLibraryPath = buildUpon.apLibraryPath;
             basicAuthUser = buildUpon.basicAuthUser;
             basicAuthPassword = buildUpon.basicAuthPassword;
         }
@@ -917,6 +946,25 @@ public final class Config {
             return this;
         }
 
+        /**
+         * Selects which bundled async-profiler distribution to load: the Grafana fork
+         * (default, required for labels and tracing context) or the genuine upstream build.
+         * Ignored when an explicit library path is set via {@link #setAPLibraryPath(String)}.
+         */
+        public Builder setAPDistribution(APDistribution apDistribution) {
+            this.apDistribution = apDistribution;
+            return this;
+        }
+
+        /**
+         * Sets an explicit path to a user-supplied libasyncProfiler library. When set,
+         * the bundled libraries are ignored and this file is loaded instead.
+         */
+        public Builder setAPLibraryPath(String apLibraryPath) {
+            this.apLibraryPath = apLibraryPath;
+            return this;
+        }
+
         public Builder setBasicAuthUser(String basicAuthUser) {
             this.basicAuthUser = basicAuthUser;
             return this;
@@ -971,6 +1019,8 @@ public final class Config {
                 tenantID,
                 APLogLevel,
                 APExtraArguments,
+                apDistribution,
+                apLibraryPath,
                 basicAuthUser, basicAuthPassword,
                 profileExportTimeout);
         }

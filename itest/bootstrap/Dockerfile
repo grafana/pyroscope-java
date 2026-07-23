@@ -7,6 +7,7 @@ ADD gradle gradle
 RUN ./gradlew --no-daemon --version
 ADD agent agent
 ADD async-profiler-grafana-fork-dist async-profiler-grafana-fork-dist
+ADD async-profiler-genuine-dist async-profiler-genuine-dist
 ADD demo/build.gradle demo/
 
 COPY itest/bootstrap/BootstrapCheck.java /app/itest/bootstrap/BootstrapCheck.java

@@ -16,9 +16,13 @@ import java.util.Map;
 public class ProfilerSdk implements ProfilerApi {
 
     private final AsyncProfiler asprof;
+    private final boolean tracingContextSupported;
+    private final boolean traceIdSupported;
 
     public ProfilerSdk() {
         this.asprof = PyroscopeAsyncProfiler.getAsyncProfiler();
+        this.tracingContextSupported = PyroscopeAsyncProfiler.isTracingContextSupported();
+        this.traceIdSupported = PyroscopeAsyncProfiler.isTraceIdSupported();
     }
     @Override
     public void startProfiling() {
@@ -39,7 +43,9 @@ public class ProfilerSdk implements ProfilerApi {
 
     @Override
     public void setTracingContext(long spanId, long spanName) {
-        asprof.setTracingContext(spanId, spanName);
+        if (tracingContextSupported) {
+            asprof.setTracingContext(spanId, spanName);
+        }
     }
 
     @Override
@@ -56,12 +62,16 @@ public class ProfilerSdk implements ProfilerApi {
         }
         long hi = parseHex64(traceId, 0);
         long lo = parseHex64(traceId, 16);
-        asprof.setTraceId(hi, lo);
+        if (traceIdSupported) {
+            asprof.setTraceId(hi, lo);
+        }
     }
 
     @Override
     public void clearTraceId() {
-        asprof.setTraceId(0L, 0L);
+        if (traceIdSupported) {
+            asprof.setTraceId(0L, 0L);
+        }
     }
 
     static long parseHex64(String s, int offset) {

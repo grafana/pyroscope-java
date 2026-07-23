@@ -17,6 +17,7 @@ RUN if [ "${JAVA_VERSION}" -ge 25 ] 2>/dev/null; then ./gradlew --no-daemon wrap
 RUN ./gradlew --no-daemon --version
 ADD agent agent
 ADD async-profiler-grafana-fork-dist async-profiler-grafana-fork-dist
+ADD async-profiler-genuine-dist async-profiler-genuine-dist
 ADD demo/build.gradle demo/
 
 
@@ -35,6 +36,13 @@ RUN apt-get update && \
 WORKDIR /app
 ADD demo demo
 COPY --from=builder /app/agent/build/libs/pyroscope.jar /app/agent/build/libs/pyroscope.jar
+# A non-bundled libasyncProfiler at a fixed path, used to test PYROSCOPE_AP_LIBRARY_PATH
+COPY --from=builder /app/async-profiler-genuine-dist/lib /app/async-profiler-genuine-dist/lib
+RUN case "$(uname -m)" in \
+        x86_64) cp /app/async-profiler-genuine-dist/lib/libasyncProfiler-linux-x64.so /app/libasyncProfiler.so ;; \
+        aarch64) cp /app/async-profiler-genuine-dist/lib/libasyncProfiler-linux-arm64.so /app/libasyncProfiler.so ;; \
+        *) echo "unsupported arch $(uname -m)" && exit 1 ;; \
+    esac
 
 RUN javac demo/src/main/java/Fib.java
 

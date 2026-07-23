@@ -56,6 +56,7 @@ public final class ScopedContext implements AutoCloseable {
     static final ConcurrentHashMap<Long, LabelsSet> CONSTANT_CONTEXTS = new ConcurrentHashMap<>();
 
     private static volatile AsyncProfiler asyncProfiler;
+    private static volatile Boolean labelsSupported;
 
     static AsyncProfiler getAsyncProfiler() {
         if (asyncProfiler != null) {
@@ -63,6 +64,19 @@ public final class ScopedContext implements AutoCloseable {
         }
         asyncProfiler = PyroscopeAsyncProfiler.getAsyncProfiler();
         return asyncProfiler;
+    }
+
+    /**
+     * Whether the loaded async-profiler library supports labels (setContextId).
+     * Only the Grafana fork of async-profiler supports this.
+     */
+    static boolean labelsSupported() {
+        Boolean supported = labelsSupported;
+        if (supported == null) {
+            supported = PyroscopeAsyncProfiler.isLabelsSupported();
+            labelsSupported = supported;
+        }
+        return supported;
     }
 
     final LabelsSet labels;
@@ -108,7 +122,7 @@ public final class ScopedContext implements AutoCloseable {
      */
     ScopedContext(@NotNull LabelsSet labels, long prevContextId) {
         this.labels = checkNotNull(labels, "Labels");
-        if (ENABLED.get()) {
+        if (ENABLED.get() && labelsSupported()) {
             this.contextId = CONTEXT_COUNTER.incrementAndGet();
             this.prevContextId = prevContextId;
             CONTEXTS.put(contextId, this);
@@ -131,7 +145,7 @@ public final class ScopedContext implements AutoCloseable {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
-        if (ENABLED.get()) {
+        if (ENABLED.get() && labelsSupported()) {
             getAsyncProfiler().setContextId(this.prevContextId);
         }
     }
