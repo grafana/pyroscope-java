@@ -195,6 +195,14 @@ public final class Config {
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
+        if (format == Format.OTLP && profilerType != ProfilerType.ASYNC) {
+            throw new IllegalArgumentException("OTLP format is supported only by the ASYNC profiler");
+        }
+        if (format == Format.OTLP &&
+                ((profilingAlloc != null && !profilingAlloc.isEmpty()) ||
+                 (profilingLock != null && !profilingLock.isEmpty()))) {
+            throw new IllegalArgumentException("OTLP format does not support allocation or lock profiling");
+        }
         this.pushQueueCapacity = pushQueueCapacity;
         this.labels = Collections.unmodifiableMap(labels);
         this.profileExportTimeout = profileExportTimeout;
@@ -548,6 +556,8 @@ public final class Config {
         switch (format.trim().toLowerCase()) {
             case "jfr":
                 return Format.JFR;
+            case "otlp":
+                return Format.OTLP;
             default:
                 DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Unknown format %s, using %s", format, DEFAULT_FORMAT);
                 return DEFAULT_FORMAT;
