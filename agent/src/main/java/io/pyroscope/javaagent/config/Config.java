@@ -11,10 +11,12 @@ import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
 import okhttp3.HttpUrl;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
@@ -58,6 +60,7 @@ public final class Config {
     private static final String PYROSCOPE_HTTP_HEADERS = "PYROSCOPE_HTTP_HEADERS";
     private static final String PYROSCOPE_TENANT_ID = "PYROSCOPE_TENANT_ID";
     private static final String PYROSCOPE_PROFILE_EXPORT_TIMEOUT = "PYROSCOPE_PROFILE_EXPORT_TIMEOUT";
+    private static final String PYROSCOPE_TMP_DIR = "PYROSCOPE_TMP_DIR";
 
     /**
      * Experimental feature, may be removed in the future
@@ -137,6 +140,7 @@ public final class Config {
     public final String APExtraArguments;
     public final String basicAuthUser;
     public final String basicAuthPassword;
+    public final @Nullable Path tmpDir;
 
     Config(final boolean agentEnabled,
            final String applicationName,
@@ -166,7 +170,8 @@ public final class Config {
            String APExtraArguments,
            String basicAuthUser,
            String basicAuthPassword,
-           Duration profileExportTimeout) {
+           Duration profileExportTimeout,
+           @Nullable Path tmpDir) {
         this.agentEnabled = agentEnabled;
         this.applicationName = applicationName;
         this.profilerType = profilerType;
@@ -192,6 +197,7 @@ public final class Config {
         this.APExtraArguments = APExtraArguments;
         this.basicAuthUser = basicAuthUser;
         this.basicAuthPassword = basicAuthPassword;
+        this.tmpDir = validateTmpDir(tmpDir);
         this.timeseries = timeseriesName(AppName.parse(applicationName), profilingEvent, format);
         this.timeseriesName = timeseries.toString();
         this.format = format;
@@ -250,6 +256,7 @@ public final class Config {
                ", httpHeaders=" + httpHeaders +
                ", samplingDuration=" + samplingDuration +
                ", tenantID=" + tenantID +
+               ", tmpDir='" + tmpDir + '\'' +
                '}';
     }
 
@@ -305,7 +312,8 @@ public final class Config {
             cp.get(PYROSCOPE_AP_LOG_LEVEL_CONFIG),
             cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
             cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG), cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG),
-            profileExportTimeout(cp));
+            profileExportTimeout(cp),
+            tmpDir(cp));
     }
 
     /**
@@ -659,6 +667,19 @@ public final class Config {
         return cp.get(PYROSCOPE_TENANT_ID);
     }
 
+    private static @Nullable Path tmpDir(ConfigurationProvider cp) {
+        String s = cp.get(PYROSCOPE_TMP_DIR);
+        return (s != null && !s.isEmpty()) ? Paths.get(s) : null;
+    }
+
+    private static @Nullable Path validateTmpDir(@Nullable Path tmpDir) {
+        if (tmpDir != null && tmpDir.toAbsolutePath().toString().contains(",")) {
+            throw new IllegalArgumentException(
+                "PYROSCOPE_TMP_DIR must not contain commas — async-profiler uses comma as option separator: " + tmpDir);
+        }
+        return tmpDir;
+    }
+
     private static Duration samplingDuration(ConfigurationProvider configurationProvider) {
         Duration uploadInterval = uploadInterval(configurationProvider);
 
@@ -730,6 +751,7 @@ public final class Config {
         private String basicAuthUser;
         private String basicAuthPassword;
         private String jfrProfilerSettings;
+        private @Nullable Path tmpDir;
 
         public Builder() {
         }
@@ -766,6 +788,7 @@ public final class Config {
             APExtraArguments = buildUpon.APExtraArguments;
             basicAuthUser = buildUpon.basicAuthUser;
             basicAuthPassword = buildUpon.basicAuthPassword;
+            tmpDir = buildUpon.tmpDir;
         }
 
         public Builder setAgentEnabled(boolean agentEnabled) {
@@ -940,6 +963,12 @@ public final class Config {
             return this;
         }
 
+        public Builder setTmpDir(@Nullable String tmpDir) {
+            this.tmpDir = validateTmpDir(
+                (tmpDir != null && !tmpDir.isEmpty()) ? Paths.get(tmpDir) : null);
+            return this;
+        }
+
         public @NotNull Config build() {
             if (applicationName == null || applicationName.isEmpty()) {
                 applicationName = generateApplicationName();
@@ -972,7 +1001,8 @@ public final class Config {
                 APLogLevel,
                 APExtraArguments,
                 basicAuthUser, basicAuthPassword,
-                profileExportTimeout);
+                profileExportTimeout,
+                tmpDir);
         }
     }
 }

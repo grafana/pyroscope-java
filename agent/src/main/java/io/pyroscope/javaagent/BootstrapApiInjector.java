@@ -1,13 +1,18 @@
 package io.pyroscope.javaagent;
 
 import io.pyroscope.javaagent.api.Logger;
+import io.pyroscope.javaagent.impl.DefaultConfigurationProvider;
 import io.pyroscope.javaagent.impl.DefaultLogger;
+import io.pyroscope.javaagent.util.TmpFileUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.jar.JarFile;
 
@@ -34,8 +39,27 @@ import java.util.jar.JarFile;
 class BootstrapApiInjector {
 
     private static final String RESOURCE_NAME = "/pyroscope-bootstrap.jar.bin";
+    private static final String PYROSCOPE_TMP_DIR = "PYROSCOPE_TMP_DIR";
 
     static void inject(Instrumentation instrumentation) {
+        String s = getTmpDir();
+        Path tmpDir = null;
+        if (s != null && !s.isEmpty()) {
+            try {
+                tmpDir = Paths.get(s);
+            } catch (InvalidPathException e) {
+                DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
+                    "BootstrapApiInjector: invalid PYROSCOPE_TMP_DIR '%s', using system temp: %s", s, e.getMessage());
+            }
+        }
+        inject(instrumentation, tmpDir);
+    }
+
+    private static String getTmpDir() {
+        return DefaultConfigurationProvider.INSTANCE.get(PYROSCOPE_TMP_DIR);
+    }
+
+    static void inject(Instrumentation instrumentation, @Nullable Path tmpDir) {
         try {
             try (InputStream is = BootstrapApiInjector.class.getResourceAsStream(RESOURCE_NAME)) {
                 if (is == null) {
@@ -44,7 +68,7 @@ class BootstrapApiInjector {
                         RESOURCE_NAME);
                     return;
                 }
-                Path tempJar = Files.createTempFile("pyroscope-bootstrap-", ".jar");
+                Path tempJar = createBootstrapJar(tmpDir);
                 tempJar.toFile().deleteOnExit();
                 Files.copy(is, tempJar, StandardCopyOption.REPLACE_EXISTING);
 
@@ -56,5 +80,9 @@ class BootstrapApiInjector {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR,
                 "BootstrapApiInjector: Failed to inject bootstrap API: %s", e);
         }
+    }
+
+    private static Path createBootstrapJar(@Nullable Path tmpDir) throws IOException {
+        return TmpFileUtil.createTempFile(tmpDir, "pyroscope-bootstrap-", ".jar").toPath();
     }
 }

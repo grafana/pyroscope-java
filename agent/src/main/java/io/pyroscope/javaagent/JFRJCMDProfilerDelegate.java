@@ -2,6 +2,7 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.util.TmpFileUtil;
 import io.pyroscope.labels.v2.Pyroscope;
 
 import java.io.BufferedReader;
@@ -48,7 +49,7 @@ public final class JFRJCMDProfilerDelegate implements ProfilerDelegate {
         jfrSettingsPath = findJfrSettingsPath(config);
 
         try {
-            tempJFRFile = File.createTempFile("pyroscope", ".jfr");
+            tempJFRFile = TmpFileUtil.createJfrFile(config);
             tempJFRFile.deleteOnExit();
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -141,7 +142,8 @@ public final class JFRJCMDProfilerDelegate implements ProfilerDelegate {
         }
         // otherwise load default settings
         try (InputStream inputStream = JFRJCMDProfilerDelegate.class.getResourceAsStream(JFR_SETTINGS_RESOURCE)) {
-            Path jfrSettingsPath = Files.createTempFile("pyroscope", ".jfc");
+            Path jfrSettingsPath = TmpFileUtil.createTempFile(config.tmpDir, "pyroscope", ".jfc").toPath();
+            jfrSettingsPath.toFile().deleteOnExit();
             Files.copy(inputStream, jfrSettingsPath, StandardCopyOption.REPLACE_EXISTING);
             return jfrSettingsPath;
         } catch (IOException e) {

@@ -2,6 +2,7 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.util.TmpFileUtil;
 import jdk.jfr.Recording;
 
 import java.io.File;
@@ -11,9 +12,8 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
-import static io.pyroscope.labels.v2.Pyroscope.*;
+import static io.pyroscope.labels.v2.Pyroscope.LabelsWrapper;
 import static java.lang.String.format;
 
 /**
@@ -37,16 +37,11 @@ public final class JFRJDKProfilerDelegate implements ProfilerDelegate {
     public void setConfig(final Config config) {
         this.config = config;
         try {
-            tempJFRFile = jfrRecordingPath();
+            tempJFRFile = TmpFileUtil.createJfrFile(config);
+            tempJFRFile.deleteOnExit();
         } catch (IOException e) {
             throw new UncheckedIOException("cannot create JFR destination path", e);
         }
-    }
-
-    private static File jfrRecordingPath() throws IOException {
-        File tempJFRFile = File.createTempFile("pyroscope", ".jfr");
-        tempJFRFile.deleteOnExit();
-        return tempJFRFile;
     }
 
     /**
