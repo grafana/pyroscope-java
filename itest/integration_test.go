@@ -16,10 +16,12 @@ import (
 	"pyroscope-java-itest/require"
 )
 
-const pyroscopeImage = "grafana/pyroscope:2.1.0@sha256:73b23dbb99f154a0803c136abafdff825475f415dd4d4587538d014c672b5a55"
+const pyroscopeImage = "grafana/pyroscope:2.1.1@sha256:c8ad9891fc8562c794c946883c8324b7e48f4eda58d243387c7b6254f9f061fb"
 const needle = "run;Fib.lambda$appLogic$0;Fib.fib;Fib.fib;Fib.fib;Fib.fib;"
 const otelScopeNameLabel = "otel.scope.name"
 const expectedOtelScopeName = "com.grafana.pyroscope/java"
+const cpuNanosecondsProfileType = "process_cpu:cpu:nanoseconds:cpu:nanoseconds"
+const otlpItimerProfileType = "itimer:itimer:ns:itimer:ns"
 
 func startPyroscope(t *testing.T, net *dockertest.Network) string {
 	t.Helper()
@@ -62,16 +64,17 @@ func appImagePrefix(dockerfile string) string {
 	}
 }
 
-func startApp(t *testing.T, net *dockertest.Network, image string) {
+func startApp(t *testing.T, net *dockertest.Network, image string, env map[string]string) {
 	t.Helper()
 	t.Logf("starting app %s ...", image)
 	dockertest.StartContainer(t, dockertest.ContainerRequest{
 		Image:   image,
 		Network: net.Name,
+		Env:     env,
 	})
 }
 
-func queryProfile(t *testing.T, pyroscopeURL string, labelSelector string) (string, error) {
+func queryProfile(t *testing.T, pyroscopeURL string, profileTypeID string, labelSelector string) (string, error) {
 	t.Helper()
 	qc := querier.NewClient(http.DefaultClient, pyroscopeURL)
 
@@ -80,7 +83,7 @@ func queryProfile(t *testing.T, pyroscopeURL string, labelSelector string) (stri
 	maxNodes := int64(65536)
 	resp, err := qc.SelectMergeStacktraces(context.Background(),
 		&querier.SelectMergeStacktracesRequest{
-			ProfileTypeID: "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+			ProfileTypeID: profileTypeID,
 			Start:         from.UnixMilli(),
 			End:           to.UnixMilli(),
 			LabelSelector: labelSelector,
@@ -109,7 +112,7 @@ func runQueryProfileTest(t *testing.T, dockerfile string, imageVersion string, j
 	t.Logf("pyroscope URL: %s", pyroscopeURL)
 
 	image := buildAppImage(t, dockerfile, imageVersion, javaVersion)
-	startApp(t, net, image)
+	startApp(t, net, image, nil)
 
 	serviceName := serviceNameFromDockerfile(dockerfile, imageVersion, javaVersion)
 	testTarget(t, pyroscopeURL, serviceName)
@@ -132,20 +135,25 @@ func serviceNameFromDockerfile(dockerfile string, imageVersion string, javaVersi
 func testTarget(t *testing.T, pyroscopeURL string, serviceName string) {
 	t.Helper()
 	labelSelector := fmt.Sprintf(`{service_name="%s","%s"="%s"}`, serviceName, otelScopeNameLabel, expectedOtelScopeName)
+	testLabelSelector(t, pyroscopeURL, serviceName, cpuNanosecondsProfileType, labelSelector)
+}
+
+func testLabelSelector(t *testing.T, pyroscopeURL string, targetName string, profileTypeID string, labelSelector string) {
+	t.Helper()
 	var lastCollapsed string
 	var lastErr error
 	ok := require.Eventually(t, func() bool {
-		lastCollapsed, lastErr = queryProfile(t, pyroscopeURL, labelSelector)
+		lastCollapsed, lastErr = queryProfile(t, pyroscopeURL, profileTypeID, labelSelector)
 		if lastErr != nil {
-			t.Logf("[%s] query %s error: %s", serviceName, labelSelector, lastErr)
+			t.Logf("[%s] query %s error: %s", targetName, labelSelector, lastErr)
 			return false
 		}
 		if lastCollapsed == "" {
-			t.Logf("[%s] empty profile for %s", serviceName, labelSelector)
+			t.Logf("[%s] empty profile for %s", targetName, labelSelector)
 			return false
 		}
 		if !strings.Contains(lastCollapsed, needle) {
-			t.Logf("[%s] needle not found yet for %s", serviceName, labelSelector)
+			t.Logf("[%s] needle not found yet for %s", targetName, labelSelector)
 			return false
 		}
 		return true
@@ -153,13 +161,28 @@ func testTarget(t *testing.T, pyroscopeURL string, serviceName string) {
 
 	if !ok {
 		if lastErr != nil {
-			t.Logf("[%s] last error for %s: %s", serviceName, labelSelector, lastErr)
+			t.Logf("[%s] last error for %s: %s", targetName, labelSelector, lastErr)
 		}
-		t.Logf("[%s] last collapsed profile for %s:\n%s", serviceName, labelSelector, lastCollapsed)
+		t.Logf("[%s] last collapsed profile for %s:\n%s", targetName, labelSelector, lastCollapsed)
 		t.FailNow()
 	}
 }
 
 func TestQueryProfile(t *testing.T) {
 	runQueryProfileTest(t, envDockerfile(), envImageVersion(), envJavaVersion())
+}
+
+func TestQueryOtlpProfile(t *testing.T) {
+	net := dockertest.CreateNetwork(t)
+
+	pyroscopeURL := startPyroscope(t, net)
+	t.Logf("pyroscope URL: %s", pyroscopeURL)
+
+	image := buildAppImage(t, envDockerfile(), envImageVersion(), envJavaVersion())
+	startApp(t, net, image, map[string]string{
+		"PYROSCOPE_FORMAT": "otlp",
+	})
+
+	// async-profiler does not yet include service.name in its OTLP resource.
+	testLabelSelector(t, pyroscopeURL, "otlp", otlpItimerProfileType, `{service_name="unknown_service"}`)
 }

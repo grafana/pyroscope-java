@@ -24,9 +24,6 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
 
     private Config config;
     private EventType eventType;
-    private String alloc;
-    private String lock;
-    private Duration interval;
     private Format format;
     private File tempJFRFile;
 
@@ -40,10 +37,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     public void setConfig(@NotNull final Config config) {
         checkNotNull(config, "config");
         this.config = config;
-        this.alloc = config.profilingAlloc;
-        this.lock = config.profilingLock;
         this.eventType = config.profilingEvent;
-        this.interval = config.profilingInterval;
         this.format = config.format;
 
         if (format == Format.JFR && null == tempJFRFile) {
@@ -61,14 +55,14 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
      */
     @Override
     public synchronized void start() {
-        if (format == Format.JFR) {
+        if (format == Format.JFR || format == Format.OTLP) {
             try {
-                instance.execute(createJFRCommand());
+                instance.execute(createStartCommand());
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
         } else {
-            instance.start(eventType.id, interval.toNanos());
+            instance.start(eventType.id, config.profilingInterval.toNanos());
         }
     }
 
@@ -98,21 +92,27 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         return dumpImpl(started, ended);
     }
 
-    private String createJFRCommand() {
+    String createStartCommand() {
+        return createStartCommand(config, format, tempJFRFile);
+    }
+
+    static String createStartCommand(Config config, Format format, File tempJFRFile) {
         StringBuilder sb = new StringBuilder();
-        sb.append("start,event=").append(eventType.id);
-        if (alloc != null && !alloc.isEmpty()) {
-            sb.append(",alloc=").append(alloc);
+        sb.append("start,event=").append(config.profilingEvent.id);
+        if (config.profilingAlloc != null && !config.profilingAlloc.isEmpty()) {
+            sb.append(",alloc=").append(config.profilingAlloc);
             if (config.allocLive) {
                 sb.append(",live");
             }
         }
-        if (lock != null && !lock.isEmpty()) {
-            sb.append(",lock=").append(lock);
+        if (config.profilingLock != null && !config.profilingLock.isEmpty()) {
+            sb.append(",lock=").append(config.profilingLock);
         }
-        sb.append(",interval=").append(interval.toNanos())
-                .append(",file=").append(tempJFRFile.toString())
-                .append(",timeout=").append(asyncProfilerTimeoutSeconds(config.uploadInterval));
+        sb.append(",interval=").append(config.profilingInterval.toNanos());
+        if (format == Format.JFR) {
+            sb.append(",file=").append(tempJFRFile.toString())
+                    .append(",timeout=").append(asyncProfilerTimeoutSeconds(config.uploadInterval));
+        }
         if (config.APLogLevel != null) {
             sb.append(",loglevel=").append(config.APLogLevel);
         }
@@ -134,6 +134,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         final byte[] data;
         if (format == Format.JFR) {
             data = dumpJFR();
+        } else if (format == Format.OTLP) {
+            data = instance.dumpOtlp(Counter.TOTAL);
         } else {
             data = instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8);
         }
