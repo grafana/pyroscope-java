@@ -204,10 +204,11 @@ public final class Config {
         if (format == Format.OTLP && profilerType != ProfilerType.ASYNC) {
             throw new IllegalArgumentException("OTLP format is supported only by the ASYNC profiler");
         }
-        if (format == Format.OTLP &&
-                ((profilingAlloc != null && !profilingAlloc.isEmpty()) ||
-                 (profilingLock != null && !profilingLock.isEmpty()))) {
-            throw new IllegalArgumentException("OTLP format does not support allocation or lock profiling");
+        final boolean sequentialSampling = samplingDuration != null && samplingEventOrder != null;
+        if (format == Format.OTLP && !sequentialSampling &&
+                ((profilingAlloc != null && !profilingAlloc.isEmpty() && profilingEvent != EventType.ALLOC) ||
+                 (profilingLock != null && !profilingLock.isEmpty() && profilingEvent != EventType.LOCK))) {
+            throw new IllegalArgumentException("OTLP format does not support multiple profiling events simultaneously");
         }
         this.pushQueueCapacity = pushQueueCapacity;
         this.labels = Collections.unmodifiableMap(labels);
