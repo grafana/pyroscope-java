@@ -81,6 +81,10 @@ public class PyroscopeExporter implements Exporter {
 
             config.httpHeaders.forEach((k, v) -> request.header(k, v));
 
+            if (config.format == Format.OTLP && config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
+                request.header("Content-Encoding", "gzip");
+            }
+
             addAuthHeader(request, url, config);
 
 
@@ -116,7 +120,11 @@ public class PyroscopeExporter implements Exporter {
 
     private RequestBody requestBody(Snapshot snapshot) {
         if (config.format == Format.OTLP) {
-            return RequestBody.create(snapshot.data, PROTOBUF);
+            RequestBody body = RequestBody.create(snapshot.data, PROTOBUF);
+            if (config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
+                body = GzipSink.gzip(body, config.compressionLevelJFR);
+            }
+            return body;
         }
 
         byte[] labels = snapshot.labels.toByteArray();
