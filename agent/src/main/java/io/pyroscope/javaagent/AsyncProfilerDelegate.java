@@ -74,7 +74,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         try {
             instance.stop();
         } catch (IllegalStateException e) {
-            // async-profiler throws when stop is called after the JFR timeout has already elapsed.
+            // async-profiler throws when stop is called after the recording timeout has already elapsed.
             if (!PROFILER_NOT_ACTIVE.equals(e.getMessage())) {
                 throw e;
             }
@@ -110,8 +110,10 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         }
         sb.append(",interval=").append(config.profilingInterval.toNanos());
         if (format == Format.JFR) {
-            sb.append(",file=").append(tempJFRFile.toString())
-                    .append(",timeout=").append(asyncProfilerTimeoutSeconds(config.uploadInterval));
+            sb.append(",file=").append(tempJFRFile.toString());
+        }
+        if (format == Format.JFR || format == Format.OTLP) {
+            sb.append(",timeout=").append(asyncProfilerTimeoutSeconds(config.uploadInterval));
         }
         if (config.APLogLevel != null) {
             sb.append(",loglevel=").append(config.APLogLevel);
