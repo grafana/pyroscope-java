@@ -4,12 +4,27 @@ import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AsyncProfilerDelegateCommandTest {
+    @Test
+    void jfrStartCommandIncludesFileAndTimeout() {
+        Config config = new Config.Builder()
+            .setFormat(Format.JFR)
+            .setUploadInterval(Duration.ofSeconds(10))
+            .build();
+        File jfrFile = new File("recording.jfr");
+
+        String command = AsyncProfilerDelegate.createStartCommand(config, Format.JFR, jfrFile);
+
+        assertTrue(command.contains("file=" + jfrFile));
+        assertTrue(command.contains("timeout=11"));
+    }
+
     @Test
     void otlpStartCommandIncludesConfiguredOptionsWithoutJfrFile() {
         Config config = new Config.Builder()
