@@ -1,6 +1,7 @@
 package io.pyroscope.javaagent.config;
 
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.api.ConfigurationProvider;
 import org.junit.jupiter.api.Test;
 
@@ -26,21 +27,52 @@ class OtlpConfigTest {
     }
 
     @Test
-    void rejectsOtlpWithAllocationProfiling() {
+    void acceptsOtlpWithAllocationProfiling() {
+        Config config = Config.build(provider(
+            "PYROSCOPE_FORMAT", "otlp",
+            "PYROSCOPE_PROFILER_EVENT", "alloc",
+            "PYROSCOPE_PROFILER_ALLOC", "512k"));
+        assertEquals(EventType.ALLOC, config.profilingEvent);
+        assertEquals("512k", config.profilingAlloc);
+    }
+
+    @Test
+    void acceptsOtlpWithLockProfiling() {
+        Config config = Config.build(provider(
+            "PYROSCOPE_FORMAT", "otlp",
+            "PYROSCOPE_PROFILER_EVENT", "lock",
+            "PYROSCOPE_PROFILER_LOCK", "10ms"));
+        assertEquals(EventType.LOCK, config.profilingEvent);
+        assertEquals("10ms", config.profilingLock);
+    }
+
+    @Test
+    void rejectsOtlpWithSimultaneousAllocationProfiling() {
         ConfigurationProvider provider = provider(
             "PYROSCOPE_FORMAT", "otlp",
             "PYROSCOPE_PROFILER_ALLOC", "512k");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> Config.build(provider));
-        assertEquals("OTLP format does not support allocation or lock profiling", exception.getMessage());
+        assertEquals("OTLP format does not support multiple profiling events simultaneously", exception.getMessage());
     }
 
     @Test
-    void rejectsOtlpWithLockProfiling() {
+    void rejectsOtlpWithSimultaneousLockProfiling() {
         ConfigurationProvider provider = provider(
             "PYROSCOPE_FORMAT", "otlp",
             "PYROSCOPE_PROFILER_LOCK", "10ms");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> Config.build(provider));
-        assertEquals("OTLP format does not support allocation or lock profiling", exception.getMessage());
+        assertEquals("OTLP format does not support multiple profiling events simultaneously", exception.getMessage());
+    }
+
+    @Test
+    void acceptsOtlpWithSequentialSamplingEvents() {
+        Config config = Config.build(provider(
+            "PYROSCOPE_FORMAT", "otlp",
+            "PYROSCOPE_PROFILER_ALLOC", "512k",
+            "PYROSCOPE_PROFILER_LOCK", "10ms",
+            "PYROSCOPE_SAMPLING_DURATION", "1s",
+            "PYROSCOPE_SAMPLING_EVENT_ORDER", "cpu,alloc,lock"));
+        assertEquals(3, config.samplingEventOrder.size());
     }
 
     private static ConfigurationProvider provider(String... pairs) {
