@@ -11,18 +11,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -110,14 +112,16 @@ public class PyroscopeExporterTest {
     }
 
     @Test
-    void exportsOtlpAsRawProtobufToProfilesEndpoint() throws Exception {
+    void exportsOtlpAsGzippedProtobufToProfilesEndpoint() throws Exception {
         byte[] profile = new byte[] {1, 2, 3, 4};
         String[] contentType = new String[1];
+        String[] contentEncoding = new String[1];
         byte[][] requestBody = new byte[1][];
         CountDownLatch requestCaptured = new CountDownLatch(1);
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/v1development/profiles", exchange -> {
             contentType[0] = exchange.getRequestHeaders().getFirst("Content-Type");
+            contentEncoding[0] = exchange.getRequestHeaders().getFirst("Content-Encoding");
             requestBody[0] = readAllBytes(exchange.getRequestBody());
             requestCaptured.countDown();
             exchange.sendResponseHeaders(200, -1);
@@ -136,7 +140,9 @@ public class PyroscopeExporterTest {
                 Format.OTLP, EventType.CPU, Instant.EPOCH, Instant.EPOCH, profile, null));
             assertTrue(requestCaptured.await(5, TimeUnit.SECONDS));
             assertEquals("application/x-protobuf", contentType[0]);
-            assertEquals(Arrays.toString(profile), Arrays.toString(requestBody[0]));
+            assertEquals("gzip", contentEncoding[0]);
+            assertArrayEquals(profile, readAllBytes(new GZIPInputStream(
+                new ByteArrayInputStream(requestBody[0]))));
         } finally {
             exporter.stop();
             server.stop(0);
