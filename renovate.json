@@ -3,5 +3,13 @@
   "extends": [
     "github>grafana/grafana-renovate-config//presets/base",
     "security:only-security-updates"
+  ],
+  "packageRules": [
+    {
+      "description": "Enable Grafana shared workflow updates",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["grafana/shared-workflows"],
+      "enabled": true
+    }
   ]
 }
