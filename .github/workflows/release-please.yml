@@ -21,7 +21,7 @@ jobs:
       version: ${{ steps.rp.outputs.version }}
     steps:
       - id: get-github-app-token
-        uses: grafana/shared-workflows/actions/create-github-app-token@580590a644e82e79bb2598bdaba0be245a14dda0 # create-github-app-token/v0.2.2
+        uses: grafana/shared-workflows/actions/create-github-app-token@46f48da11e78ebdba7a8747ae456b11062fac83e # create-github-app-token/v0.3.1
         with:
           github_app: pyroscope-development-app
 
@@ -44,7 +44,8 @@ jobs:
       id-token: write
     steps:
       - name: Get secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@726f1a912f45b4807774b76a6d40cbd3fb7a12c0
+        id: get-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@2e3743a1f8abfd3e921e53a7726ec0744c11bb01 # get-vault-secrets/v2.0.1
         with:
           repo_secrets: |
             NEXUS_USERNAME=publishing:nexus_username
@@ -67,6 +68,8 @@ jobs:
 
       - name: Prepare GPG Keyring
         id: prepare_gpg_keyring
+        env:
+          NEXUS_GPG_SECRING_FILE_BASE64: ${{ fromJSON(steps.get-secrets.outputs.secrets).NEXUS_GPG_SECRING_FILE_BASE64 }}
         run: |
           mkdir -p "${{ github.workspace }}/gpg"
           chmod 700 "${{ github.workspace }}/gpg"
@@ -76,6 +79,10 @@ jobs:
 
       - name: Build and Publish
         env:
+          NEXUS_USERNAME: ${{ fromJSON(steps.get-secrets.outputs.secrets).NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ fromJSON(steps.get-secrets.outputs.secrets).NEXUS_PASSWORD }}
+          NEXUS_GPG_KEY_ID: ${{ fromJSON(steps.get-secrets.outputs.secrets).NEXUS_GPG_KEY_ID }}
+          NEXUS_GPG_PASSWORD: ${{ fromJSON(steps.get-secrets.outputs.secrets).NEXUS_GPG_PASSWORD }}
           NEXUS_GPG_SECRING_FILE: ${{ steps.prepare_gpg_keyring.outputs.keyring_path }}
         run: make publish
 
