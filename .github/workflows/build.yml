@@ -27,6 +27,11 @@ jobs:
         with:
           java-version: '21'
           distribution: 'zulu'
+          cache: 'gradle'
+          cache-dependency-path: |
+            **/*.gradle*
+            **/gradle-wrapper.properties
+            .github/workflows/build.yml
       - name: Upgrade Gradle wrapper for newer Java versions
         if: ${{ !contains(fromJSON('["11", "17", "21"]'), matrix.java) }}
         run: ./gradlew wrapper --gradle-version=9.0
@@ -35,4 +40,5 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
+          cache: 'gradle'
       - run: ./gradlew shadowJar
