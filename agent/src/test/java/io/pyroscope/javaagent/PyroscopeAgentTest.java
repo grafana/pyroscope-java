@@ -1,5 +1,6 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
@@ -27,6 +28,9 @@ public class PyroscopeAgentTest {
     @Mock
     private ProfilingScheduler profilingScheduler;
 
+    @Mock
+    private ProfilerDelegate profiler;
+
     @BeforeEach
     void setUp() {
         configAgentEnabled = new Config.Builder()
@@ -35,6 +39,7 @@ public class PyroscopeAgentTest {
         optionsAgentEnabled = new PyroscopeAgent.Options.Builder(configAgentEnabled)
             .setScheduler(profilingScheduler)
             .setLogger(logger)
+            .setProfiler(profiler)
             .build();
 
         configAgentDisabled = new Config.Builder()
@@ -43,6 +48,7 @@ public class PyroscopeAgentTest {
         optionsAgentDisabled = new PyroscopeAgent.Options.Builder(configAgentDisabled)
             .setScheduler(profilingScheduler)
             .setLogger(logger)
+            .setProfiler(profiler)
             .build();
     }
 
@@ -56,6 +62,7 @@ public class PyroscopeAgentTest {
         PyroscopeAgent.start(optionsAgentEnabled);
 
         verify(profilingScheduler, times(1)).start(any());
+        verify(logger, never()).log(eq(Logger.Level.WARN), contains("OTLP export"));
     }
 
     @Test
@@ -63,5 +70,25 @@ public class PyroscopeAgentTest {
         PyroscopeAgent.start(optionsAgentDisabled);
 
         verify(profilingScheduler, never()).start(any());
+    }
+
+    @Test
+    void warnsWhenOtlpDoesNotIncludeApplicationNameOrLabels() {
+        Config config = new Config.Builder()
+            .setAgentEnabled(true)
+            .setFormat(Format.OTLP)
+            .build();
+        PyroscopeAgent.Options options = new PyroscopeAgent.Options.Builder(config)
+            .setScheduler(profilingScheduler)
+            .setLogger(logger)
+            .setProfiler(profiler)
+            .build();
+
+        PyroscopeAgent.start(options);
+
+        verify(logger).log(
+            Logger.Level.WARN,
+            "OTLP export does not include the configured application name or labels; " +
+            "profiles may appear under service_name=\"unknown_service\"");
     }
 }

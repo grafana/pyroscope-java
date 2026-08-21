@@ -1,5 +1,6 @@
 package io.pyroscope.javaagent;
 
+import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
@@ -59,6 +60,11 @@ public class PyroscopeAgent {
             }
             sOptions = options;
             logger.log(Logger.Level.DEBUG, "Config: %s", options.config);
+            if (options.config.format == Format.OTLP) {
+                logger.log(Logger.Level.WARN,
+                    "OTLP export does not include the configured application name or labels; " +
+                    "profiles may appear under service_name=\"unknown_service\"");
+            }
             try {
                 options.scheduler.start(options.profiler);
                 ScopedContext.ENABLED.set(true);
