@@ -147,6 +147,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
                 started,
                 ended,
                 data,
+                // This also removes closed scoped contexts. Keep draining them even though the
+                // current OTLP exporter does not include the resulting labels snapshot.
                 Pyroscope.LabelsWrapper.dump()
         );
     }
