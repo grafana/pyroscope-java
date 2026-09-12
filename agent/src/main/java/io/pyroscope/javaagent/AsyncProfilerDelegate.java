@@ -3,6 +3,7 @@ package io.pyroscope.javaagent;
 import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.impl.PprofEncoder;
 import io.pyroscope.javaagent.util.TmpFileUtil;
 import io.pyroscope.labels.v2.Pyroscope;
 import one.profiler.AsyncProfiler;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.pyroscope.Preconditions.checkNotNull;
 import static java.nio.file.Files.newInputStream;
@@ -55,7 +58,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
      */
     @Override
     public synchronized void start() {
-        if (format == Format.JFR || format == Format.OTLP) {
+        if (format == Format.JFR || format == Format.OTLP || format == Format.PPROF) {
             try {
                 instance.execute(createStartCommand());
             } catch (IOException e) {
@@ -112,7 +115,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         if (format == Format.JFR) {
             sb.append(",file=").append(tempJFRFile.toString());
         }
-        if (format == Format.JFR || format == Format.OTLP) {
+        if (format == Format.JFR || format == Format.OTLP || format == Format.PPROF) {
             sb.append(",timeout=").append(asyncProfilerTimeoutSeconds(config.uploadInterval));
         }
         if (config.APLogLevel != null) {
@@ -138,6 +141,16 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
             data = dumpJFR();
         } else if (format == Format.OTLP) {
             data = instance.dumpOtlp(Counter.TOTAL);
+        } else if (format == Format.PPROF) {
+            Map<String, String> labels = new HashMap<>(config.timeseries.getLabels());
+            labels.putAll(config.labels);
+            labels.putAll(Pyroscope.getStaticLabels());
+            try {
+                data = PprofEncoder.encode(instance.dumpCollapsed(Counter.SAMPLES), started, ended,
+                    config.profilingInterval.toNanos(), labels);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
         } else {
             data = instance.dumpCollapsed(Counter.SAMPLES).getBytes(StandardCharsets.UTF_8);
         }

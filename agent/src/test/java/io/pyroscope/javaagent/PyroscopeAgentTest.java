@@ -2,8 +2,11 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.api.Logger;
+import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.config.ProfilingMode;
+import io.pyroscope.javaagent.impl.PullProfilingScheduler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,7 @@ import javax.net.ssl.X509TrustManager;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PyroscopeAgentTest {
@@ -57,6 +61,7 @@ public class PyroscopeAgentTest {
 
     @AfterEach
     void tearDown() {
+        reset(profilingScheduler);
         PyroscopeAgent.stop();
     }
 
@@ -66,6 +71,82 @@ public class PyroscopeAgentTest {
 
         verify(profilingScheduler, times(1)).start(any());
         verify(logger, never()).log(eq(Logger.Level.WARN), contains("OTLP export"));
+    }
+
+    @Test
+    void pullModeSelectsHttpSchedulerWithoutAnExporter() {
+        Config config = new Config.Builder().setProfilingMode(ProfilingMode.PULL)
+            .setFormat(Format.PPROF).setPullPort(0).build();
+        PyroscopeAgent.Options options = new PyroscopeAgent.Options.Builder(config)
+            .setLogger(logger).setProfiler(profiler).build();
+        assertTrue(options.scheduler instanceof PullProfilingScheduler);
+        assertNull(options.exporter);
+        assertThrows(IllegalArgumentException.class, () -> new PyroscopeAgent.Options.Builder(config)
+            .setProfiler(profiler).setExporter(mock(Exporter.class)).build());
+    }
+
+    @Test
+    void customSchedulerStopsWithoutAnExporter() {
+        PyroscopeAgent.start(optionsAgentEnabled);
+        PyroscopeAgent.stop();
+        verify(profilingScheduler).stop();
+        verify(logger, never()).log(eq(Logger.Level.ERROR), eq("Error stopping profiler %s"), any());
+    }
+
+    @Test
+    void failedStartupCleansUpComponents() {
+        Exporter exporter = mock(Exporter.class);
+        doThrow(new IllegalStateException("cannot start")).when(profilingScheduler).start(profiler);
+        PyroscopeAgent.Options options = new PyroscopeAgent.Options.Builder(configAgentEnabled)
+            .setScheduler(profilingScheduler).setExporter(exporter).setProfiler(profiler).setLogger(logger).build();
+        PyroscopeAgent.start(options);
+        assertFalse(PyroscopeAgent.isStarted());
+        verify(profilingScheduler).stop();
+        verify(exporter).stop();
+    }
+
+    @Test
+    void schedulerFailureDoesNotSkipExporterCleanup() {
+        Exporter exporter = mock(Exporter.class);
+        PyroscopeAgent.Options options = new PyroscopeAgent.Options.Builder(configAgentEnabled)
+            .setScheduler(profilingScheduler).setExporter(exporter).setProfiler(profiler).setLogger(logger).build();
+        PyroscopeAgent.start(options);
+        doThrow(new IllegalStateException("cannot stop")).when(profilingScheduler).stop();
+        PyroscopeAgent.stop();
+        assertTrue(PyroscopeAgent.isStarted());
+        verify(exporter).stop();
+    }
+
+    @Test
+    void failedStopBlocksRestartUntilCleanupSucceeds() {
+        PyroscopeAgent.start(optionsAgentEnabled);
+        doThrow(new IllegalStateException("worker is still running")).doNothing()
+            .when(profilingScheduler).stop();
+        PyroscopeAgent.stop();
+        assertTrue(PyroscopeAgent.isStarted());
+
+        ProfilingScheduler replacement = mock(ProfilingScheduler.class);
+        PyroscopeAgent.Options options = new PyroscopeAgent.Options.Builder(configAgentEnabled)
+            .setScheduler(replacement).setProfiler(profiler).setLogger(logger).build();
+        PyroscopeAgent.start(options);
+        verifyNoInteractions(replacement);
+
+        PyroscopeAgent.stop();
+        assertFalse(PyroscopeAgent.isStarted());
+        PyroscopeAgent.start(options);
+        verify(replacement).start(profiler);
+    }
+
+    @Test
+    void failedStartupRetainsOwnershipWhenCleanupAlsoFails() {
+        doThrow(new IllegalStateException("cannot start")).when(profilingScheduler).start(profiler);
+        doThrow(new IllegalStateException("cannot stop")).doNothing().when(profilingScheduler).stop();
+        PyroscopeAgent.start(optionsAgentEnabled);
+        assertTrue(PyroscopeAgent.isStarted());
+        PyroscopeAgent.start(optionsAgentEnabled);
+        verify(profilingScheduler).start(profiler);
+        PyroscopeAgent.stop();
+        assertFalse(PyroscopeAgent.isStarted());
     }
 
     @Test
