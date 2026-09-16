@@ -22,8 +22,8 @@ class PullConfigTest {
     @Test
     void readsPullConfigurationAndPreservesItWhenCopied() {
         Map<String, String> values = new HashMap<>();
-        values.put("PYROSCOPE_PROFILING_MODE", "pull");
-        values.put("PYROSCOPE_FORMAT", "pprof");
+        values.put("PYROSCOPE_PROFILING_MODE", " \tPuLl\r\n");
+        values.put("PYROSCOPE_FORMAT", " PPROF ");
         values.put("PYROSCOPE_PULL_BIND_ADDRESS", " \tlocalhost\r\n");
         values.put("PYROSCOPE_PULL_PORT", "9090");
         Config config = Config.build(values::get).newBuilder().build();
@@ -45,6 +45,8 @@ class PullConfigTest {
         assertEquals("127.0.0.1", pull().build().pullBindAddress);
         assertEquals(4041, pull().build().pullPort);
         assertEquals(0, pull().setPullPort(0).build().pullPort);
+        assertEquals(EventType.ITIMER, pull().build().profilingEvent);
+        assertEquals(EventType.CPU, pull().setProfilingEvent(EventType.CPU).build().profilingEvent);
     }
 
     @Test
