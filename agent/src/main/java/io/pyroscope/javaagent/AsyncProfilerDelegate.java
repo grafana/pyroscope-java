@@ -30,9 +30,14 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private Format format;
     private File tempJFRFile;
 
-    private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
+    private final AsyncProfiler instance;
 
     public AsyncProfilerDelegate(@NotNull Config config) {
+        this(config, PyroscopeAsyncProfiler.getAsyncProfiler());
+    }
+
+    AsyncProfilerDelegate(@NotNull Config config, @NotNull AsyncProfiler instance) {
+        this.instance = checkNotNull(instance, "instance");
         setConfig(config);
     }
 
