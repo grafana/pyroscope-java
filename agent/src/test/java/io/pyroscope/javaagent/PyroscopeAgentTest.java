@@ -6,6 +6,7 @@ import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.config.ProfilingMode;
+import io.pyroscope.javaagent.impl.ContinuousProfilingScheduler;
 import io.pyroscope.javaagent.impl.PullProfilingScheduler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,6 +101,36 @@ public class PyroscopeAgentTest {
         assertFalse(PyroscopeAgent.isStarted());
         verify(profilingScheduler).stop();
         verify(exporter).stop();
+    }
+
+    @Test
+    void failedContinuousStartupAllowsRetry() {
+        Exporter exporter = mock(Exporter.class);
+        ContinuousProfilingScheduler scheduler =
+            new ContinuousProfilingScheduler(configAgentEnabled, exporter, logger);
+        PyroscopeAgent.Options options = new PyroscopeAgent.Options.Builder(configAgentEnabled)
+            .setScheduler(scheduler).setExporter(exporter).setProfiler(profiler).setLogger(logger).build();
+        doThrow(new IllegalArgumentException("invalid profiling event")).doNothing().when(profiler).start();
+
+        try {
+            PyroscopeAgent.start(options);
+            assertFalse(PyroscopeAgent.isStarted());
+            verify(exporter).stop();
+            verify(profiler, never()).stop();
+
+            PyroscopeAgent.start(options);
+            assertTrue(PyroscopeAgent.isStarted());
+            verify(profiler, times(2)).start();
+
+            PyroscopeAgent.stop();
+            assertFalse(PyroscopeAgent.isStarted());
+            verify(profiler).stop();
+            verify(exporter, times(2)).stop();
+            assertDoesNotThrow(scheduler::stop);
+        } finally {
+            PyroscopeAgent.stop();
+            scheduler.stop();
+        }
     }
 
     @Test
