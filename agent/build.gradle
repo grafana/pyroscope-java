@@ -85,6 +85,13 @@ test {
     }
 }
 
+tasks.register('writePprofCompatibilityFixture', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass.set('io.pyroscope.javaagent.impl.PprofCompatibilityFixture')
+    args layout.buildDirectory.file('pprof-compatibility/profile.pb.gz').get().asFile.absolutePath
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8

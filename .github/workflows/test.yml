@@ -10,6 +10,31 @@ permissions:
   contents: read
 
 jobs:
+  pprof-compatibility:
+    runs-on: ubuntu-x64
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+        with:
+          java-version: 11
+          distribution: temurin
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
+        with:
+          go-version: stable
+          cache: false
+      - name: Validate encoded profile with Google pprof
+        run: |
+          ./gradlew :agent:writePprofCompatibilityFixture
+          go tool pprof -top agent/build/pprof-compatibility/profile.pb.gz | tee pprof.txt
+          grep -q 'leaf' pprof.txt
+          grep -q 'shared' pprof.txt
+          grep -q 'root' pprof.txt
+          go tool pprof -tags agent/build/pprof-compatibility/profile.pb.gz | tee tags.txt
+          grep -q 'region' tags.txt
+          grep -q 'west' tags.txt
+
   test:
     runs-on: ${{ matrix.agent }}
     strategy:
