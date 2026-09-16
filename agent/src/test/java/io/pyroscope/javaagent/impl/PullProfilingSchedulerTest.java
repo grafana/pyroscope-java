@@ -66,7 +66,9 @@ class PullProfilingSchedulerTest {
             try (Response response = get("/debug/pprof/profile?seconds=1")) {
                 assertEquals(200, response.code());
                 assertEquals("application/octet-stream", response.header("Content-Type"));
+                assertEquals("attachment; filename=profile.pb.gz", response.header("Content-Disposition"));
                 assertEquals("no-store", response.header("Cache-Control"));
+                assertEquals("close", response.header("Connection"));
                 assertArrayEquals(body, response.body().bytes());
             }
         }
@@ -100,6 +102,10 @@ class PullProfilingSchedulerTest {
             .post(RequestBody.create(new byte[0])).build()).execute()) {
             assertEquals(405, response.code());
             assertEquals("GET", response.header("Allow"));
+        }
+        try (Response response = client.newCall(new Request.Builder().url(url("/debug/pprof/profile"))
+            .post(RequestBody.create(new byte[]{1})).build()).execute()) {
+            assertEquals(400, response.code());
         }
         verifyNoInteractions(profiler);
     }
@@ -258,11 +264,13 @@ class PullProfilingSchedulerTest {
         InetSocketAddress address = scheduler.getAddress();
         scheduler.stop();
         scheduler.stop();
+        assertThrows(IllegalStateException.class, scheduler::getAddress);
         try (ServerSocket socket = new ServerSocket()) {
             socket.bind(address);
         }
         scheduler.start(profiler);
         assertTrue(scheduler.getAddress().getPort() > 0);
+        assertThrows(IllegalStateException.class, () -> scheduler.start(profiler));
         verifyNoInteractions(profiler);
     }
 
