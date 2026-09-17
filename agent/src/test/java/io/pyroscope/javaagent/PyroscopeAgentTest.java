@@ -11,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -90,5 +93,16 @@ public class PyroscopeAgentTest {
             Logger.Level.WARN,
             "OTLP export does not include the configured application name or labels; " +
             "profiles may appear under service_name=\"unknown_service\"");
+    }
+
+    @Test
+    void warnsWhenSslSocketFactoryIsIgnored() {
+        new PyroscopeAgent.Options.Builder(configAgentEnabled)
+            .setScheduler(profilingScheduler)
+            .setSslSocketFactory(mock(SSLSocketFactory.class), mock(X509TrustManager.class))
+            .setLogger(logger)
+            .build();
+
+        verify(logger).log(Logger.Level.WARN, "sslSocketFactory is ignored (custom exporter or scheduler specified)");
     }
 }

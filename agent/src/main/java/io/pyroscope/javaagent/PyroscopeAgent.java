@@ -9,6 +9,8 @@ import io.pyroscope.javaagent.impl.*;
 import io.pyroscope.labels.v2.ScopedContext;
 import org.jetbrains.annotations.NotNull;
 
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 import java.lang.instrument.Instrumentation;
 
 import static io.pyroscope.Preconditions.checkNotNull;
@@ -129,6 +131,8 @@ public class PyroscopeAgent {
             private Exporter exporter;
             private ProfilingScheduler scheduler;
             private Logger logger;
+            private SSLSocketFactory sslSocketFactory;
+            private X509TrustManager trustManager;
 
             public Builder(@NotNull Config config) {
                 checkNotNull(config, "config");
@@ -138,6 +142,20 @@ public class PyroscopeAgent {
             public Builder setExporter(@NotNull Exporter exporter) {
                 checkNotNull(exporter, "exporter");
                 this.exporter = exporter;
+                return this;
+            }
+
+            /**
+             * Secures the default profile export transport with a caller-supplied socket factory and
+             * the trust manager backing it. Ignored, with a warning, when a custom
+             * {@link #setExporter(Exporter) exporter} or {@link #setScheduler(ProfilingScheduler) scheduler}
+             * is supplied.
+             */
+            public Builder setSslSocketFactory(@NotNull SSLSocketFactory sslSocketFactory, @NotNull X509TrustManager trustManager) {
+                checkNotNull(sslSocketFactory, "sslSocketFactory");
+                checkNotNull(trustManager, "trustManager");
+                this.sslSocketFactory = sslSocketFactory;
+                this.trustManager = trustManager;
                 return this;
             }
 
@@ -163,9 +181,12 @@ public class PyroscopeAgent {
                 if (logger == null) {
                     logger = new DefaultLogger(config.logLevel, System.err);
                 }
+                if (sslSocketFactory != null && (exporter != null || scheduler != null)) {
+                    logger.log(Logger.Level.WARN, "sslSocketFactory is ignored (custom exporter or scheduler specified)");
+                }
                 if (scheduler == null) {
                     if (exporter == null) {
-                        exporter = new QueuedExporter(config, new PyroscopeExporter(config, logger), logger);
+                        exporter = new QueuedExporter(config, new PyroscopeExporter(config, logger, sslSocketFactory, trustManager), logger);
                     }
                     if (config.samplingDuration == null) {
                         scheduler = new ContinuousProfilingScheduler(config, exporter, logger);
