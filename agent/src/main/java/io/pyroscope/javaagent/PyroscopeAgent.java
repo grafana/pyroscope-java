@@ -154,7 +154,7 @@ public class PyroscopeAgent {
             }
 
             public Builder setProfiler(@NotNull ProfilerDelegate profiler) {
-                checkNotNull(profiler, "logger");
+                checkNotNull(profiler, "profiler");
                 this.profiler = profiler;
                 return this;
             }
