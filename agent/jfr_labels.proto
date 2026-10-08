@@ -1,3 +1,12 @@
+// The wire format of LabelsSnapshot is a frozen contract with Grafana Pyroscope's ingest path:
+// the agent posts an encoded LabelsSnapshot as the "labels" part of a JFR upload.
+//
+// Nothing in the build compiles this file. The agent encodes the message by hand, in
+// agent/src/main/java/io/pyroscope/labels/v2/LabelsSnapshotEncoder.java. This file is the schema
+// of record, and is used to regenerate the test-only reference copy at
+// agent/src/test/java/io/pyroscope/labels/pbref/JfrLabels.java (regenerate with protoc, then
+// rename the Java package references, leaving the embedded descriptor strings alone).
+
 syntax = "proto3";
 
 package io.pyroscope.labels.pb;

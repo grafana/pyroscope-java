@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 
 import static io.pyroscope.Preconditions.checkNotNull;
 
@@ -60,36 +59,41 @@ public final class Pyroscope {
             ScopedContext.CONTEXTS.clear();
         }
 
+        /**
+         * Sizing hints carried over from the previous dump, so the steady state is a single
+         * right-sized allocation. Plain volatile ints: a stale hint only costs a resize.
+         */
+        private static volatile int bufferHint = 4096;
+        private static volatile int stringsHint = 64;
+
         public static JfrLabels.LabelsSnapshot dump() {
-            final JfrLabels.LabelsSnapshot.Builder sb = JfrLabels.LabelsSnapshot.newBuilder();
-            final StringTableBuilder stb = new StringTableBuilder();
-            stb.indexes.putAll(CONSTANTS);
-            final Set<Long> closedContexts = new HashSet<>();
-            final BiConsumer<Long, LabelsSet> collect = (contextID, ls) -> {
-                final JfrLabels.Context.Builder cb = JfrLabels.Context.newBuilder();
-                ls.forEachLabel((k, v) -> {
-                    cb.putLabels(stb.get(k), stb.get(v));
-                });
-                sb.putContexts(contextID, cb.build());
-            };
+            final LabelsSnapshotEncoder enc = new LabelsSnapshotEncoder(
+                    bufferHint + (bufferHint >> 3),
+                    stringsHint + (stringsHint >> 3));
+            enc.seedStringTable(CONSTANTS);
+            List<Long> closedContexts = null;
             for (Map.Entry<Long, ScopedContext> it : ScopedContext.CONTEXTS.entrySet()) {
-                final Long contextID = it.getKey();
-                if (it.getValue().closed.get()) {
-                    closedContexts.add(contextID);
+                final ScopedContext ctx = it.getValue();
+                if (ctx.closed.get()) {
+                    if (closedContexts == null) {
+                        closedContexts = new ArrayList<>();
+                    }
+                    closedContexts.add(it.getKey());
                 }
-                collect.accept(contextID, it.getValue().labels);
+                enc.writeContext(it.getKey(), ctx.labels.args());
             }
             for (Map.Entry<Long, LabelsSet> it : ScopedContext.CONSTANT_CONTEXTS.entrySet()) {
-                final Long contextID = it.getKey();
-                collect.accept(contextID, it.getValue());
+                enc.writeContext(it.getKey(), it.getValue().args());
             }
-            stb.indexes.forEach((k, v) -> {
-                sb.putStrings(v, k);
-            });
-            for (Long cid : closedContexts) {
-                ScopedContext.CONTEXTS.remove(cid);
+            enc.writeStringTable();
+            if (closedContexts != null) {
+                for (int i = 0; i < closedContexts.size(); i++) {
+                    ScopedContext.CONTEXTS.remove(closedContexts.get(i));
+                }
             }
-            return sb.build();
+            bufferHint = Math.max(4096, enc.size());
+            stringsHint = Math.max(64, enc.stringCount());
+            return enc.finish();
         }
 
         static final ConcurrentHashMap<String, Long> CONSTANTS = new ConcurrentHashMap<>();
@@ -139,23 +143,5 @@ public final class Pyroscope {
 
     public static Map<String, String> getStaticLabels() {
         return staticLabels;
-    }
-
-    static class StringTableBuilder {
-        private final Map<String, Long> indexes = new HashMap<>();
-
-        public StringTableBuilder() {
-        }
-
-        public long get(@NotNull String s) {
-            Long prev = indexes.get(s);
-            if (prev != null) {
-                return prev;
-            }
-            long index = indexes.size() + 1;
-            indexes.put(s, index);
-            return index;
-
-        }
     }
 }

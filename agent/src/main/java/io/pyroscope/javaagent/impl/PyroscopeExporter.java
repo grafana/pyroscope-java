@@ -7,6 +7,7 @@ import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.util.zip.GzipSink;
+import io.pyroscope.labels.pb.JfrLabels;
 import io.pyroscope.labels.v2.Pyroscope;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
@@ -127,7 +128,8 @@ public class PyroscopeExporter implements Exporter {
             return body;
         }
 
-        byte[] labels = snapshot.labels.toByteArray();
+        JfrLabels.LabelsSnapshot labels = snapshot.labels;
+        int labelsLength = labels == null ? 0 : labels.size();
         MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
             .setType(MultipartBody.FORM);
         RequestBody jfrBody = RequestBody.create(snapshot.data);
@@ -135,8 +137,10 @@ public class PyroscopeExporter implements Exporter {
             jfrBody = GzipSink.gzip(jfrBody, config.compressionLevelJFR);
         }
         bodyBuilder.addFormDataPart("jfr", "jfr", jfrBody);
-        if (labels.length > 0) {
-            RequestBody labelsBody = RequestBody.create(labels, PROTOBUF);
+        if (labelsLength > 0) {
+            // The encoded snapshot may be shorter than its backing buffer; send just the prefix
+            // instead of copying it.
+            RequestBody labelsBody = RequestBody.create(labels.buffer(), PROTOBUF, 0, labelsLength);
             if (config.compressionLevelLabels != Deflater.NO_COMPRESSION) {
                 labelsBody = GzipSink.gzip(labelsBody, config.compressionLevelLabels);
             }

@@ -19,8 +19,10 @@ dependencies {
     implementation('com.squareup.okhttp3:okhttp:4.12.0')
     implementation("com.squareup.moshi:moshi:1.15.2")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0")
-    api 'com.google.protobuf:protobuf-java:4.36.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.14.2'
+    // Test-only: verifies the hand-written labels encoder against the real
+    // protobuf implementation. Nothing protobuf ships at runtime.
+    testImplementation 'com.google.protobuf:protobuf-java:4.36.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.4'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.12.4'
@@ -113,7 +115,6 @@ shadowJar {
 
     minimize()
     archiveClassifier.set('')
-    relocate("com.google",    "io.pyroscope.vendor.com.google")
     relocate("one.profiler",  "io.pyroscope.vendor.one.profiler")
     relocate("okio",  "io.pyroscope.vendor.okio")
     relocate("okhttp3",  "io.pyroscope.vendor.okhttp3")
@@ -126,7 +127,6 @@ shadowJar {
     dependencies {
         exclude "org/jetbrains/**"
         exclude "org/intellij/**"
-        exclude "google/protobuf/**"
     }
 }
 
