@@ -64,13 +64,15 @@ func appImagePrefix(dockerfile string) string {
 	}
 }
 
-func startApp(t *testing.T, net *dockertest.Network, image string, env map[string]string) {
+// startApp starts the app image. An empty cmd keeps the image's own CMD, which runs Fib.
+func startApp(t *testing.T, net *dockertest.Network, image string, env map[string]string, cmd ...string) *dockertest.Container {
 	t.Helper()
 	t.Logf("starting app %s ...", image)
-	dockertest.StartContainer(t, dockertest.ContainerRequest{
+	return dockertest.StartContainer(t, dockertest.ContainerRequest{
 		Image:   image,
 		Network: net.Name,
 		Env:     env,
+		Cmd:     cmd,
 	})
 }
 
@@ -138,32 +140,68 @@ func testTarget(t *testing.T, pyroscopeURL string, serviceName string) {
 	testLabelSelector(t, pyroscopeURL, serviceName, cpuNanosecondsProfileType, labelSelector)
 }
 
+// profileExpectation is what a single label selector's collapsed profile has to look like.
+type profileExpectation struct {
+	labelSelector string
+	// contains is a collapsed stack fragment the profile must have.
+	contains string
+	// absent are fragments the profile must not have. Used to check that a label selects only its
+	// own samples.
+	absent []string
+}
+
 func testLabelSelector(t *testing.T, pyroscopeURL string, targetName string, profileTypeID string, labelSelector string) {
 	t.Helper()
-	var lastCollapsed string
+	testProfiles(t, pyroscopeURL, targetName, profileTypeID, []profileExpectation{
+		{labelSelector: labelSelector, contains: needle},
+	})
+}
+
+// testProfiles waits until every expectation holds. They are all checked on every tick, so the
+// budget is shared rather than paid per selector, and so that "this label selects its own stacks"
+// and "it does not select anybody else's" are decided on the same profiles.
+func testProfiles(t *testing.T, pyroscopeURL string, targetName string, profileTypeID string, expectations []profileExpectation) {
+	t.Helper()
+	lastCollapsed := make([]string, len(expectations))
 	var lastErr error
 	ok := require.Eventually(t, func() bool {
-		lastCollapsed, lastErr = queryProfile(t, pyroscopeURL, profileTypeID, labelSelector)
-		if lastErr != nil {
-			t.Logf("[%s] query %s error: %s", targetName, labelSelector, lastErr)
-			return false
+		satisfied := true
+		for i, e := range expectations {
+			collapsed, err := queryProfile(t, pyroscopeURL, profileTypeID, e.labelSelector)
+			lastCollapsed[i] = collapsed
+			if err != nil {
+				lastErr = err
+				t.Logf("[%s] query %s error: %s", targetName, e.labelSelector, err)
+				satisfied = false
+				continue
+			}
+			if collapsed == "" {
+				t.Logf("[%s] empty profile for %s", targetName, e.labelSelector)
+				satisfied = false
+				continue
+			}
+			if !strings.Contains(collapsed, e.contains) {
+				t.Logf("[%s] %q not found yet for %s", targetName, e.contains, e.labelSelector)
+				satisfied = false
+				continue
+			}
+			for _, a := range e.absent {
+				if strings.Contains(collapsed, a) {
+					t.Logf("[%s] unexpected %q in profile for %s", targetName, a, e.labelSelector)
+					satisfied = false
+				}
+			}
 		}
-		if lastCollapsed == "" {
-			t.Logf("[%s] empty profile for %s", targetName, labelSelector)
-			return false
-		}
-		if !strings.Contains(lastCollapsed, needle) {
-			t.Logf("[%s] needle not found yet for %s", targetName, labelSelector)
-			return false
-		}
-		return true
+		return satisfied
 	}, 3*time.Minute, 5*time.Second)
 
 	if !ok {
 		if lastErr != nil {
-			t.Logf("[%s] last error for %s: %s", targetName, labelSelector, lastErr)
+			t.Logf("[%s] last error: %s", targetName, lastErr)
 		}
-		t.Logf("[%s] last collapsed profile for %s:\n%s", targetName, labelSelector, lastCollapsed)
+		for i, e := range expectations {
+			t.Logf("[%s] last collapsed profile for %s:\n%s", targetName, e.labelSelector, lastCollapsed[i])
+		}
 		t.FailNow()
 	}
 }
