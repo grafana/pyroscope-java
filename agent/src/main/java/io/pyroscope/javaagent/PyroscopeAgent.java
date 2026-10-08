@@ -5,6 +5,7 @@ import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.api.ProfilingScheduler;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.config.ProfilingMode;
 import io.pyroscope.javaagent.impl.*;
 import io.pyroscope.labels.v2.ScopedContext;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +41,13 @@ public class PyroscopeAgent {
 
     public static void start(@NotNull Config config) {
         checkNotNull(config, "config");
-        start(new Options.Builder(config).build());
+        synchronized (sLock) {
+            if (sOptions != null) {
+                sOptions.logger.log(Logger.Level.ERROR, "Failed to start profiling - already started");
+                return;
+            }
+            start(new Options.Builder(config).build());
+        }
     }
 
     public static void start(@NotNull Options options) {
@@ -67,12 +74,22 @@ public class PyroscopeAgent {
             }
             try {
                 options.scheduler.start(options.profiler);
-                ScopedContext.ENABLED.set(true);
+                ScopedContext.ENABLED.set(options.config.format != Format.PPROF);
+                if (options.config.format == Format.PPROF) {
+                    logger.log(Logger.Level.WARN,
+                        "Pull profiles do not include dynamic labels or trace context");
+                }
                 logger.log(Logger.Level.INFO, "Profiling started");
                 ProfilerApiPublisher.publish(logger);
             } catch (final Throwable e) {
+                try {
+                    stopComponents(options);
+                    sOptions = null;
+                } catch (Throwable cleanupError) {
+                    e.addSuppressed(cleanupError);
+                }
+                ScopedContext.ENABLED.set(false);
                 logger.log(Logger.Level.ERROR, "Error starting profiler %s", e);
-                sOptions = null;
             }
         }
     }
@@ -85,20 +102,30 @@ public class PyroscopeAgent {
                 return;
             }
             try {
-                sOptions.scheduler.stop();
-                sOptions.exporter.stop();
+                stopComponents(sOptions);
                 sOptions.logger.log(Logger.Level.INFO, "Profiling stopped");
+                sOptions = null;
             } catch (Throwable e) {
                 sOptions.logger.log(Logger.Level.ERROR, "Error stopping profiler %s", e);
+                // Retain ownership until a later stop confirms that all workers have exited.
             }
-
-            sOptions = null;
         }
     }
 
+    /** Returns true while the agent owns the profiler, including incomplete shutdown. */
     public static boolean isStarted() {
         synchronized (sLock) {
             return sOptions != null;
+        }
+    }
+
+    private static void stopComponents(Options options) {
+        try {
+            options.scheduler.stop();
+        } finally {
+            if (options.exporter != null) {
+                options.exporter.stop();
+            }
         }
     }
 
@@ -164,13 +191,20 @@ public class PyroscopeAgent {
                     logger = new DefaultLogger(config.logLevel, System.err);
                 }
                 if (scheduler == null) {
-                    if (exporter == null) {
-                        exporter = new QueuedExporter(config, new PyroscopeExporter(config, logger), logger);
-                    }
-                    if (config.samplingDuration == null) {
-                        scheduler = new ContinuousProfilingScheduler(config, exporter, logger);
+                    if (config.profilingMode == ProfilingMode.PULL) {
+                        if (exporter != null) {
+                            throw new IllegalArgumentException("Pull mode does not use an exporter");
+                        }
+                        scheduler = new PullProfilingScheduler(config, logger);
                     } else {
-                        scheduler = new SamplingProfilingScheduler(config, exporter, logger);
+                        if (exporter == null) {
+                            exporter = new QueuedExporter(config, new PyroscopeExporter(config, logger), logger);
+                        }
+                        if (config.samplingDuration == null) {
+                            scheduler = new ContinuousProfilingScheduler(config, exporter, logger);
+                        } else {
+                            scheduler = new SamplingProfilingScheduler(config, exporter, logger);
+                        }
                     }
                 }
                 if (profiler == null) {

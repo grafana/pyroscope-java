@@ -84,6 +84,10 @@ public class ContinuousProfilingScheduler implements ProfilingScheduler {
     }
 
     private static void awaitTermination(ScheduledExecutorService svc) {
+        // Startup can fail before the executor is created; repeated stops also have no executor.
+        if (svc == null) {
+            return;
+        }
         try {
             boolean terminated = svc.awaitTermination(10, TimeUnit.SECONDS);
             if (!terminated) {
