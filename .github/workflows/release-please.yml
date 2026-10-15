@@ -55,7 +55,7 @@ jobs:
             NEXUS_GPG_SECRING_FILE_BASE64=publishing:nexus_gpg_secring_file
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ needs.release-please.outputs.sha }}
           persist-credentials: false
