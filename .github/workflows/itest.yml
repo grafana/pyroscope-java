@@ -10,32 +10,12 @@ permissions:
   contents: read
 
 jobs:
-  discover:
-    name: discover tests
-    runs-on: ubuntu-x64
-    outputs:
-      tests: ${{ steps.tests.outputs.tests }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-      - name: Install Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
-        with:
-          go-version: stable
-          cache-dependency-path: itest/go.mod
-      - name: Generate test matrix
-        id: tests
-        run: echo "tests=$(make ci-matrix)" >> "$GITHUB_OUTPUT"
-
   test:
-    name: integration-test ${{ matrix.test }} ${{ matrix.os }} Java ${{ matrix.java_version }}
-    needs: discover
+    name: integration-test ${{ matrix.os }} Java ${{ matrix.java_version }}
     runs-on: ubuntu-x64
     strategy:
       fail-fast: false
       matrix:
-        test: ${{ fromJSON(needs.discover.outputs.tests) }}
         os: [alpine-3.22, alpine-3.23, ubuntu-22.04, ubuntu-24.04]
         java_version: ["8", "11", "17", "21", "25"]
     steps:
@@ -56,7 +36,7 @@ jobs:
           echo "dockerfile=${distro}-test.Dockerfile" >> "$GITHUB_OUTPUT"
           echo "image_version=${version}" >> "$GITHUB_OUTPUT"
       - name: Run integration test
-        run: go test -v -timeout 15m -count=1 -run '^${{ matrix.test }}$$' .
+        run: go test -v -timeout 30m -count=1 .
         working-directory: itest
         env:
           DOCKERFILE: ${{ steps.os.outputs.dockerfile }}
