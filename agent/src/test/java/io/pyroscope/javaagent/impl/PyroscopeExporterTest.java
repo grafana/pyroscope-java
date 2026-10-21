@@ -4,24 +4,33 @@ import com.sun.net.httpserver.HttpServer;
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.Snapshot;
+import io.pyroscope.javaagent.SnapshotFile;
+import io.pyroscope.javaagent.TestSnapshotFiles;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.v2.Pyroscope;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -31,6 +40,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PyroscopeExporterTest {
     private static final Logger NOOP_LOGGER = (level, msg, args) -> {};
+
+    @TempDir
+    Path tempDir;
 
     @BeforeEach
     @AfterEach
@@ -147,6 +159,137 @@ public class PyroscopeExporterTest {
             exporter.stop();
             server.stop(0);
         }
+    }
+
+    @Test
+    void streamsSnapshotFileAsGzippedJfrPartAndDeletesIt() throws Exception {
+        byte[] profile = randomProfile();
+        SnapshotFile snapshot = new TestSnapshotFiles(tempDir, 2).take(profile);
+        List<byte[]> requests = new ArrayList<>();
+        HttpServer server = ingestServer(requests, 200);
+
+        PyroscopeExporter exporter = new PyroscopeExporter(
+            new Config.Builder()
+                .setServerAddress("http://localhost:" + server.getAddress().getPort())
+                .build(),
+            NOOP_LOGGER);
+        try {
+            exporter.export(snapshot);
+            List<byte[]> received = received(requests);
+            assertEquals(1, received.size());
+            assertArrayEquals(profile, gunzipPart(received.get(0)));
+            assertFalse(Files.exists(snapshot.file()), "uploaded snapshot file should be deleted");
+        } finally {
+            exporter.stop();
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void rereadsSnapshotFileOnRetry() throws Exception {
+        byte[] profile = randomProfile();
+        SnapshotFile snapshot = new TestSnapshotFiles(tempDir, 2).take(profile);
+        List<byte[]> requests = new ArrayList<>();
+        HttpServer server = ingestServer(requests, 503, 200);
+
+        PyroscopeExporter exporter = new PyroscopeExporter(
+            new Config.Builder()
+                .setServerAddress("http://localhost:" + server.getAddress().getPort())
+                .setCompressionLevelJFR(Deflater.NO_COMPRESSION)
+                .build(),
+            NOOP_LOGGER);
+        try {
+            exporter.export(snapshot);
+            List<byte[]> received = received(requests);
+            assertEquals(2, received.size());
+            for (byte[] request : received) {
+                assertTrue(indexOf(request, profile) >= 0, "every attempt should contain the whole profile");
+            }
+            assertFalse(Files.exists(snapshot.file()));
+        } finally {
+            exporter.stop();
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void dropsSupersededSnapshotFile() throws Exception {
+        TestSnapshotFiles files = new TestSnapshotFiles(tempDir, 1);
+        SnapshotFile superseded = files.take(new byte[] {1});
+        SnapshotFile current = files.take(new byte[] {2});
+        List<byte[]> requests = new ArrayList<>();
+        HttpServer server = ingestServer(requests, 200);
+
+        PyroscopeExporter exporter = new PyroscopeExporter(
+            new Config.Builder()
+                .setServerAddress("http://localhost:" + server.getAddress().getPort())
+                .build(),
+            NOOP_LOGGER);
+        try {
+            exporter.export(superseded);
+            assertEquals(0, received(requests).size());
+            assertTrue(Files.exists(current.file()), "newer snapshot file must be kept");
+        } finally {
+            exporter.stop();
+            server.stop(0);
+        }
+    }
+
+    /**
+     * Records request bodies of /ingest calls and answers with the given statuses, the last one repeating.
+     */
+    private static HttpServer ingestServer(List<byte[]> requests, int... statuses) throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+        server.createContext("/ingest", exchange -> {
+            byte[] body = readAllBytes(exchange.getRequestBody());
+            int status;
+            synchronized (requests) {
+                requests.add(body);
+                status = statuses[Math.min(requests.size(), statuses.length) - 1];
+            }
+            exchange.sendResponseHeaders(status, -1);
+            exchange.close();
+        });
+        server.start();
+        return server;
+    }
+
+    /**
+     * Copies the recorded requests under the lock the handler thread writes them with. export() returns only after
+     * the server responded, and the handler records the body before responding.
+     */
+    private static List<byte[]> received(List<byte[]> requests) {
+        synchronized (requests) {
+            return new ArrayList<>(requests);
+        }
+    }
+
+    private static byte[] randomProfile() {
+        // larger than several Okio segments and file transfer chunks
+        byte[] profile = new byte[100_000];
+        new Random(42).nextBytes(profile);
+        return profile;
+    }
+
+    private static byte[] gunzipPart(byte[] multipartBody) throws IOException {
+        int start = indexOf(multipartBody, new byte[] {0x1f, (byte) 0x8b, 8});
+        assertTrue(start >= 0, "no gzip stream in request");
+        // GZIPInputStream stops at the gzip trailer and ignores the multipart bytes after it
+        return readAllBytes(new GZIPInputStream(
+            new ByteArrayInputStream(multipartBody, start, multipartBody.length - start)));
+    }
+
+    private static int indexOf(byte[] haystack, byte[] needle) {
+        outer:
+        for (int i = 0; i <= haystack.length - needle.length; i++) {
+            for (int j = 0; j < needle.length; j++) {
+                if (haystack[i + j] != needle[j]) {
+                    continue outer;
+                }
+            }
+            return i;
+        }
+        return -1;
     }
 
     private static byte[] readAllBytes(InputStream input) throws IOException {
