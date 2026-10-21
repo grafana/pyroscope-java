@@ -2,6 +2,8 @@ package io.pyroscope.http;
 
 public enum Format {
     JFR ("jfr"),
+    /** CPU profiles served by the pull-mode HTTP endpoint. */
+    PPROF ("pprof"),
     /** Experimental and unstable; the OTLP Profiles protocol may change incompatibly. */
     OTLP ("otlp");
 

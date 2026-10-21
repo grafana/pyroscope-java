@@ -2,6 +2,7 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.config.Config;
+import io.pyroscope.javaagent.config.ProfilingMode;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -11,6 +12,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AsyncProfilerDelegateCommandTest {
+    @Test
+    void pprofCommandUsesScrapeTimeoutWithoutARecordingFile() {
+        Config config = new Config.Builder()
+            .setProfilingMode(ProfilingMode.PULL)
+            .setFormat(Format.PPROF)
+            .setUploadInterval(Duration.ofSeconds(30))
+            .build();
+        String command = AsyncProfilerDelegate.createStartCommand(config, Format.PPROF, null);
+        assertTrue(command.contains("timeout=31"));
+        assertTrue(command.contains("event=itimer"));
+        assertFalse(command.contains("file="));
+    }
+
     @Test
     void jfrStartCommandIncludesFileAndTimeout() {
         Config config = new Config.Builder()

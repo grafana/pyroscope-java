@@ -29,6 +29,10 @@ public class AppName {
         return new Builder(name, labels);
     }
 
+    public Map<String, String> getLabels() {
+        return labels;
+    }
+
     public static class Builder {
         private String name;
         private Map<String, String> labels;

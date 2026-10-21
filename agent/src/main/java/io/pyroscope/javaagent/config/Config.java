@@ -32,6 +32,9 @@ import static io.pyroscope.Preconditions.checkNotNull;
  */
 public final class Config {
     private static final String PYROSCOPE_AGENT_ENABLED_CONFIG = "PYROSCOPE_AGENT_ENABLED";
+    private static final String PYROSCOPE_PROFILING_MODE = "PYROSCOPE_PROFILING_MODE";
+    private static final String PYROSCOPE_PULL_BIND_ADDRESS = "PYROSCOPE_PULL_BIND_ADDRESS";
+    private static final String PYROSCOPE_PULL_PORT = "PYROSCOPE_PULL_PORT";
     private static final String PYROSCOPE_APPLICATION_NAME_CONFIG = "PYROSCOPE_APPLICATION_NAME";
     private static final String PYROSCOPE_PROFILING_INTERVAL_CONFIG = "PYROSCOPE_PROFILING_INTERVAL";
     private static final String PYROSCOPE_PROFILER_TYPE_CONFIG = "PYROSCOPE_PROFILER_TYPE";
@@ -82,6 +85,8 @@ public final class Config {
     private static final String PYROSCOPE_JFR_PROFILER_SETTINGS = "PYROSCOPE_JFR_PROFILER_SETTINGS";
 
     private static final boolean DEFAULT_AGENT_ENABLED = true;
+    private static final String DEFAULT_PULL_BIND_ADDRESS = "127.0.0.1";
+    private static final int DEFAULT_PULL_PORT = 4041;
     public static final String DEFAULT_SPY_NAME = "javaspy";
     private static final Duration DEFAULT_PROFILING_INTERVAL = Duration.ofMillis(10);
     private static final EventType DEFAULT_PROFILER_EVENT = EventType.ITIMER;
@@ -104,6 +109,9 @@ public final class Config {
     private static final Duration DEFAULT_PROFILE_EXPORT_TIMEOUT = Duration.ofSeconds(10);
 
     public final boolean agentEnabled;
+    public final ProfilingMode profilingMode;
+    public final String pullBindAddress;
+    public final int pullPort;
     public final String applicationName;
     public final ProfilerType profilerType;
     public final Duration profilingInterval;
@@ -171,8 +179,37 @@ public final class Config {
            String basicAuthUser,
            String basicAuthPassword,
            Duration profileExportTimeout,
-           @Nullable Path tmpDir) {
+           @Nullable Path tmpDir,
+           ProfilingMode profilingMode,
+           String pullBindAddress,
+           int pullPort) {
         this.agentEnabled = agentEnabled;
+        this.profilingMode = checkNotNull(profilingMode, "profilingMode");
+        this.pullBindAddress = checkNotNull(pullBindAddress, "pullBindAddress").trim();
+        this.pullPort = pullPort;
+        if (profilingMode == ProfilingMode.PULL) {
+            if (this.pullBindAddress.isEmpty() || pullPort < 0 || pullPort > 65535) {
+                throw new IllegalArgumentException("Invalid pull listener address or port");
+            }
+            if (format != Format.PPROF || profilerType != ProfilerType.ASYNC) {
+                throw new IllegalArgumentException("Pull mode requires PPROF format and the ASYNC profiler");
+            }
+            if ((profilingEvent != EventType.CPU && profilingEvent != EventType.ITIMER) ||
+                    (profilingAlloc != null && !profilingAlloc.isEmpty()) ||
+                    (profilingLock != null && !profilingLock.isEmpty()) || allocLive ||
+                    samplingDuration != null || samplingEventOrder != null) {
+                throw new IllegalArgumentException("Pull mode supports only CPU or ITIMER profiling without sampling or additional events");
+            }
+            if (APExtraArguments != null && !APExtraArguments.isEmpty()) {
+                throw new IllegalArgumentException("Pull mode does not support AP extra arguments");
+            }
+            if (profilingInterval.isZero() || profilingInterval.isNegative()) {
+                throw new IllegalArgumentException("Pull mode requires a positive profiling interval");
+            }
+            profilingInterval.toNanos();
+        } else if (format == Format.PPROF) {
+            throw new IllegalArgumentException("PPROF format requires pull mode");
+        }
         this.applicationName = applicationName;
         this.profilerType = profilerType;
         this.profilingInterval = profilingInterval;
@@ -240,6 +277,9 @@ public final class Config {
     public String toString() {
         return "Config{" +
                "agentEnabled=" + agentEnabled +
+               ", profilingMode=" + profilingMode +
+               ", pullBindAddress='" + pullBindAddress + '\'' +
+               ", pullPort=" + pullPort +
                ", applicationName='" + applicationName + '\'' +
                ", profilerType=" + profilerType +
                ", profilingInterval=" + profilingInterval +
@@ -322,7 +362,10 @@ public final class Config {
             cp.get(PYROSCOPE_AP_EXTRA_ARGUMENTS_CONFIG),
             cp.get(PYROSCOPE_BASIC_AUTH_USER_CONFIG), cp.get(PYROSCOPE_BASIC_AUTH_PASSWORD_CONFIG),
             profileExportTimeout(cp),
-            tmpDir(cp));
+            tmpDir(cp),
+            profilingMode(cp),
+            pullBindAddress(cp),
+            pullPort(cp));
     }
 
     /**
@@ -567,10 +610,28 @@ public final class Config {
                 return Format.JFR;
             case "otlp":
                 return Format.OTLP;
+            case "pprof":
+                return Format.PPROF;
             default:
                 DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Unknown format %s, using %s", format, DEFAULT_FORMAT);
                 return DEFAULT_FORMAT;
         }
+    }
+
+    private static ProfilingMode profilingMode(ConfigurationProvider cp) {
+        String value = cp.get(PYROSCOPE_PROFILING_MODE);
+        return value == null || value.isEmpty() ? ProfilingMode.PUSH :
+            ProfilingMode.valueOf(value.trim().toUpperCase(Locale.ROOT));
+    }
+
+    private static String pullBindAddress(ConfigurationProvider cp) {
+        String value = cp.get(PYROSCOPE_PULL_BIND_ADDRESS);
+        return value == null ? DEFAULT_PULL_BIND_ADDRESS : value;
+    }
+
+    private static int pullPort(ConfigurationProvider cp) {
+        String value = cp.get(PYROSCOPE_PULL_PORT);
+        return value == null || value.isEmpty() ? DEFAULT_PULL_PORT : Integer.parseInt(value);
     }
 
     private static int pushQueueCapacity(ConfigurationProvider configurationProvider) {
@@ -732,6 +793,9 @@ public final class Config {
 
     public static class Builder {
         private boolean agentEnabled = DEFAULT_AGENT_ENABLED;
+        private ProfilingMode profilingMode = ProfilingMode.PUSH;
+        private String pullBindAddress = DEFAULT_PULL_BIND_ADDRESS;
+        private int pullPort = DEFAULT_PULL_PORT;
         private String applicationName = null;
         private ProfilerType profilerType = ProfilerType.ASYNC;
         private Duration profilingInterval = DEFAULT_PROFILING_INTERVAL;
@@ -770,6 +834,9 @@ public final class Config {
         public Builder(@NotNull Config buildUpon) {
             checkNotNull(buildUpon, "config");
             agentEnabled = buildUpon.agentEnabled;
+            profilingMode = buildUpon.profilingMode;
+            pullBindAddress = buildUpon.pullBindAddress;
+            pullPort = buildUpon.pullPort;
             applicationName = buildUpon.applicationName;
             profilerType = buildUpon.profilerType;
             profilingInterval = buildUpon.profilingInterval;
@@ -804,6 +871,21 @@ public final class Config {
 
         public Builder setAgentEnabled(boolean agentEnabled) {
             this.agentEnabled = agentEnabled;
+            return this;
+        }
+
+        public Builder setProfilingMode(ProfilingMode profilingMode) {
+            this.profilingMode = profilingMode;
+            return this;
+        }
+
+        public Builder setPullBindAddress(String pullBindAddress) {
+            this.pullBindAddress = pullBindAddress;
+            return this;
+        }
+
+        public Builder setPullPort(int pullPort) {
+            this.pullPort = pullPort;
             return this;
         }
 
@@ -1013,7 +1095,10 @@ public final class Config {
                 APExtraArguments,
                 basicAuthUser, basicAuthPassword,
                 profileExportTimeout,
-                tmpDir);
+                tmpDir,
+                profilingMode,
+                pullBindAddress,
+                pullPort);
         }
     }
 }
