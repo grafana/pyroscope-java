@@ -89,6 +89,15 @@ public final class LabelsSet {
     }
 
     /**
+     * Internal: the flat array of alternating keys and values, not copied.
+     * Callers must not modify it. Used by the labels encoder to walk the labels
+     * without allocating a {@link BiConsumer} per context.
+     */
+    String[] args() {
+        return args;
+    }
+
+    /**
      * Applies a BiConsumer function to each key-value pair in this label set.
      *
      * <p>This method provides a way to iterate through all labels without
