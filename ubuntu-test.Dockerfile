@@ -37,7 +37,9 @@ WORKDIR /app
 ADD demo demo
 COPY --from=builder /app/agent/build/libs/pyroscope.jar /app/agent/build/libs/pyroscope.jar
 
-RUN javac demo/src/main/java/Fib.java
+RUN javac -cp /app/agent/build/libs/pyroscope.jar \
+    demo/src/main/java/Fib.java \
+    demo/src/main/java/LabelsApp.java
 
 ENV PYROSCOPE_LOG_LEVEL=debug
 ENV PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
