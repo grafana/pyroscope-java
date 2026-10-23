@@ -10,7 +10,10 @@ import io.pyroscope.javaagent.util.zip.GzipSink;
 import io.pyroscope.labels.v2.Pyroscope;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
@@ -33,14 +36,26 @@ public class PyroscopeExporter implements Exporter {
     final OkHttpClient client;
     final String staticLabels;
     public PyroscopeExporter(Config config, Logger logger) {
+        this(config, logger, null, null);
+    }
+
+    /**
+     * Secures HTTPS connections with the given socket factory and the trust manager backing it.
+     * Pass {@code null} for both to use the JVM defaults.
+     */
+    public PyroscopeExporter(Config config, Logger logger,
+                             @Nullable SSLSocketFactory sslSocketFactory, @Nullable X509TrustManager trustManager) {
         this.config = config;
         this.logger = logger;
         this.staticLabels = nameWithStaticLabels(); 
-        this.client = new OkHttpClient.Builder()
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
             .connectTimeout(config.profileExportTimeout)
             .readTimeout(config.profileExportTimeout)
-            .callTimeout(config.profileExportTimeout)
-            .build();
+            .callTimeout(config.profileExportTimeout);
+        if (sslSocketFactory != null) {
+            builder.sslSocketFactory(sslSocketFactory, trustManager);
+        }
+        this.client = builder.build();
 
     }
 
