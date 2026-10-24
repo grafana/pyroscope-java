@@ -2,6 +2,7 @@ package io.pyroscope.javaagent.impl;
 
 import io.pyroscope.javaagent.OverfillQueue;
 import io.pyroscope.javaagent.Snapshot;
+import io.pyroscope.javaagent.SnapshotFile;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
@@ -13,6 +14,8 @@ public class QueuedExporter implements Exporter {
     private final Thread thread;
     private final OverfillQueue<Snapshot> queue;
     private final int capacity;
+    private volatile Snapshot exporting;
+    private volatile boolean stopped;
 
     public QueuedExporter(Config config, Exporter impl, Logger logger) {
         this.impl = impl;
@@ -38,7 +41,12 @@ public class QueuedExporter implements Exporter {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 final Snapshot snapshot = queue.take();
-                impl.export(snapshot);
+                exporting = snapshot;
+                try {
+                    impl.export(snapshot);
+                } finally {
+                    exporting = null;
+                }
             }
         } catch (final InterruptedException e) {
             logger.log(Logger.Level.DEBUG, "Uploading interrupted");
@@ -48,19 +56,46 @@ public class QueuedExporter implements Exporter {
 
     @Override
     public void export(@NotNull Snapshot snapshot) {
+        if (stopped) {
+            close(snapshot);
+            return;
+        }
         try {
-            queue.put(snapshot);
+            close(queue.put(snapshot));
         } catch (final InterruptedException ignored) {
+            close(snapshot);
             Thread.currentThread().interrupt();
+        }
+        if (stopped) {
+            closeQueued();
         }
     }
 
+    /**
+     * Stops exporting and deletes the files of all pending snapshots. An upload in progress keeps reading its already
+     * opened file.
+     */
     @Override
     public void stop() {
+        stopped = true;
         try {
             this.thread.interrupt();
         } catch (Exception e) {
             logger.log(Logger.Level.ERROR, "Error stopping thread", e);
+        }
+        closeQueued();
+        close(exporting);
+    }
+
+    private void closeQueued() {
+        for (Snapshot snapshot : queue.drain()) {
+            close(snapshot);
+        }
+    }
+
+    private static void close(Snapshot snapshot) {
+        if (snapshot instanceof SnapshotFile) {
+            ((SnapshotFile) snapshot).close();
         }
     }
 }

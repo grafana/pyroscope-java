@@ -102,7 +102,7 @@ public class PyroscopeExporter implements Exporter {
                     return;
                 }
                 if (jfrFile == null) {
-                    logger.log(Logger.Level.WARN, "Dropping profiling snapshot: superseded by newer snapshots before it was uploaded");
+                    logger.log(Logger.Level.WARN, "Dropping profiling snapshot: superseded by newer snapshots or released before it was uploaded");
                     return;
                 }
             }

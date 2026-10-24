@@ -12,10 +12,12 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,6 +44,39 @@ class QueuedExporterTest {
             assertTrue(impl.firstOpenSucceeded.get(), "the snapshot being uploaded must not be superseded");
         } finally {
             exporter.stop();
+        }
+    }
+
+    @Test
+    void stopDeletesQueuedAndUploadingFiles() throws Exception {
+        BlockingExporter impl = new BlockingExporter();
+        QueuedExporter exporter = new QueuedExporter(config(2), impl, NOOP_LOGGER);
+        TestSnapshotFiles files = new TestSnapshotFiles(tempDir, exporter.maxLiveSnapshots());
+        exporter.export(files.take(new byte[] {0}));
+        assertTrue(impl.entered.await(5, TimeUnit.SECONDS));
+        exporter.export(files.take(new byte[] {1}));
+        exporter.export(files.take(new byte[] {2}));
+        exporter.export(files.take(new byte[] {3}));
+
+        exporter.stop();
+
+        assertNoFiles();
+    }
+
+    @Test
+    void exportAfterStopDeletesFile() throws Exception {
+        QueuedExporter exporter = new QueuedExporter(config(2), new BlockingExporter(), NOOP_LOGGER);
+        TestSnapshotFiles files = new TestSnapshotFiles(tempDir, exporter.maxLiveSnapshots());
+        exporter.stop();
+
+        exporter.export(files.take(new byte[] {0}));
+
+        assertNoFiles();
+    }
+
+    private void assertNoFiles() throws IOException {
+        try (Stream<Path> dir = Files.list(tempDir)) {
+            assertEquals(0, dir.count());
         }
     }
 
