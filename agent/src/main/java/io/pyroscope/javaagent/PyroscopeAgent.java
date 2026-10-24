@@ -199,8 +199,14 @@ public class PyroscopeAgent {
                 if (profiler == null) {
                     profiler = ProfilerDelegate.create(config);
                 }
-                if (defaultExporter != null && profiler instanceof AsyncProfilerDelegate) {
-                    ((AsyncProfilerDelegate) profiler).enableSnapshotFiles(defaultExporter.maxLiveSnapshots(), logger);
+                if (profiler instanceof AsyncProfilerDelegate) {
+                    AsyncProfilerDelegate delegate = (AsyncProfilerDelegate) profiler;
+                    if (defaultExporter != null) {
+                        delegate.enableSnapshotFiles(defaultExporter.maxLiveSnapshots(), logger);
+                    } else {
+                        // a custom exporter may expect Snapshot.data, also when the delegate was used with ours before
+                        delegate.disableSnapshotFiles();
+                    }
                 }
                 return new Options(this);
             }

@@ -95,6 +95,16 @@ final class SnapshotFileRotation {
         return snapshot;
     }
 
+    /**
+     * Supersedes all snapshots and deletes their files.
+     */
+    synchronized void close() {
+        for (int slot = 0; slot < owners.length; slot++) {
+            owners[slot] = null;
+            deleteQuietly(slotPaths[slot]);
+        }
+    }
+
     synchronized FileChannel open(SnapshotFile snapshot) throws IOException {
         if (!owns(snapshot)) {
             return null;

@@ -88,6 +88,17 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     }
 
     /**
+     * Makes JFR dumps return the recording in memory again and deletes the files of all snapshots that are still on
+     * disk.
+     */
+    public synchronized void disableSnapshotFiles() {
+        if (snapshotFiles != null) {
+            snapshotFiles.close();
+            snapshotFiles = null;
+        }
+    }
+
+    /**
      * Start async-profiler
      */
     @Override

@@ -103,6 +103,29 @@ class AsyncProfilerDelegateSnapshotFileTest {
         assertNull(first.open(), "the old snapshot is superseded by the resized rotation, not by a second one");
     }
 
+    @Test
+    void disablingDeletesFilesAndReturnsDataInMemory() throws Exception {
+        AsyncProfilerDelegate delegate = newDelegate();
+        delegate.enableSnapshotFiles(2, NOOP_LOGGER);
+        SnapshotFile first = record(delegate);
+
+        delegate.disableSnapshotFiles();
+
+        assertFalse(Files.exists(first.file()));
+        assertNull(first.open());
+        delegate.start();
+        burnCpu(200);
+        delegate.stop();
+        Snapshot snapshot = delegate.dumpProfile(Instant.now(), Instant.now());
+        assertFalse(snapshot instanceof SnapshotFile);
+        assertJfr(snapshot.data);
+
+        delegate.enableSnapshotFiles(2, NOOP_LOGGER);
+        SnapshotFile again = record(delegate);
+        assertEquals(first.file(), again.file());
+        assertNull(first.open(), "a snapshot of the closed rotation must not open the new rotation's file");
+    }
+
     private AsyncProfilerDelegate newDelegate() {
         Config config = new Config.Builder()
             .setFormat(Format.JFR)
