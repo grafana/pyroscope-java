@@ -10,6 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -78,6 +79,28 @@ class AsyncProfilerDelegateSnapshotFileTest {
         assertFalse(snapshot instanceof SnapshotFile);
         assertJfr(snapshot.data);
         assertEquals(Collections.singletonList(Logger.Level.WARN), levels);
+    }
+
+    @Test
+    void enablingAgainResizesTheExistingRotation() throws Exception {
+        AsyncProfilerDelegate delegate = newDelegate();
+        delegate.enableSnapshotFiles(3, NOOP_LOGGER);
+        SnapshotFile first = record(delegate);
+        SnapshotFile second = record(delegate);
+        SnapshotFile third = record(delegate);
+
+        delegate.enableSnapshotFiles(1, NOOP_LOGGER);
+
+        assertTrue(Files.exists(first.file()), "the remaining slot keeps its snapshot");
+        try (FileChannel channel = first.open()) {
+            assertNotNull(channel);
+        }
+        assertFalse(Files.exists(second.file()));
+        assertFalse(Files.exists(third.file()));
+        assertNull(second.open());
+        assertNull(third.open());
+        assertEquals(first.file(), record(delegate).file());
+        assertNull(first.open(), "the old snapshot is superseded by the resized rotation, not by a second one");
     }
 
     private AsyncProfilerDelegate newDelegate() {

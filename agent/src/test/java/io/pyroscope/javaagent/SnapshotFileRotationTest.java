@@ -80,6 +80,36 @@ class SnapshotFileRotationTest {
     }
 
     @Test
+    void growingKeepsSnapshotsAndAddsSlots() throws IOException {
+        TestSnapshotFiles files = new TestSnapshotFiles(tempDir, 1);
+        SnapshotFile a = files.take(bytes("a"));
+
+        files.resize(2);
+        SnapshotFile b = files.take(bytes("b"));
+
+        assertEquals(tempDir.resolve("pyroscope.jfr.0"), a.file());
+        assertEquals(tempDir.resolve("pyroscope.jfr.1"), b.file());
+        try (FileChannel channel = a.open()) {
+            assertEquals("a", read(channel));
+        }
+    }
+
+    @Test
+    void shrinkingSupersedesAndDeletesRemovedSlots() throws IOException {
+        TestSnapshotFiles files = new TestSnapshotFiles(tempDir, 2);
+        SnapshotFile a = files.take(bytes("a"));
+        SnapshotFile b = files.take(bytes("b"));
+
+        files.resize(1);
+
+        assertNull(b.open());
+        b.close();
+        assertFalse(Files.exists(b.file()));
+        assertTrue(Files.exists(a.file()));
+        assertEquals(a.file(), files.take(bytes("c")).file());
+    }
+
+    @Test
     void atomicReplaceCheckLeavesNoFiles() throws IOException {
         SnapshotFileRotation.checkAtomicReplace(tempDir);
 

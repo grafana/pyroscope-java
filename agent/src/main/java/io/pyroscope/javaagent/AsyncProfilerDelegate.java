@@ -64,7 +64,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
      * Makes JFR dumps return a {@link SnapshotFile} that keeps the recording on disk, rotating through
      * {@code slots} files next to the temporary JFR file. Only use this when the exporter handles {@link SnapshotFile}.
      * <p>
-     * Does nothing if the filesystem cannot atomically replace files.
+     * Calling this again changes the number of slots. Does nothing if the filesystem cannot atomically replace files.
      */
     public synchronized void enableSnapshotFiles(int slots, @NotNull Logger logger) {
         checkNotNull(logger, "logger");
@@ -72,6 +72,10 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
             return;
         }
         this.logger = logger;
+        if (snapshotFiles != null) {
+            snapshotFiles.resize(slots);
+            return;
+        }
         Path source = tempJFRFile.toPath();
         try {
             SnapshotFileRotation.checkAtomicReplace(source.getParent());

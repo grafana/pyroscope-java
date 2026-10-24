@@ -26,6 +26,10 @@ public final class TestSnapshotFiles {
             JfrLabels.LabelsSnapshot.getDefaultInstance());
     }
 
+    public void resize(int slots) {
+        rotation.resize(slots);
+    }
+
     public Path source() {
         return source;
     }
