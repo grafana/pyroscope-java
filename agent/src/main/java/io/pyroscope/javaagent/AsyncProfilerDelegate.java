@@ -2,22 +2,24 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.util.TmpFileUtil;
+import io.pyroscope.labels.pb.JfrLabels;
 import io.pyroscope.labels.v2.Pyroscope;
 import one.profiler.AsyncProfiler;
 import one.profiler.Counter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 
 import static io.pyroscope.Preconditions.checkNotNull;
-import static java.nio.file.Files.newInputStream;
 
 public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private static final String PROFILER_NOT_ACTIVE = "Profiler is not active";
@@ -26,6 +28,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private EventType eventType;
     private Format format;
     private File tempJFRFile;
+    private SnapshotFileRotation snapshotFiles;
+    private Logger logger;
 
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
@@ -42,11 +46,55 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
 
         if (format == Format.JFR && null == tempJFRFile) {
             try {
-                tempJFRFile = TmpFileUtil.createJfrFile(config);
+                // Async-profiler recreates the file with default permissions after each rotation, so keep the
+                // recordings in a directory only the owner can access. Register the directory for deletion before
+                // the files in it: the JVM deletes them in reverse order.
+                Path dir = TmpFileUtil.createTempDirectory(config.tmpDir, "pyroscope");
+                dir.toFile().deleteOnExit();
+                tempJFRFile = dir.resolve("pyroscope.jfr").toFile();
                 tempJFRFile.deleteOnExit();
+                Files.createFile(tempJFRFile.toPath());
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
+        }
+    }
+
+    /**
+     * Makes JFR dumps return a {@link SnapshotFile} that keeps the recording on disk, rotating through
+     * {@code slots} files next to the temporary JFR file. Only use this when the exporter handles {@link SnapshotFile}.
+     * <p>
+     * Calling this again changes the number of slots. Does nothing if the filesystem cannot atomically replace files.
+     */
+    public synchronized void enableSnapshotFiles(int slots, @NotNull Logger logger) {
+        checkNotNull(logger, "logger");
+        if (tempJFRFile == null) {
+            return;
+        }
+        this.logger = logger;
+        if (snapshotFiles != null) {
+            snapshotFiles.resize(slots);
+            return;
+        }
+        Path source = tempJFRFile.toPath();
+        try {
+            SnapshotFileRotation.checkAtomicReplace(source.getParent());
+        } catch (IOException e) {
+            logger.log(Logger.Level.INFO, "Keeping JFR snapshots in memory, %s does not support atomic file replacement: %s",
+                source.getParent(), e);
+            return;
+        }
+        snapshotFiles = new SnapshotFileRotation(source, slots);
+    }
+
+    /**
+     * Makes JFR dumps return the recording in memory again and deletes the files of all snapshots that are still on
+     * disk.
+     */
+    public synchronized void disableSnapshotFiles() {
+        if (snapshotFiles != null) {
+            snapshotFiles.close();
+            snapshotFiles = null;
         }
     }
 
@@ -133,8 +181,21 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         if (config.gcBeforeDump) {
             System.gc();
         }
+        // This also removes closed scoped contexts. Keep draining them even though the
+        // current OTLP exporter does not include the resulting labels snapshot.
+        // Dumped before the recording is read because a SnapshotFile needs them. The profiler is stopped, and if
+        // reading the recording fails, the profile referencing these labels is lost anyway.
+        final JfrLabels.LabelsSnapshot labels = Pyroscope.LabelsWrapper.dump();
+
         final byte[] data;
         if (format == Format.JFR) {
+            if (snapshotFiles != null) {
+                try {
+                    return snapshotFiles.take(format, eventType, started, ended, labels);
+                } catch (IOException e) {
+                    logger.log(Logger.Level.WARN, "Failed to move JFR recording aside, reading it into memory instead: %s", e);
+                }
+            }
             data = dumpJFR();
         } else if (format == Format.OTLP) {
             data = instance.dumpOtlp(Counter.TOTAL);
@@ -147,19 +208,13 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
                 started,
                 ended,
                 data,
-                // This also removes closed scoped contexts. Keep draining them even though the
-                // current OTLP exporter does not include the resulting labels snapshot.
-                Pyroscope.LabelsWrapper.dump()
+                labels
         );
     }
 
     private byte[] dumpJFR() {
         try {
-            byte[] bytes = new byte[(int) tempJFRFile.length()];
-            try (DataInputStream ds = new DataInputStream(newInputStream(tempJFRFile.toPath()))) {
-                ds.readFully(bytes);
-            }
-            return bytes;
+            return Files.readAllBytes(tempJFRFile.toPath());
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

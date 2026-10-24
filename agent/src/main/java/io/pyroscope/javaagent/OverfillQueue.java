@@ -1,5 +1,7 @@
 package io.pyroscope.javaagent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -29,19 +31,23 @@ public final class OverfillQueue<E> {
      * Inserts the specified element at the tail of this queue if it is
      * possible to do so without exceeding the queue's capacity. If not,
      * drops one element from the head of the queue.
+     *
+     * @return the dropped element, or {@code null} if none was dropped
      */
-    public void put(final E element) throws InterruptedException {
+    public E put(final E element) throws InterruptedException {
         lock.lockInterruptibly();
         try {
             boolean offerSuccessful = innerQueue.offer(element);
             if (offerSuccessful) {
                 notEmpty.signal();
+                return null;
             } else {
                 // Drop one old element to ensure the capacity for the new one.
-                innerQueue.poll();
+                E dropped = innerQueue.poll();
                 offerSuccessful = innerQueue.offer(element);
                 if (offerSuccessful) {
                     notEmpty.signal();
+                    return dropped;
                 } else {
                     // Doing this as a sanity check.
                     throw new RuntimeException("innerQueue.offer was not successful");
@@ -62,6 +68,20 @@ public final class OverfillQueue<E> {
             while ((result = innerQueue.poll()) == null) {
                 notEmpty.await();
             }
+            return result;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Removes and returns all elements in the queue.
+     */
+    public List<E> drain() {
+        lock.lock();
+        try {
+            List<E> result = new ArrayList<>(innerQueue.size());
+            innerQueue.drainTo(result);
             return result;
         } finally {
             lock.unlock();
