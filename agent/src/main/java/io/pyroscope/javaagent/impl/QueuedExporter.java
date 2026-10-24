@@ -12,15 +12,25 @@ public class QueuedExporter implements Exporter {
     final Logger logger;
     private final Thread thread;
     private final OverfillQueue<Snapshot> queue;
+    private final int capacity;
 
     public QueuedExporter(Config config, Exporter impl, Logger logger) {
         this.impl = impl;
         this.logger = logger;
         this.thread = new Thread(this::exportLoop);
         this.thread.setDaemon(true);
-        this.queue = new OverfillQueue<>(config.pushQueueCapacity);
+        this.capacity = config.pushQueueCapacity;
+        this.queue = new OverfillQueue<>(capacity);
 
         this.thread.start();
+    }
+
+    /**
+     * The most snapshots that can be alive at once: a full queue, the one being exported, and a new one being
+     * created before it is passed to {@link #export}.
+     */
+    public int maxLiveSnapshots() {
+        return capacity + 2;
     }
 
     private void exportLoop() {
