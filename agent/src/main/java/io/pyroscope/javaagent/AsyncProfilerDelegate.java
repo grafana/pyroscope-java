@@ -172,6 +172,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
         }
         // This also removes closed scoped contexts. Keep draining them even though the
         // current OTLP exporter does not include the resulting labels snapshot.
+        // Dumped before the recording is read because a SnapshotFile needs them. The profiler is stopped, and if
+        // reading the recording fails, the profile referencing these labels is lost anyway.
         final JfrLabels.LabelsSnapshot labels = Pyroscope.LabelsWrapper.dump();
 
         final byte[] data;
