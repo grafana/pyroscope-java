@@ -4,12 +4,15 @@ import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +42,22 @@ class AsyncProfilerDelegateSnapshotFileTest {
         assertJfr(secondData);
         assertArrayEquals(firstData, Files.readAllBytes(first.file()),
             "the next recording must not write into the moved file");
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void recordingsStayInOwnerOnlyDirectory() throws Exception {
+        AsyncProfilerDelegate delegate = newDelegate();
+        delegate.enableSnapshotFiles(2, NOOP_LOGGER);
+
+        SnapshotFile first = record(delegate);
+        SnapshotFile second = record(delegate);
+
+        Path dir = jfrFile(delegate).getParent();
+        assertEquals(tempDir, dir.getParent());
+        assertEquals("rwx------", PosixFilePermissions.toString(Files.getPosixFilePermissions(dir)));
+        assertEquals(dir, first.file().getParent());
+        assertEquals(dir, second.file().getParent());
     }
 
     @Test

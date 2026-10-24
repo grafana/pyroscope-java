@@ -19,6 +19,9 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * <p>
  * Moving into a slot supersedes the snapshot that previously owned it. All slot operations are serialized so that a
  * reader can never open a file that has already been handed to a newer snapshot.
+ * <p>
+ * Every file is registered with {@link java.io.File#deleteOnExit()}. The JVM deletes registered files in reverse
+ * order, so they are removed before the directory, if the caller registered that first.
  */
 final class SnapshotFileRotation {
     private final Path source;

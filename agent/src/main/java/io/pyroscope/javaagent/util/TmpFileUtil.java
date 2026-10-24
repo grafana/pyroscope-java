@@ -24,4 +24,15 @@ public class TmpFileUtil {
         }
         return File.createTempFile(prefix, suffix).getAbsoluteFile();
     }
+
+    /**
+     * Creates a new directory that only the owner can access (on POSIX filesystems).
+     */
+    public static Path createTempDirectory(@Nullable Path dir, String prefix) throws IOException {
+        if (dir != null) {
+            Files.createDirectories(dir);
+            return Files.createTempDirectory(dir, prefix).toAbsolutePath();
+        }
+        return Files.createTempDirectory(prefix).toAbsolutePath();
+    }
 }

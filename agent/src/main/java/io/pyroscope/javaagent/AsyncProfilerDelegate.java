@@ -46,8 +46,14 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
 
         if (format == Format.JFR && null == tempJFRFile) {
             try {
-                tempJFRFile = TmpFileUtil.createJfrFile(config);
+                // Async-profiler recreates the file with default permissions after each rotation, so keep the
+                // recordings in a directory only the owner can access. Register the directory for deletion before
+                // the files in it: the JVM deletes them in reverse order.
+                Path dir = TmpFileUtil.createTempDirectory(config.tmpDir, "pyroscope");
+                dir.toFile().deleteOnExit();
+                tempJFRFile = dir.resolve("pyroscope.jfr").toFile();
                 tempJFRFile.deleteOnExit();
+                Files.createFile(tempJFRFile.toPath());
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
