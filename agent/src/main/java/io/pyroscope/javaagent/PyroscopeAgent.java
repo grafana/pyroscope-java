@@ -200,7 +200,7 @@ public class PyroscopeAgent {
                     profiler = ProfilerDelegate.create(config);
                 }
                 if (defaultExporter != null && profiler instanceof AsyncProfilerDelegate) {
-                    ((AsyncProfilerDelegate) profiler).enableSnapshotFiles(defaultExporter.maxLiveSnapshots());
+                    ((AsyncProfilerDelegate) profiler).enableSnapshotFiles(defaultExporter.maxLiveSnapshots(), logger);
                 }
                 return new Options(this);
             }

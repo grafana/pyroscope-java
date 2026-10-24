@@ -40,6 +40,26 @@ final class SnapshotFileRotation {
     }
 
     /**
+     * Checks that files in {@code dir} can be atomically replaced, which {@link #take} relies on.
+     *
+     * @throws IOException if the filesystem does not support it
+     */
+    static void checkAtomicReplace(Path dir) throws IOException {
+        Path probe = dir.resolve("probe");
+        Path target = dir.resolve("probe.target");
+        probe.toFile().deleteOnExit();
+        target.toFile().deleteOnExit();
+        try {
+            Files.write(probe, new byte[0]);
+            Files.write(target, new byte[0]);
+            Files.move(probe, target, REPLACE_EXISTING, ATOMIC_MOVE);
+        } finally {
+            Files.deleteIfExists(probe);
+            Files.deleteIfExists(target);
+        }
+    }
+
+    /**
      * Moves the source file into the next slot.
      *
      * @throws IOException if the file could not be moved; the source file is left in place

@@ -79,6 +79,20 @@ class SnapshotFileRotationTest {
         }
     }
 
+    @Test
+    void atomicReplaceCheckLeavesNoFiles() throws IOException {
+        SnapshotFileRotation.checkAtomicReplace(tempDir);
+
+        try (Stream<Path> dir = Files.list(tempDir)) {
+            assertEquals(0, dir.count());
+        }
+    }
+
+    @Test
+    void atomicReplaceCheckFailsForMissingDirectory() {
+        assertThrows(IOException.class, () -> SnapshotFileRotation.checkAtomicReplace(tempDir.resolve("missing")));
+    }
+
     private static byte[] bytes(String s) {
         return s.getBytes(UTF_8);
     }

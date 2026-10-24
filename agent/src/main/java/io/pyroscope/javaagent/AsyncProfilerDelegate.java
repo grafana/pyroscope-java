@@ -2,6 +2,7 @@ package io.pyroscope.javaagent;
 
 import io.pyroscope.PyroscopeAsyncProfiler;
 import io.pyroscope.http.Format;
+import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.javaagent.util.TmpFileUtil;
 import io.pyroscope.labels.pb.JfrLabels;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -27,6 +29,7 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     private Format format;
     private File tempJFRFile;
     private SnapshotFileRotation snapshotFiles;
+    private Logger logger;
 
     private final AsyncProfiler instance = PyroscopeAsyncProfiler.getAsyncProfiler();
 
@@ -54,11 +57,24 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
     /**
      * Makes JFR dumps return a {@link SnapshotFile} that keeps the recording on disk, rotating through
      * {@code slots} files next to the temporary JFR file. Only use this when the exporter handles {@link SnapshotFile}.
+     * <p>
+     * Does nothing if the filesystem cannot atomically replace files.
      */
-    public synchronized void enableSnapshotFiles(int slots) {
-        if (tempJFRFile != null) {
-            snapshotFiles = new SnapshotFileRotation(tempJFRFile.toPath(), slots);
+    public synchronized void enableSnapshotFiles(int slots, @NotNull Logger logger) {
+        checkNotNull(logger, "logger");
+        if (tempJFRFile == null) {
+            return;
         }
+        this.logger = logger;
+        Path source = tempJFRFile.toPath();
+        try {
+            SnapshotFileRotation.checkAtomicReplace(source.getParent());
+        } catch (IOException e) {
+            logger.log(Logger.Level.INFO, "Keeping JFR snapshots in memory, %s does not support atomic file replacement: %s",
+                source.getParent(), e);
+            return;
+        }
+        snapshotFiles = new SnapshotFileRotation(source, slots);
     }
 
     /**
@@ -153,8 +169,8 @@ public final class AsyncProfilerDelegate implements ProfilerDelegate {
             if (snapshotFiles != null) {
                 try {
                     return snapshotFiles.take(format, eventType, started, ended, labels);
-                } catch (IOException ignored) {
-                    // e.g. the filesystem refuses to replace a slot that is still open; read the file instead
+                } catch (IOException e) {
+                    logger.log(Logger.Level.WARN, "Failed to move JFR recording aside, reading it into memory instead: %s", e);
                 }
             }
             data = dumpJFR();
