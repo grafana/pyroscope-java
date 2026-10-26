@@ -80,6 +80,7 @@ public final class Config {
      * Allows you to overwrite default JFR profiler settings
      */
     private static final String PYROSCOPE_JFR_PROFILER_SETTINGS = "PYROSCOPE_JFR_PROFILER_SETTINGS";
+    private static final String PYROSCOPE_JFR_EVENTS_CONFIG = "PYROSCOPE_JFR_EVENTS";
 
     private static final boolean DEFAULT_AGENT_ENABLED = true;
     public static final String DEFAULT_SPY_NAME = "javaspy";
@@ -118,6 +119,7 @@ public final class Config {
     @Deprecated
     public final String authToken;
     public final String jfrProfilerSettings;
+    public final EnumSet<EventType> jfrEvents;
 
     @Deprecated
     public final String timeseriesName;
@@ -155,6 +157,7 @@ public final class Config {
            final Logger.Level logLevel,
            final String serverAddress,
            final String authToken, String jfrProfilerSettings,
+           final EnumSet<EventType> jfrEvents,
            final Format format,
            final int pushQueueCapacity,
            final Map<String, String> labels,
@@ -185,6 +188,7 @@ public final class Config {
         this.serverAddress = serverAddress;
         this.authToken = authToken;
         this.jfrProfilerSettings = jfrProfilerSettings;
+        this.jfrEvents = normalizeJfrEvents(profilingEvent, jfrEvents);
         this.ingestMaxTries = ingestMaxRetries;
         this.compressionLevelJFR = validateCompressionLevel(compressionLevelJFR);
         this.compressionLevelLabels = validateCompressionLevel(compressionLevelLabels);
@@ -292,12 +296,13 @@ public final class Config {
                 PYROSCOPE_ALLOC_LIVE, PYROSCOPE_PROFILER_ALLOC_CONFIG);
             allocLive = false;
         }
+        EventType profilingEvent = profilingEvent(cp);
         return new Config(
             agentEnabled,
             applicationName(cp),
             profilerType(cp),
             profilingInterval(cp),
-            profilingEvent(cp),
+            profilingEvent,
             alloc,
             profilingLock(cp),
             samplingEventOrder(cp),
@@ -307,6 +312,7 @@ public final class Config {
             serverAddress(cp),
             authToken(cp),
             jfrProfilerSettings(cp),
+            jfrEvents(cp, profilingEvent),
             format(cp),
             pushQueueCapacity(cp),
             labels(cp),
@@ -341,7 +347,7 @@ public final class Config {
     /**
      * Determines the profiler type from configuration.
      * <p>
-     * NOTE: When this returns ProfilerType.JFR, it is considered an experimental feature 
+     * NOTE: When this returns ProfilerType.JFR, it is considered an experimental feature
      * and is subject to API changes or may be removed in future releases.
      */
     private static ProfilerType profilerType(ConfigurationProvider configurationProvider) {
@@ -416,6 +422,57 @@ public final class Config {
                 PYROSCOPE_PROFILER_EVENT_CONFIG, profilingEventStr, DEFAULT_PROFILER_EVENT.id);
             return DEFAULT_PROFILER_EVENT;
         }
+    }
+
+    private static EnumSet<EventType> normalizeJfrEvents(EventType defaultEvent, EnumSet<EventType> events) {
+        EnumSet<EventType> fallback = EnumSet.of(defaultEvent == EventType.CPU || defaultEvent == EventType.ALLOC || defaultEvent == EventType.LOCK
+            ? defaultEvent : EventType.CPU);
+        if (events == null || events.isEmpty()) {
+            return fallback;
+        }
+
+        EnumSet<EventType> normalized = EnumSet.noneOf(EventType.class);
+        for (EventType eventType : events) {
+            if (eventType == EventType.CPU || eventType == EventType.ALLOC || eventType == EventType.LOCK) {
+                normalized.add(eventType);
+            }
+        }
+        return normalized.isEmpty() ? fallback : normalized;
+    }
+
+    private static EnumSet<EventType> jfrEvents(ConfigurationProvider configurationProvider, EventType defaultEvent) {
+        final String jfrEventsStr = configurationProvider.get(PYROSCOPE_JFR_EVENTS_CONFIG);
+        if (jfrEventsStr == null || jfrEventsStr.trim().isEmpty()) {
+            return normalizeJfrEvents(defaultEvent, null);
+        }
+
+        EnumSet<EventType> events = EnumSet.noneOf(EventType.class);
+        for (String token : jfrEventsStr.split("\\s*,\\s*")) {
+            String normalized = token.trim().toLowerCase(Locale.ROOT);
+            if (normalized.isEmpty()) {
+                continue;
+            }
+            switch (normalized) {
+                case "all":
+                    events.addAll(EnumSet.of(EventType.CPU, EventType.ALLOC, EventType.LOCK));
+                    break;
+                case "cpu":
+                    events.add(EventType.CPU);
+                    break;
+                case "alloc":
+                    events.add(EventType.ALLOC);
+                    break;
+                case "lock":
+                    events.add(EventType.LOCK);
+                    break;
+                default:
+                    DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN,
+                        "Invalid %s value %s, using %s",
+                        PYROSCOPE_JFR_EVENTS_CONFIG, jfrEventsStr, defaultEvent.id);
+                    return normalizeJfrEvents(defaultEvent, null);
+            }
+        }
+        return normalizeJfrEvents(defaultEvent, events);
     }
 
     private static String profilingAlloc(ConfigurationProvider configurationProvider) {
@@ -501,7 +558,7 @@ public final class Config {
             return IntervalParser.parse(profileExportTimeoutStr);
         } catch (final NumberFormatException e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Invalid %s value %s, using %s",
-            		PYROSCOPE_PROFILE_EXPORT_TIMEOUT, profileExportTimeoutStr, DEFAULT_PROFILE_EXPORT_TIMEOUT);
+                PYROSCOPE_PROFILE_EXPORT_TIMEOUT, profileExportTimeoutStr, DEFAULT_PROFILE_EXPORT_TIMEOUT);
             return DEFAULT_PROFILE_EXPORT_TIMEOUT;
         }
     }
@@ -669,7 +726,7 @@ public final class Config {
             return httpHeaders != null ? httpHeaders : Collections.emptyMap();
         } catch (Exception e) {
             DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.ERROR, "Failed to parse %s = %s configuration. " +
-                                                                   "Falling back to no extra http headers. %s: ", PYROSCOPE_HTTP_HEADERS, sHttpHeaders, e.getMessage());
+                "Falling back to no extra http headers. %s: ", PYROSCOPE_HTTP_HEADERS, sHttpHeaders, e.getMessage());
             return Collections.emptyMap();
         }
     }
@@ -762,6 +819,7 @@ public final class Config {
         private String basicAuthUser;
         private String basicAuthPassword;
         private String jfrProfilerSettings;
+        private EnumSet<EventType> jfrEvents = null;
         private @Nullable Path tmpDir;
 
         public Builder() {
@@ -783,6 +841,7 @@ public final class Config {
             serverAddress = buildUpon.serverAddress;
             authToken = buildUpon.authToken;
             jfrProfilerSettings = buildUpon.jfrProfilerSettings;
+            jfrEvents = buildUpon.jfrEvents;
             format = buildUpon.format;
             pushQueueCapacity = buildUpon.pushQueueCapacity;
             labels = buildUpon.labels;
@@ -878,6 +937,13 @@ public final class Config {
          */
         public Builder setJFRProfilerSettings(String jfrProfilerSettings) {
             this.jfrProfilerSettings = jfrProfilerSettings;
+            return this;
+        }
+
+        public Builder setJfrEvents(Collection<EventType> jfrEvents) {
+            this.jfrEvents = (jfrEvents == null || jfrEvents.isEmpty())
+                ? null
+                : EnumSet.copyOf(jfrEvents);
             return this;
         }
 
@@ -998,6 +1064,7 @@ public final class Config {
                 serverAddress,
                 authToken,
                 jfrProfilerSettings,
+                normalizeJfrEvents(profilingEvent, jfrEvents),
                 format,
                 pushQueueCapacity,
                 labels,

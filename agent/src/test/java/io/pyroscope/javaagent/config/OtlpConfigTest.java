@@ -5,6 +5,7 @@ import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.api.ConfigurationProvider;
 import org.junit.jupiter.api.Test;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +45,20 @@ class OtlpConfigTest {
             "PYROSCOPE_PROFILER_LOCK", "10ms"));
         assertEquals(EventType.LOCK, config.profilingEvent);
         assertEquals("10ms", config.profilingLock);
+    }
+
+    @Test
+    void acceptsExplicitJfrEventSelection() {
+        Config config = Config.build(provider(
+            "PYROSCOPE_JFR_EVENTS", "lock"));
+        assertEquals(EnumSet.of(EventType.LOCK), config.jfrEvents);
+    }
+
+    @Test
+    void acceptsAllJfrEvents() {
+        Config config = Config.build(provider(
+            "PYROSCOPE_JFR_EVENTS", "all"));
+        assertEquals(EnumSet.of(EventType.CPU, EventType.ALLOC, EventType.LOCK), config.jfrEvents);
     }
 
     @Test

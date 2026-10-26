@@ -51,37 +51,34 @@ public final class JFRJDKProfilerDelegate implements ProfilerDelegate {
     public synchronized void start() {
         try {
             recording = new Recording();
-            switch (config.profilingEvent) {
-                case CPU: {
-                    recording.enable("jdk.ExecutionSample")
-                        .withPeriod(config.profilingInterval)
-                        .withStackTrace();
-                    break;
-                }
-                case ALLOC: {
-                    recording.enable("jdk.ObjectAllocationInNewTLAB")
-                        .withPeriod(config.profilingInterval)
-                        .withStackTrace();
-                    recording.enable("jdk.ObjectAllocationOutsideTLAB")
-                        .withPeriod(config.profilingInterval)
-                        .withStackTrace();
-                    break;
-                }
-                case LOCK: {
-                    Duration lockDuration = parseDuration(config.profilingLock, DEFAULT_LOCK_INTERVAL);
-                    recording.enable("jdk.ThreadPark")
-                        .withThreshold(lockDuration)
-                        .withPeriod(config.profilingInterval)
-                        .withStackTrace();
-                    recording.enable("jdk.JavaMonitorEnter")
-                        .withThreshold(lockDuration)
-                        .withPeriod(config.profilingInterval)
-                        .withStackTrace();
-                    break;
-                }
-                default:
-                    throw new IllegalArgumentException(format("Unsupported event type: %s", config.profilingEvent));
+
+            if (config.jfrEvents.contains(EventType.CPU)) {
+                recording.enable("jdk.ExecutionSample")
+                    .withPeriod(config.profilingInterval)
+                    .withStackTrace();
             }
+
+            if (config.jfrEvents.contains(EventType.ALLOC)) {
+                recording.enable("jdk.ObjectAllocationInNewTLAB")
+                    .withPeriod(config.profilingInterval)
+                    .withStackTrace();
+                recording.enable("jdk.ObjectAllocationOutsideTLAB")
+                    .withPeriod(config.profilingInterval)
+                    .withStackTrace();
+            }
+
+            if (config.jfrEvents.contains(EventType.LOCK)) {
+                Duration lockDuration = parseDuration(config.profilingLock, DEFAULT_LOCK_INTERVAL);
+                recording.enable("jdk.ThreadPark")
+                    .withThreshold(lockDuration)
+                    .withPeriod(config.profilingInterval)
+                    .withStackTrace();
+                recording.enable("jdk.JavaMonitorEnter")
+                    .withThreshold(lockDuration)
+                    .withPeriod(config.profilingInterval)
+                    .withStackTrace();
+            }
+
             recording.setToDisk(true);
             recording.setDestination(tempJFRFile.toPath());
             recording.start();
