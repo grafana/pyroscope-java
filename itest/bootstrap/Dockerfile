@@ -1,4 +1,4 @@
-FROM alpine:3.23.3 AS builder
+FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS builder
 RUN apk add openjdk11
 
 WORKDIR /app
@@ -13,7 +13,7 @@ COPY itest/bootstrap/BootstrapCheck.java /app/itest/bootstrap/BootstrapCheck.jav
 RUN ./gradlew --no-daemon shadowJar
 RUN javac itest/bootstrap/BootstrapCheck.java
 
-FROM alpine:3.23.3 AS runner
+FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS runner
 RUN apk add openjdk11-jre-headless
 
 WORKDIR /app
