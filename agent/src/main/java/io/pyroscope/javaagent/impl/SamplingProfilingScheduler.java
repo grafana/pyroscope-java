@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -118,6 +119,7 @@ public class SamplingProfilingScheduler implements ProfilingScheduler {
     private Config isolate(final EventType type, final Config config) {
         final Builder b = new Builder(config);
         b.setProfilingEvent(type);
+        b.setJfrEvents(EnumSet.of(type));
         if (!EventType.ALLOC.equals(type))
             b.setProfilingAlloc("");
         if (!EventType.LOCK.equals(type))
