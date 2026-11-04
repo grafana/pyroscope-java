@@ -5,6 +5,8 @@ import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.api.ConfigurationProvider;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +46,80 @@ class OtlpConfigTest {
             "PYROSCOPE_PROFILER_LOCK", "10ms"));
         assertEquals(EventType.LOCK, config.profilingEvent);
         assertEquals("10ms", config.profilingLock);
+    }
+
+    @Test
+    void acceptsExplicitJfrEventSelection() {
+        Config config = Config.build(provider(
+            "PYROSCOPE_JFR_EVENTS", "lock"));
+        assertEquals(EnumSet.of(EventType.LOCK), config.jfrEvents);
+    }
+
+    @Test
+    void acceptsAllJfrEvents() {
+        Config config = Config.build(provider(
+            "PYROSCOPE_JFR_EVENTS", "all"));
+        assertEquals(EnumSet.of(EventType.CPU, EventType.ALLOC, EventType.LOCK), config.jfrEvents);
+    }
+
+    @Test
+    void copiedBuilderDefaultsFollowProfilingEvent() {
+        Config original = new Config.Builder().build();
+        Config copy = original.newBuilder().setProfilingEvent(EventType.ALLOC).build();
+        Config secondCopy = copy.newBuilder().setProfilingEvent(EventType.LOCK).build();
+
+        assertEquals(EnumSet.of(EventType.CPU), original.jfrEvents);
+        assertEquals(EnumSet.of(EventType.ALLOC), copy.jfrEvents);
+        assertEquals(EnumSet.of(EventType.LOCK), secondCopy.jfrEvents);
+    }
+
+    @Test
+    void copiedProviderDefaultsFollowProfilingEvent() {
+        for (String value : new String[] {null, "", " ", "invalid", "cpu,invalid", ","}) {
+            Config original = Config.build(provider("PYROSCOPE_JFR_EVENTS", value));
+            Config copy = original.newBuilder().setProfilingEvent(EventType.ALLOC).build();
+
+            assertEquals(EnumSet.of(EventType.CPU), original.jfrEvents);
+            assertEquals(EnumSet.of(EventType.ALLOC), copy.jfrEvents, "Selection: " + value);
+        }
+    }
+
+    @Test
+    void copiedExplicitSelectionsDoNotFollowProfilingEvent() {
+        Config[] originals = {
+            new Config.Builder().setJfrEvents(EnumSet.of(EventType.CPU)).build(),
+            new Config.Builder().setJfrEvents(EnumSet.of(EventType.ALLOC, EventType.LOCK)).build(),
+            Config.build(provider("PYROSCOPE_JFR_EVENTS", "cpu")),
+            Config.build(provider("PYROSCOPE_JFR_EVENTS", "all"))
+        };
+        for (Config original : originals) {
+            Config copy = original.newBuilder().setProfilingEvent(EventType.LOCK).build();
+            Config secondCopy = copy.newBuilder().setProfilingEvent(EventType.ALLOC).build();
+
+            assertEquals(original.jfrEvents, copy.jfrEvents);
+            assertEquals(original.jfrEvents, secondCopy.jfrEvents);
+        }
+    }
+
+    @Test
+    void clearingExplicitSelectionRestoresDefaultAcrossCopies() {
+        Config original = new Config.Builder().setJfrEvents(EnumSet.of(EventType.LOCK)).build();
+        for (EnumSet<EventType> selection : Arrays.<EnumSet<EventType>>asList(null, EnumSet.noneOf(EventType.class))) {
+            Config cleared = original.newBuilder().setJfrEvents(selection).build();
+            Config copy = cleared.newBuilder().setProfilingEvent(EventType.ALLOC).build();
+
+            assertEquals(EnumSet.of(EventType.CPU), cleared.jfrEvents);
+            assertEquals(EnumSet.of(EventType.ALLOC), copy.jfrEvents);
+        }
+    }
+
+    @Test
+    void unsupportedExplicitSelectionFollowsDefaultAcrossCopies() {
+        Config original = new Config.Builder().setJfrEvents(EnumSet.of(EventType.ITIMER)).build();
+        Config copy = original.newBuilder().setProfilingEvent(EventType.LOCK).build();
+
+        assertEquals(EnumSet.of(EventType.CPU), original.jfrEvents);
+        assertEquals(EnumSet.of(EventType.LOCK), copy.jfrEvents);
     }
 
     @Test

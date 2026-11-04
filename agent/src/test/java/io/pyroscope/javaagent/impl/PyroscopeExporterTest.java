@@ -3,21 +3,26 @@ package io.pyroscope.javaagent.impl;
 import com.sun.net.httpserver.HttpServer;
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
+import io.pyroscope.javaagent.JFRJDKProfilerDelegate;
 import io.pyroscope.javaagent.Snapshot;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
 import io.pyroscope.labels.v2.Pyroscope;
+import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -145,6 +150,63 @@ public class PyroscopeExporterTest {
                 new ByteArrayInputStream(requestBody[0]))));
         } finally {
             exporter.stop();
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void exportsSelectedJfrEventMetadata(@TempDir Path tempDir) throws Exception {
+        HttpUrl[] requestUrl = new HttpUrl[1];
+        CountDownLatch[] requestCaptured = new CountDownLatch[] {new CountDownLatch(1)};
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+        server.createContext("/ingest", exchange -> {
+            requestUrl[0] = HttpUrl.parse("http://localhost" + exchange.getRequestURI());
+            readAllBytes(exchange.getRequestBody());
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+            requestCaptured[0].countDown();
+        });
+        server.start();
+        try {
+            for (EventType event : EnumSet.of(EventType.CPU, EventType.ALLOC, EventType.LOCK)) {
+                Config config = Config.build(key -> {
+                    switch (key) {
+                        case "PYROSCOPE_PROFILER_TYPE":
+                            return "JFR";
+                        case "PYROSCOPE_JFR_EVENTS":
+                            return event.id;
+                        case "PYROSCOPE_TMP_DIR":
+                            return tempDir.toString();
+                        case "PYROSCOPE_SERVER_ADDRESS":
+                            return "http://localhost:" + server.getAddress().getPort();
+                        default:
+                            return null;
+                    }
+                });
+                assertEquals(EventType.ITIMER, config.profilingEvent);
+                JFRJDKProfilerDelegate delegate = new JFRJDKProfilerDelegate(config);
+                Instant started = Instant.now();
+                delegate.start();
+                delegate.stop();
+                Snapshot snapshot = delegate.dumpProfile(started, Instant.now());
+                assertEquals(event, snapshot.eventType);
+
+                PyroscopeExporter exporter = new PyroscopeExporter(config, NOOP_LOGGER);
+                try {
+                    requestUrl[0] = null;
+                    requestCaptured[0] = new CountDownLatch(1);
+                    exporter.export(snapshot);
+                    assertTrue(requestCaptured[0].await(5, TimeUnit.SECONDS));
+                    assertEquals(event.units.id, requestUrl[0].queryParameter("units"));
+                    assertEquals(event.aggregationType.id, requestUrl[0].queryParameter("aggregationType"));
+                    assertEquals(event == EventType.CPU
+                            ? Long.toString(config.profilingIntervalInHertz()) : null,
+                        requestUrl[0].queryParameter("sampleRate"));
+                } finally {
+                    exporter.stop();
+                }
+            }
+        } finally {
             server.stop(0);
         }
     }
