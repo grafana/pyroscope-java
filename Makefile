@@ -40,10 +40,6 @@ docker-example-expt: build
 	docker compose -f examples/docker-compose-expt.yml build
 	docker compose -f examples/docker-compose-expt.yml up
 
-.PHONY: ci-matrix
-ci-matrix:
-	@cd itest && go test -list . -json . | jq -sc '[.[] | select(.Action=="output") | .Output | rtrimstr("\n") | select(startswith("Test"))]'
-
 .PHONY: itest
 itest:
 	cd itest && go test -v -timeout 15m -count=1 ./...
