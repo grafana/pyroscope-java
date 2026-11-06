@@ -25,12 +25,24 @@ class PullConfigTest {
         values.put("PYROSCOPE_PROFILING_MODE", " \tPuLl\r\n");
         values.put("PYROSCOPE_FORMAT", " PPROF ");
         values.put("PYROSCOPE_PULL_BIND_ADDRESS", " \tlocalhost\r\n");
-        values.put("PYROSCOPE_PULL_PORT", "9090");
+        values.put("PYROSCOPE_PULL_PORT", " \t9090\r\n");
         Config config = Config.build(values::get).newBuilder().build();
         assertEquals(ProfilingMode.PULL, config.profilingMode);
         assertEquals(Format.PPROF, config.format);
         assertEquals("localhost", config.pullBindAddress);
         assertEquals(9090, config.pullPort);
+    }
+
+    @Test
+    void defaultsInvalidPullConfiguration() {
+        for (String mode : new String[]{"", " \t\r\n", "unknown"}) {
+            Config config = Config.build(key -> "PYROSCOPE_PROFILING_MODE".equals(key) ? mode : null);
+            assertEquals(ProfilingMode.PUSH, config.profilingMode);
+        }
+        for (String port : new String[]{"", " \t\r\n", "not-a-port", "-1", "65536"}) {
+            Config config = Config.build(key -> "PYROSCOPE_PULL_PORT".equals(key) ? port : null);
+            assertEquals(4041, config.pullPort);
+        }
     }
 
     @Test

@@ -620,8 +620,15 @@ public final class Config {
 
     private static ProfilingMode profilingMode(ConfigurationProvider cp) {
         String value = cp.get(PYROSCOPE_PROFILING_MODE);
-        return value == null || value.isEmpty() ? ProfilingMode.PUSH :
-            ProfilingMode.valueOf(value.trim().toUpperCase(Locale.ROOT));
+        if (value == null || value.trim().isEmpty()) {
+            return ProfilingMode.PUSH;
+        }
+        try {
+            return ProfilingMode.valueOf(value.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            DefaultLogger.PRECONFIG_LOGGER.log(Logger.Level.WARN, "Unknown profiling mode %s, using PUSH", value);
+            return ProfilingMode.PUSH;
+        }
     }
 
     private static String pullBindAddress(ConfigurationProvider cp) {
@@ -631,7 +638,15 @@ public final class Config {
 
     private static int pullPort(ConfigurationProvider cp) {
         String value = cp.get(PYROSCOPE_PULL_PORT);
-        return value == null || value.isEmpty() ? DEFAULT_PULL_PORT : Integer.parseInt(value);
+        if (value == null || value.trim().isEmpty()) {
+            return DEFAULT_PULL_PORT;
+        }
+        try {
+            int port = Integer.parseInt(value.trim());
+            return port >= 0 && port <= 65535 ? port : DEFAULT_PULL_PORT;
+        } catch (NumberFormatException e) {
+            return DEFAULT_PULL_PORT;
+        }
     }
 
     private static int pushQueueCapacity(ConfigurationProvider configurationProvider) {
