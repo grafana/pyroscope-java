@@ -68,6 +68,32 @@ public class ShadowJarContentsTest {
         }
     }
 
+    /**
+     * The protobuf runtime used to be shaded in, which tripped JEP 498's terminally deprecated
+     * sun.misc.Unsafe warning on JDK 25 (grafana/pyroscope-java#361). The labels message is
+     * encoded by hand now, so nothing protobuf may ship.
+     */
+    @Test
+    void noProtobufRuntimeIsShipped() throws Exception {
+        String jarPath = System.getProperty("shadowJar.path");
+        if (jarPath == null || jarPath.isEmpty()) {
+            fail("System property 'shadowJar.path' is not set. Run this test via Gradle.");
+        }
+
+        List<String> protobufEntries = new ArrayList<>();
+        try (JarFile jar = new JarFile(new File(jarPath))) {
+            Enumeration<JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                String name = entries.nextElement().getName();
+                if (name.contains("protobuf") || name.contains("com/google/")) {
+                    protobufEntries.add(name);
+                }
+            }
+        }
+
+        assertTrue(protobufEntries.isEmpty(), "protobuf entries in shadowJar: " + protobufEntries);
+    }
+
     @Test
     void containsBootstrapApiResource() throws Exception {
         String jarPath = System.getProperty("shadowJar.path");
