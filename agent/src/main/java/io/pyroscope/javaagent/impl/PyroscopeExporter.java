@@ -3,6 +3,7 @@ package io.pyroscope.javaagent.impl;
 import io.pyroscope.http.Format;
 import io.pyroscope.javaagent.EventType;
 import io.pyroscope.javaagent.Snapshot;
+import io.pyroscope.javaagent.SnapshotFile;
 import io.pyroscope.javaagent.api.Exporter;
 import io.pyroscope.javaagent.api.Logger;
 import io.pyroscope.javaagent.config.Config;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,6 +67,10 @@ public class PyroscopeExporter implements Exporter {
             uploadSnapshot(snapshot);
         } catch (final InterruptedException ignored) {
             Thread.currentThread().interrupt();
+        } finally {
+            if (snapshot instanceof SnapshotFile) {
+                ((SnapshotFile) snapshot).close();
+            }
         }
     }
 
@@ -87,9 +93,22 @@ public class PyroscopeExporter implements Exporter {
         int tries = 0;
         while (retry) {
             tries++;
-            final RequestBody requestBody = requestBody(snapshot);
+            FileChannel jfrFile = null;
+            if (snapshot instanceof SnapshotFile) {
+                try {
+                    jfrFile = ((SnapshotFile) snapshot).open();
+                } catch (final IOException e) {
+                    logger.log(Logger.Level.ERROR, "Error reading profiling snapshot: %s", e.getMessage());
+                    return;
+                }
+                if (jfrFile == null) {
+                    logger.log(Logger.Level.WARN, "Dropping profiling snapshot: superseded by newer snapshots or released before it was uploaded");
+                    return;
+                }
+            }
+            final RequestBody requestBody = requestBody(snapshot, jfrFile);
             logger.log(Logger.Level.DEBUG, "Upload attempt %d to %s. Profile: %s bytes",
-                tries, url, snapshot.data.length);
+                tries, url, profileSize(snapshot, jfrFile));
             Request.Builder request = new Request.Builder()
                 .post(requestBody)
                 .url(url);
@@ -120,6 +139,8 @@ public class PyroscopeExporter implements Exporter {
                 }
             } catch (final IOException e) {
                 logger.log(Logger.Level.ERROR, "Error uploading snapshot: %s", e.getMessage());
+            } finally {
+                closeQuietly(jfrFile);
             }
             if (retry) {
                 if (config.ingestMaxTries >= 0 && tries >= config.ingestMaxTries) {
@@ -133,7 +154,27 @@ public class PyroscopeExporter implements Exporter {
         }
     }
 
-    private RequestBody requestBody(Snapshot snapshot) {
+    private static long profileSize(Snapshot snapshot, @Nullable FileChannel jfrFile) {
+        if (jfrFile == null) {
+            return snapshot.data.length;
+        }
+        try {
+            return jfrFile.size();
+        } catch (IOException e) {
+            return -1;
+        }
+    }
+
+    private static void closeQuietly(@Nullable FileChannel channel) {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    private RequestBody requestBody(Snapshot snapshot, @Nullable FileChannel jfrFile) {
         if (config.format == Format.OTLP) {
             RequestBody body = RequestBody.create(snapshot.data, PROTOBUF);
             if (config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
@@ -145,7 +186,9 @@ public class PyroscopeExporter implements Exporter {
         byte[] labels = snapshot.labels.toByteArray();
         MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
             .setType(MultipartBody.FORM);
-        RequestBody jfrBody = RequestBody.create(snapshot.data);
+        RequestBody jfrBody = jfrFile != null
+            ? new FileChannelRequestBody(jfrFile, null)
+            : RequestBody.create(snapshot.data);
         if (config.compressionLevelJFR != Deflater.NO_COMPRESSION) {
             jfrBody = GzipSink.gzip(jfrBody, config.compressionLevelJFR);
         }

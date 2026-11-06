@@ -2,11 +2,14 @@ package io.pyroscope.javaagent.util;
 
 import io.pyroscope.javaagent.config.Config;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,6 +17,15 @@ public class TmpFileUtilTest {
 
     @TempDir
     Path tempDir;
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void testCreateTempDirectoryIsOwnerOnly() throws Exception {
+        Path dir = TmpFileUtil.createTempDirectory(tempDir.resolve("nested"), "pyroscope");
+
+        assertEquals(tempDir.resolve("nested"), dir.getParent());
+        assertEquals("rwx------", PosixFilePermissions.toString(Files.getPosixFilePermissions(dir)));
+    }
 
     @Test
     void testCreateJfrFileInConfiguredDirectory() throws Exception {

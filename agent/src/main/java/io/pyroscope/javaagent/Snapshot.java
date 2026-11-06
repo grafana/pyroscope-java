@@ -5,7 +5,7 @@ import io.pyroscope.labels.pb.*;
 
 import java.time.Instant;
 
-public final class Snapshot {
+public class Snapshot {
     public final Format format;
     public final EventType eventType;
     public final Instant started;

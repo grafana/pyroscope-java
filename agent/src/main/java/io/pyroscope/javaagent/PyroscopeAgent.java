@@ -184,9 +184,11 @@ public class PyroscopeAgent {
                 if (sslSocketFactory != null && (exporter != null || scheduler != null)) {
                     logger.log(Logger.Level.WARN, "sslSocketFactory is ignored (custom exporter or scheduler specified)");
                 }
+                QueuedExporter defaultExporter = null;
                 if (scheduler == null) {
                     if (exporter == null) {
-                        exporter = new QueuedExporter(config, new PyroscopeExporter(config, logger, sslSocketFactory, trustManager), logger);
+                        defaultExporter = new QueuedExporter(config, new PyroscopeExporter(config, logger, sslSocketFactory, trustManager), logger);
+                        exporter = defaultExporter;
                     }
                     if (config.samplingDuration == null) {
                         scheduler = new ContinuousProfilingScheduler(config, exporter, logger);
@@ -196,6 +198,15 @@ public class PyroscopeAgent {
                 }
                 if (profiler == null) {
                     profiler = ProfilerDelegate.create(config);
+                }
+                if (profiler instanceof AsyncProfilerDelegate) {
+                    AsyncProfilerDelegate delegate = (AsyncProfilerDelegate) profiler;
+                    if (defaultExporter != null) {
+                        delegate.enableSnapshotFiles(defaultExporter.maxLiveSnapshots(), logger);
+                    } else {
+                        // a custom exporter may expect Snapshot.data, also when the delegate was used with ours before
+                        delegate.disableSnapshotFiles();
+                    }
                 }
                 return new Options(this);
             }
